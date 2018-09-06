@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+require 'faastruby'
+require 'faastruby/cli'
+command = ARGV.shift
+FaaStRuby::CLI.run(command, ARGV)
