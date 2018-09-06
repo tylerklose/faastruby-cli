@@ -1,0 +1,6 @@
+require 'oj'
+require 'faastruby/version'
+require 'faastruby/base'
+require 'faastruby/api'
+require 'faastruby/function'
+require 'faastruby/workspace'
