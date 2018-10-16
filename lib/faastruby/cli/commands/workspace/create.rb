@@ -28,7 +28,7 @@ module FaaStRuby
         end
 
         def self.help
-          "create-workspace".blue + " WORKSPACE_NAME [--stdout|-o, --output-file] [-e, --email YOUR_EMAIL_ADDRESS]"
+          "create-workspace".blue + " WORKSPACE_NAME [--stdout|-c, --credentials-file CREDENTIALS_FILE] [-e, --email YOUR_EMAIL_ADDRESS]"
         end
 
         def usage
@@ -40,7 +40,7 @@ module FaaStRuby
         def missing_args
           if @args.empty?
             @missing_args << "Missing argument: WORKSPACE_NAME".red
-            @missing_args << "Usage: faastruby create-workspace WORKSPACE_NAME"
+            @missing_args << usage
           end
           FaaStRuby::CLI.error(["'#{@args.first}' is not a valid workspace name.".red, usage], color: nil) if @args.first =~ /^-.*/
           @missing_args
@@ -55,7 +55,7 @@ module FaaStRuby
             #   @options['credentials_file'] = @args.shift
             when '--stdout'
               @options['stdout'] = true
-            when '-o', '--output-file'
+            when '-c', '--credentials-file'
               @options['credentials_file'] = @args.shift
             when '-e', '--email'
               @options['email'] = @args.shift

@@ -1,15 +1,17 @@
 module FaaStRuby
   class Credentials # TODO: change it to YAML?
-    def self.load_credentials_file
-      if File.file?(FAASTRUBY_CREDENTIALS)
-        Oj.load(File.read(FAASTRUBY_CREDENTIALS))
+    def self.load_credentials_file(credentials_file = FAASTRUBY_CREDENTIALS)
+      if File.file?(credentials_file)
+        creds = Oj.load(File.read(credentials_file))
+        return creds if creds.is_a?(Hash)
+        return {}
       else
         {}
       end
     end
 
     def self.add(workspace_name, new_credentials, credentials_file)
-      credentials = load_credentials_file
+      credentials = load_credentials_file(credentials_file)
       credentials.merge!({workspace_name => new_credentials})
       save_file(credentials, credentials_file)
     end
@@ -32,9 +34,9 @@ module FaaStRuby
       puts "#{symbol} f #{credentials_file}".colorize(color)
     end
 
-    def self.load_for(workspace_name)
-      credentials = load_from_env(workspace_name) || load_credentials_file
-      FaaStRuby::CLI.error("Could not find credentials for '#{workspace_name}' in '#{FAASTRUBY_CREDENTIALS}'") unless credentials.has_key?(workspace_name)
+    def self.load_for(workspace_name, cred_file = FAASTRUBY_CREDENTIALS)
+      credentials = load_from_env(workspace_name) || load_credentials_file(cred_file)
+      FaaStRuby::CLI.error("Could not find credentials for '#{workspace_name}' in '#{cred_file}'") unless credentials.has_key?(workspace_name)
       FaaStRuby.configure do |config|
         config.api_key = credentials[workspace_name]['api_key']
         config.api_secret = credentials[workspace_name]['api_secret']

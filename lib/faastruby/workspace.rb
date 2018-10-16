@@ -13,7 +13,7 @@ module FaaStRuby
       case response.code
       when 422
         workspace.errors += ['(422) Unprocessable Entity', response.body]
-      when 200
+      when 200, 201
         workspace.credentials = response.body['credentials']
       else
         workspace.errors << "(#{response.code}) Error"

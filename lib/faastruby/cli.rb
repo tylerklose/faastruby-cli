@@ -1,5 +1,5 @@
-require 'yaml'
 require 'tty-spinner'
+require 'yaml'
 require 'tty-table'
 require 'zip'
 require 'colorize'

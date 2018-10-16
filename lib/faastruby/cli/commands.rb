@@ -35,6 +35,7 @@ end
 require 'faastruby/cli/credentials'
 require 'faastruby/cli/commands/function'
 require 'faastruby/cli/commands/workspace'
+require 'faastruby/cli/commands/credentials'
 require 'faastruby/cli/commands/help'
 require 'faastruby/cli/commands/version'
 
@@ -52,6 +53,8 @@ module FaaStRuby
       'list-workspace' => FaaStRuby::Command::Workspace::List,
       'test' => FaaStRuby::Command::Function::Test,
       'run' => FaaStRuby::Command::Function::Run,
+      'add-credentials' => FaaStRuby::Command::Credentials::Add,
+      'list-credentials' => FaaStRuby::Command::Credentials::List,
       'help' => FaaStRuby::Command::Help,
       '-h' => FaaStRuby::Command::Help,
       '--help' => FaaStRuby::Command::Help,
