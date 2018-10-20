@@ -3,6 +3,7 @@ require 'rest-client'
 module FaaStRuby
   class API
     @@api_version = 'v2'
+    attr_reader :api_url, :credentials, :headers
     def initialize
       @api_url = "#{HOST}/#{@@api_version}"
       @credentials = {'API-KEY' => FaaStRuby.api_key, 'API-SECRET' => FaaStRuby.api_secret}
@@ -37,15 +38,15 @@ module FaaStRuby
       parse RestClient.post(url, payload, @credentials){|response, request, result| response }
     end
 
-    def delete_from_workspace(function:, workspace:)
-      url = "#{@api_url}/workspaces/#{workspace.name}/functions/#{function.name}"
+    def delete_from_workspace(function_name:, workspace_name:)
+      url = "#{@api_url}/workspaces/#{workspace_name}/functions/#{function_name}"
       parse RestClient.delete(url, @headers){|response, request, result| response }
     end
 
-    def list_workspace_functions(workspace_name)
-      url = "#{@api_url}/workspaces/#{workspace_name}/functions"
-      parse RestClient.get(url, @headers){|response, request, result| response }
-    end
+    # def list_workspace_functions(workspace_name)
+    #   url = "#{@api_url}/workspaces/#{workspace_name}/functions"
+    #   parse RestClient.get(url, @headers){|response, request, result| response }
+    # end
 
     def run(function_name:, workspace_name:, payload:, method:, headers: {}, time: false, query: nil)
       url = "#{HOST}/#{workspace_name}/#{function_name}#{query}"
@@ -57,9 +58,9 @@ module FaaStRuby
       end
     end
 
-    def update_function_context(function:, workspace:, payload:)
+    def update_function_context(function_name:, workspace_name:, payload:)
       # payload is a string
-      url = "#{@api_url}/workspaces/#{workspace.name}/functions/#{function.name}"
+      url = "#{@api_url}/workspaces/#{workspace_name}/functions/#{function_name}"
       parse RestClient.patch(url, Oj.dump(payload), @headers){|response, request, result| response }
     end
 
@@ -81,7 +82,10 @@ module FaaStRuby
         return struct.new(nil, nil, ["(408) Request Timeout"], 408)
       when 422
         body = Oj.load(response.body)
-        return struct.new(nil, nil, ["(422) Unprocessable Entity - #{body['error']}"], 422)
+        errors = ["(422) Unprocessable Entity"]
+        errors << body['error'] if body['error']
+        errors += body['errors'] if body['errors']
+        return struct.new(nil, nil, errors, 422)
       when 402 # Limit excedeed
         body = Oj.load(response.body)
         return struct.new(nil, nil, ["(402) Limit Exceeded - #{body['error']}"], 402)

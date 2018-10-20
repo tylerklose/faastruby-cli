@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2 - Oct 20 2018
+### New
+- Functions can be scheduled via faastruby.yml
+### Fixed
+- Some API errors were not being properly displayed
+
 ## 0.2.1 - Oct 16 2018
 - New command: `add-credentials` - add credentials to a credentials file
 - New command: `list-credentials` - list current credentials in a credentials file
