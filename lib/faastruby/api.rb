@@ -81,7 +81,10 @@ module FaaStRuby
         return struct.new(nil, nil, ["(408) Request Timeout"], 408)
       when 422
         body = Oj.load(response.body)
-        return struct.new(nil, nil, ["(422) Unprocessable Entity - #{body['error']}"], 422)
+        errors = ["(422) Unprocessable Entity"]
+        errors << body['error'] if body['error']
+        errors += body['errors'] if body['errors']
+        return struct.new(nil, nil, errors, 422)
       when 402 # Limit excedeed
         body = Oj.load(response.body)
         return struct.new(nil, nil, ["(402) Limit Exceeded - #{body['error']}"], 402)
