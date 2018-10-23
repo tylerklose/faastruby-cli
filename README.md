@@ -1,4 +1,5 @@
 [![Gem Version](https://badge.fury.io/rb/faastruby.svg)](https://badge.fury.io/rb/faastruby)
+[![Build Status](https://travis-ci.org/FaaStRuby/faastruby-cli.svg?branch=master)](https://travis-ci.org/FaaStRuby/faastruby-cli)
 
 # faastruby-cli
 

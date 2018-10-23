@@ -1,3 +1,5 @@
+require 'faastruby/api'
+
 module FaaStRuby
   class Workspace < BaseObject
 
@@ -23,7 +25,7 @@ module FaaStRuby
     ###################
 
     ##### Instance methods
-    attr_accessor :name, :errors, :functions, :email, :object, :credentials
+    attr_accessor :name, :errors, :functions, :email, :object, :credentials, :updated_at, :created_at
 
     def destroy
       response = @api.destroy_workspace(@name)
