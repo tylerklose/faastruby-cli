@@ -8,6 +8,7 @@ module FaaStRuby
       @api_url = "#{HOST}/#{@@api_version}"
       @credentials = {'API-KEY' => FaaStRuby.api_key, 'API-SECRET' => FaaStRuby.api_secret}
       @headers = {content_type: :json, accept: :json}.merge(@credentials)
+      @struct = Struct.new(:response, :body, :errors, :code)
     end
 
     def create_workspace(workspace_name:, email: nil)
@@ -65,34 +66,26 @@ module FaaStRuby
     end
 
     def parse(response)
-      struct = Struct.new(:response, :body, :errors, :code)
+      body = Oj.load(response.body) unless [500, 408].include?(response.code)
       case response.code
-      when 401
-        body = Oj.load(response.body)
-        return struct.new(nil, nil, ["(401) Unauthorized - #{body['error']}"], 401)
-      when 404
-        body = Oj.load(response.body)
-        return struct.new(nil, nil, ["(404) Not Found - #{body['error']}"], 404)
-      when 409
-        body = Oj.load(response.body)
-        return struct.new(nil, nil, ["(409) Conflict - #{body['error']}"], 409)
-      when 500
-        return struct.new(nil, nil, ["(500) Error"], 500)
-      when 408
-        return struct.new(nil, nil, ["(408) Request Timeout"], 408)
+      when 401 then return error(["(401) Unauthorized - #{body['error']}"], 401)
+      when 404 then return error(["(404) Not Found - #{body['error']}"], 404)
+      when 409 then return error(["(409) Conflict - #{body['error']}"], 409)
+      when 500 then return error(["(500) Error"], 500)
+      when 408 then return error(["(408) Request Timeout"], 408)
+      when 402 then return error(["(402) Limit Exceeded - #{body['error']}"], 402)
       when 422
-        body = Oj.load(response.body)
         errors = ["(422) Unprocessable Entity"]
         errors << body['error'] if body['error']
         errors += body['errors'] if body['errors']
-        return struct.new(nil, nil, errors, 422)
-      when 402 # Limit excedeed
-        body = Oj.load(response.body)
-        return struct.new(nil, nil, ["(402) Limit Exceeded - #{body['error']}"], 402)
+        return error(errors, 422)
       else
-        body = Oj.load(response.body)
-        return struct.new(response, body, (body['errors'] || []), response.code)
+        return @struct.new(response, body, (body['errors'] || []), response.code)
       end
+    end
+
+    def error(errors, code)
+      @struct.new(nil, nil, errors, code)
     end
   end
 end
