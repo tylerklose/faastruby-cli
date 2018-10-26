@@ -13,17 +13,22 @@ module FaaStRuby
         puts
         workspaces = ["Workspaces:"]
         functions = ["Functions:"]
+        credentials = ["Credentials:"]
         FaaStRuby::Command::COMMANDS.each do |command, klass|
           next if command == 'upgrade'
           next if klass.to_s.match(/.+Command::Help$/)
           next if klass.to_s.match(/.+Command::Version$/)
           section = functions if klass.to_s.match(/.+::Function::.+/)
           section = workspaces if klass.to_s.match(/.+::Workspace::.+/)
+          section = credentials if klass.to_s.match(/.+::Credentials::.+/)
+          section ||= []
           section << "  #{klass.help}"
         end
         puts workspaces
         puts
         puts functions
+        puts
+        puts credentials
         puts
       end
     end

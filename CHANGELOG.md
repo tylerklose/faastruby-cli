@@ -4,6 +4,7 @@
 - Added #status_code to Workspace class to hold the API response code after a request
 - Added refresh_credentials endpoint
 - Fix the request headers
+- Fix bug with `faastruby help`
 
 ## 0.2.2 - Oct 20 2018
 ### New

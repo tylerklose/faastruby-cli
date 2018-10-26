@@ -45,6 +45,7 @@ module FaaStRuby
 
     def self.load_from_env(workspace_name)
       return nil unless ENV['FAASTRUBY_API_KEY'] && ENV['FAASTRUBY_API_SECRET']
+      puts "#{"WARNING:".red} Using credentials from env vars FAASTRUBY_API_KEY and FAASTRUBY_API_SECRET"
       {workspace_name => {'api_key' => ENV['FAASTRUBY_API_KEY'], 'api_secret' => ENV['FAASTRUBY_API_SECRET']}}
     end
   end
