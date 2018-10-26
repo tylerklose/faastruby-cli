@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    faastruby (0.2.2)
+    faastruby (0.2.3)
       colorize (~> 0.8)
       oj (~> 3.6)
       rest-client (~> 2.0)

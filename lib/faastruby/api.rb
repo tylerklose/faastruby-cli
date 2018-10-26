@@ -7,14 +7,15 @@ module FaaStRuby
     def initialize
       @api_url = "#{HOST}/#{@@api_version}"
       @credentials = {'API-KEY' => FaaStRuby.api_key, 'API-SECRET' => FaaStRuby.api_secret}
-      @headers = {content_type: :json, accept: :json}.merge(@credentials)
+      @headers = {content_type: 'application/json', accept: 'application/json'}.merge(@credentials)
       @struct = Struct.new(:response, :body, :errors, :code)
     end
 
-    def create_workspace(workspace_name:, email: nil)
+    def create_workspace(workspace_name:, email: nil, provider: nil)
       url = "#{@api_url}/workspaces"
       payload = {'name' => workspace_name}
       payload['email'] = email if email
+      payload['provider'] = provider if provider
       parse RestClient.post(url, Oj.dump(payload), @headers){|response, request, result| response }
     end
 
@@ -31,6 +32,12 @@ module FaaStRuby
     def get_workspace_info(workspace_name)
       url = "#{@api_url}/workspaces/#{workspace_name}"
       parse RestClient.get(url, @headers){|response, request, result| response }
+    end
+
+    def refresh_credentials(workspace_name)
+      url = "#{@api_url}/workspaces/#{workspace_name}/credentials"
+      payload = {}
+      parse RestClient.put(url, payload, @credentials){|response, request, result| response }
     end
 
     def deploy(workspace_name:, package:)

@@ -13,7 +13,7 @@ RSpec.describe FaaStRuby::API do
     it 'sets @api_url, @credentials and @headers' do
       expect(@api.api_url).to eq("#{FAASTRUBY_HOST}/v2")
       expect(@api.credentials).to eq({'API-KEY' => 'API_KEY', 'API-SECRET' => 'API_SECRET'})
-      expect(@api.headers).to eq({content_type: :json, accept: :json, 'API-KEY' => 'API_KEY', 'API-SECRET' => 'API_SECRET'})
+      expect(@api.headers).to eq({content_type: 'application/json', accept: 'application/json', 'API-KEY' => 'API_KEY', 'API-SECRET' => 'API_SECRET'})
     end
   end
 
@@ -56,6 +56,20 @@ RSpec.describe FaaStRuby::API do
     end
     it 'returns a struct with body, errors and status code' do
       expect(@api_response).to have_attributes(body: @fake_api.get_workspace_response, code: 200, errors: [])
+    end
+  end
+
+  describe '#refresh_credentials' do
+    before do
+      @url_path = "#{FAASTRUBY_HOST}/v2/workspaces/test-workspace/credentials"
+      @fake_api.stub_refresh_credentials(name: 'test-workspace')
+      @api_response = @api.refresh_credentials('test-workspace')
+    end
+    it 'makes a request' do
+      expect(WebMock).to have_requested(:put, @url_path)
+    end
+    it 'returns a struct with body, errors and status code' do
+      expect(@api_response).to have_attributes(body: {'test-workspace' => @fake_api.credentials_example}, code: 200, errors: [])
     end
   end
 
