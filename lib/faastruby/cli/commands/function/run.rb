@@ -26,7 +26,7 @@ module FaaStRuby
           command << "-X #{@options['method'].upcase}" if @options['method']
           @options['headers']&.each {|h,v| command << "-H '#{h}: #{v}'"}
           command << "-d '#{@options['body']}'" if @options['body']
-          command << "'#{HOST}/#{@options['workspace_name']}/#{@function_name}#{@options['query']}'"
+          command << "'#{FaaStRuby.api_host}/#{@options['workspace_name']}/#{@function_name}#{@options['query']}'"
           puts command.join(" ")
         end
 

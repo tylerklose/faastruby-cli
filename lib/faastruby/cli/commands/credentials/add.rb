@@ -7,7 +7,7 @@ module FaaStRuby
           @workspace_name = @args.shift
           FaaStRuby::CLI.error(['Missing argument: WORKSPACE_NAME'.red, usage], color: nil) if @workspace_name.nil? || @workspace_name =~ /^-.*/
           parse_options
-          @options['credentials_file'] ||= FAASTRUBY_CREDENTIALS
+          @options['credentials_file'] ||= FaaStRuby.credentials_file
           @missing_args = []
           FaaStRuby::CLI.error(@missing_args, color: nil) if missing_args.any?
         end

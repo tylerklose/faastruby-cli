@@ -1,7 +1,9 @@
 # Changelog
 
-## 0.2.4 - Unreleased
-- Multiple regions support
+## 0.2.5 - Nov 18 2018
+- Support for multiple regions with `faastruby --region [REGION] ...`
+
+## 0.2.4 - Skipped
 
 ## 0.2.3 - Oct 20 2018
 - Added #status_code to Workspace class to hold the API response code after a request

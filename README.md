@@ -6,7 +6,7 @@
 CLI tool for managing workspaces and functions hosted at [FaaStRuby](https://faastruby.io).
 
 ## What is FaaStRuby?
-Fast, lightweight and scalable serverless platform built for Ruby developers.
+FaaStRuby is a serverless platform built for Ruby developers.
 
 * [Tutorial](https://faastruby.io/tutorial.html)
 

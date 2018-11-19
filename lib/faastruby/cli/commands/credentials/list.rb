@@ -5,7 +5,7 @@ module FaaStRuby
         def initialize(args)
           @args = args
           parse_options
-          @options['credentials_file'] ||= FAASTRUBY_CREDENTIALS
+          @options['credentials_file'] ||= FaaStRuby.credentials_file
         end
 
         def run

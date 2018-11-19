@@ -9,7 +9,7 @@ module FaaStRuby
           @workspace_name = @args.shift
           parse_options
           FaaStRuby::Credentials.load_for(@workspace_name)
-          @options['credentials_file'] ||= FAASTRUBY_CREDENTIALS
+          @options['credentials_file'] ||= FaaStRuby.credentials_file
         end
 
         def run

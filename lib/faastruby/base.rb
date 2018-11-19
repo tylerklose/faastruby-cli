@@ -1,6 +1,10 @@
 module FaaStRuby
-  HOST = ENV['FAASTRUBY_HOST'] || 'https://api.faastruby.io'
-
+  ROOT_DOMAIN = ENV['FAASTRUBY_ROOT_DOMAIN'] || 'faastruby.io'
+  DEFAULT_REGION = 'tor1'
+  REGIONS = [
+    'tor1',
+    'sfo2'
+  ]
   class << self
     attr_accessor :configuration
   end
@@ -20,6 +24,27 @@ module FaaStRuby
 
   def self.credentials
     {api_key: api_key, api_secret: api_secret}
+  end
+
+  def self.region
+    ENV['FAASTRUBY_REGION'] ||= DEFAULT_REGION
+    raise "No such region: #{ENV['FAASTRUBY_REGION']}" unless FaaStRuby::REGIONS.include?(ENV['FAASTRUBY_REGION'])
+    ENV['FAASTRUBY_REGION']
+  end
+
+  def self.api_host
+    ENV['FAASTRUBY_HOST'] || "https://api.#{region}.#{ROOT_DOMAIN}"
+  end
+
+  def self.credentials_file
+    return File.expand_path(ENV['FAASTRUBY_CREDENTIALS']) if ENV['FAASTRUBY_CREDENTIALS']
+    if region == DEFAULT_REGION && File.file?(File.expand_path('~/.faastruby'))
+      return File.expand_path('~/.faastruby')
+    elsif region == DEFAULT_REGION
+      return File.expand_path("~/.faastruby.#{region}")
+    else
+      return File.expand_path("~/.faastruby.#{region}")
+    end
   end
 
   class Configuration

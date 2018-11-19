@@ -1,6 +1,6 @@
 module FaaStRuby
   class Credentials # TODO: change it to YAML?
-    def self.load_credentials_file(credentials_file = FAASTRUBY_CREDENTIALS)
+    def self.load_credentials_file(credentials_file = FaaStRuby.credentials_file)
       if File.file?(credentials_file)
         creds = Oj.load(File.read(credentials_file))
         return creds if creds.is_a?(Hash)
@@ -34,7 +34,7 @@ module FaaStRuby
       puts "#{symbol} f #{credentials_file}".colorize(color)
     end
 
-    def self.load_for(workspace_name, cred_file = FAASTRUBY_CREDENTIALS)
+    def self.load_for(workspace_name, cred_file = FaaStRuby.credentials_file)
       credentials = load_from_env(workspace_name) || load_credentials_file(cred_file)
       FaaStRuby::CLI.error("Could not find credentials for '#{workspace_name}' in '#{cred_file}'") unless credentials.has_key?(workspace_name)
       FaaStRuby.configure do |config|

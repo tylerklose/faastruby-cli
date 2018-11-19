@@ -5,7 +5,7 @@ module FaaStRuby
     @@api_version = 'v2'
     attr_reader :api_url, :credentials, :headers
     def initialize
-      @api_url = "#{HOST}/#{@@api_version}"
+      @api_url = "#{FaaStRuby.api_host}/#{@@api_version}"
       @credentials = {'API-KEY' => FaaStRuby.api_key, 'API-SECRET' => FaaStRuby.api_secret}
       @headers = {content_type: 'application/json', accept: 'application/json'}.merge(@credentials)
       @struct = Struct.new(:response, :body, :errors, :code)
@@ -57,7 +57,7 @@ module FaaStRuby
     # end
 
     def run(function_name:, workspace_name:, payload:, method:, headers: {}, time: false, query: nil)
-      url = "#{HOST}/#{workspace_name}/#{function_name}#{query}"
+      url = "#{FaaStRuby.api_host}/#{workspace_name}/#{function_name}#{query}"
       headers['Benchmark'] = true if time
       if method == 'get'
         RestClient.public_send(method, url, headers){|response, request, result| response }

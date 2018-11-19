@@ -8,9 +8,7 @@ require 'faastruby/cli/package'
 
 module FaaStRuby
   FAASTRUBY_YAML = 'faastruby.yml'
-  FAASTRUBY_CREDENTIALS = File.expand_path(ENV['FAASTRUBY_CREDENTIALS'] || '~/.faastruby')
   SPINNER_FORMAT = :spin_2
-
   class CLI
     def self.error(message, color: :red)
       message.each {|m| STDERR.puts m.colorize(color)} if message.is_a?(Array)
@@ -24,6 +22,7 @@ module FaaStRuby
         return
       end
       check_version
+      check_region
       error("Unknown command: #{command}") unless FaaStRuby::Command::COMMANDS.has_key?(command)
       FaaStRuby::Command::COMMANDS[command].new(args).run
     end
@@ -37,6 +36,11 @@ module FaaStRuby
           "Latest version: #{latest}"
         ], color: nil)
       end
+    end
+
+    def self.check_region
+      ENV['FAASTRUBY_REGION'] ||= DEFAULT_REGION
+      error(["No such region: #{ENV['FAASTRUBY_REGION']}".red, "Valid regions are:  #{FaaStRuby::REGIONS.join(' | ')}"], color: nil) unless FaaStRuby::REGIONS.include?(ENV['FAASTRUBY_REGION'])
     end
   end
 end
