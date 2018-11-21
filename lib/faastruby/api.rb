@@ -9,6 +9,7 @@ module FaaStRuby
       @credentials = {'API-KEY' => FaaStRuby.api_key, 'API-SECRET' => FaaStRuby.api_secret}
       @headers = {content_type: 'application/json', accept: 'application/json'}.merge(@credentials)
       @struct = Struct.new(:response, :body, :errors, :code)
+      @timeout = nil # disable request timeouts
     end
 
     def create_workspace(workspace_name:, email: nil, provider: nil)
@@ -16,12 +17,26 @@ module FaaStRuby
       payload = {'name' => workspace_name}
       payload['email'] = email if email
       payload['provider'] = provider if provider
-      parse RestClient.post(url, Oj.dump(payload), @headers){|response, request, result| response }
+      parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, payload: Oj.dump(payload), headers: @headers)
+    rescue RestClient::ExceptionWithResponse => err
+      case err.http_code
+      when 301, 302, 307
+        err.response.follow_redirection
+      else
+        parse err.response
+      end
     end
 
     def destroy_workspace(workspace_name)
       url = "#{@api_url}/workspaces/#{workspace_name}"
-      parse RestClient.delete(url, @headers){|response, request, result| response }
+      parse RestClient::Request.execute(method: :delete, timeout: @timeout, url: url, headers: @headers)
+    rescue RestClient::ExceptionWithResponse => err
+      case err.http_code
+      when 301, 302, 307
+        err.response.follow_redirection
+      else
+        parse err.response
+      end
     end
 
     # def update_workspace(workspace_name, payload)
@@ -31,24 +46,52 @@ module FaaStRuby
 
     def get_workspace_info(workspace_name)
       url = "#{@api_url}/workspaces/#{workspace_name}"
-      parse RestClient.get(url, @headers){|response, request, result| response }
+      parse RestClient::Request.execute(method: :get, timeout: @timeout, url: url, headers: @headers)
+    rescue RestClient::ExceptionWithResponse => err
+      case err.http_code
+      when 301, 302, 307
+        err.response.follow_redirection
+      else
+        parse err.response
+      end
     end
 
     def refresh_credentials(workspace_name)
       url = "#{@api_url}/workspaces/#{workspace_name}/credentials"
       payload = {}
-      parse RestClient.put(url, payload, @credentials){|response, request, result| response }
+      parse RestClient::Request.execute(method: :put, timeout: @timeout, url: url, payload: payload, headers: @credentials)
+    rescue RestClient::ExceptionWithResponse => err
+      case err.http_code
+      when 301, 302, 307
+        err.response.follow_redirection
+      else
+        parse err.response
+      end
     end
 
     def deploy(workspace_name:, package:)
       url = "#{@api_url}/workspaces/#{workspace_name}/deploy"
       payload = {package: File.new(package, 'rb')}
-      parse RestClient.post(url, payload, @credentials){|response, request, result| response }
+      parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, payload: payload, headers: @credentials)
+    rescue RestClient::ExceptionWithResponse => err
+      case err.http_code
+      when 301, 302, 307
+        err.response.follow_redirection
+      else
+        parse err.response
+      end
     end
 
     def delete_from_workspace(function_name:, workspace_name:)
       url = "#{@api_url}/workspaces/#{workspace_name}/functions/#{function_name}"
-      parse RestClient.delete(url, @headers){|response, request, result| response }
+      parse RestClient::Request.execute(method: :delete, timeout: @timeout, url: url, headers: @headers)
+    rescue RestClient::ExceptionWithResponse => err
+      case err.http_code
+      when 301, 302, 307
+        err.response.follow_redirection
+      else
+        parse err.response
+      end
     end
 
     # def list_workspace_functions(workspace_name)
@@ -60,16 +103,31 @@ module FaaStRuby
       url = "#{FaaStRuby.api_host}/#{workspace_name}/#{function_name}#{query}"
       headers['Benchmark'] = true if time
       if method == 'get'
-        RestClient.public_send(method, url, headers){|response, request, result| response }
+        RestClient::Request.execute(method: :get, timeout: @timeout, url: url, headers: headers)
       else
-        RestClient.public_send(method, url, payload, headers){|response, request, result| response }
+        RestClient::Request.execute(method: method.to_sym, timeout: @timeout, url: url, payload: payload, headers: headers)
+      end
+    rescue RestClient::ExceptionWithResponse => err
+      case err.http_code
+      when 301, 302, 307
+        err.response.follow_redirection
+      else
+        return err.response
       end
     end
 
     def update_function_context(function_name:, workspace_name:, payload:)
       # payload is a string
       url = "#{@api_url}/workspaces/#{workspace_name}/functions/#{function_name}"
-      parse RestClient.patch(url, Oj.dump(payload), @headers){|response, request, result| response }
+      parse RestClient::Request.execute(method: :patch, timeout: @timeout, url: url, payload: Oj.dump(payload), headers: @headers)
+      # parse RestClient.patch(url, Oj.dump(payload), @headers){|response, request, result| response }
+    rescue RestClient::ExceptionWithResponse => err
+      case err.http_code
+      when 301, 302, 307
+        err.response.follow_redirection
+      else
+        parse err.response
+      end
     end
 
     def parse(response)

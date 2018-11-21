@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.version       = FaaStRuby::VERSION
   spec.authors       = ["Paulo Arruda"]
   spec.email         = ["parrudaj@gmail.com"]
-  spec.required_ruby_version = '>= 2.4.0'
+  spec.required_ruby_version = '>= 2.5.0'
   spec.summary       = %q{FaaStRuby CLI - Manage workspaces and functions hosted at faastruby.io.}
   spec.homepage      = "https://faastruby.io"
   spec.license       = "MIT"

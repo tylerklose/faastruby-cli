@@ -1,6 +1,10 @@
 #!/usr/bin/env ruby
 require 'faastruby'
 require 'faastruby/cli'
+trap "SIGINT" do
+  puts "Exiting"
+  exit 130
+end
 if ARGV[0] == '--region'
   ARGV.shift
   ENV['FAASTRUBY_REGION'] = ARGV.shift

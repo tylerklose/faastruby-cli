@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.6 - Nov 20 2018
+- Change Ruby minimum version to 2.5.0
+- Disable timeout on HTTP requests.
+- Handle CTRL+C interruptions gracefully
+- Add `--region` to help
+
 ## 0.2.5 - Nov 18 2018
 - Support for multiple regions with `faastruby --region [REGION] ...`
 

@@ -8,8 +8,11 @@ module FaaStRuby
       def run
         puts "FaaStRuby CLI - Manage workspaces and functions hosted at faastruby.io"
         puts
+        puts "Usage: faastruby [--region REGION, -h, -v] COMMAND ARGS"
+        puts
         puts 'help, -h, --help     # Displays this help'
         puts '-v                   # Print version and exit'
+        puts '--region tor1|sfo2   # Specify a region'
         puts
         workspaces = ["Workspaces:"]
         functions = ["Functions:"]
