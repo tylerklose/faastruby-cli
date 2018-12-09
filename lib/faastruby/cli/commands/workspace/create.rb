@@ -7,11 +7,13 @@ module FaaStRuby
           @missing_args = []
           FaaStRuby::CLI.error(@missing_args, color: nil) if missing_args.any?
           @workspace_name = @args.shift
+          @base_dir = "./#{@workspace_name}"
           parse_options
           @options['credentials_file'] ||= FaaStRuby.credentials_file
         end
 
         def run
+          dir_exists? || FileUtils.mkdir_p(@base_dir)
           spinner = spin("Requesting credentials...")
           workspace = FaaStRuby::Workspace.create(name: @workspace_name, email: @options['email'])
           spinner.stop("Done!")
@@ -36,6 +38,12 @@ module FaaStRuby
         end
 
         private
+
+        def dir_exists?
+          return false unless File.directory?(@base_dir)
+          puts "Local folder '#{@workspace_name}' already exists."
+          true
+        end
 
         def missing_args
           if @args.empty?

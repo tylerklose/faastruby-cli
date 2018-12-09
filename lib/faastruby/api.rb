@@ -131,7 +131,12 @@ module FaaStRuby
     end
 
     def parse(response)
-      body = Oj.load(response.body) unless [500, 408].include?(response.code)
+      begin
+        body = Oj.load(response.body) unless [500, 408].include?(response.code)
+      rescue Oj::ParseError => e
+        puts response.body
+        raise e
+      end
       case response.code
       when 401 then return error(["(401) Unauthorized - #{body['error']}"], 401)
       when 404 then return error(["(404) Not Found - #{body['error']}"], 404)

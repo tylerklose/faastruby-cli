@@ -21,6 +21,7 @@ module FaaStRuby
         FaaStRuby::Command::Help.new(args).run
         return
       end
+      start_server(args) if command == 'server'
       check_version
       check_region
       error("Unknown command: #{command}") unless FaaStRuby::Command::COMMANDS.has_key?(command)
@@ -41,6 +42,10 @@ module FaaStRuby
     def self.check_region
       ENV['FAASTRUBY_REGION'] ||= DEFAULT_REGION
       error(["No such region: #{ENV['FAASTRUBY_REGION']}".red, "Valid regions are:  #{FaaStRuby::REGIONS.join(' | ')}"], color: nil) unless FaaStRuby::REGIONS.include?(ENV['FAASTRUBY_REGION'])
+    end
+
+    def self.start_server(args)
+      exec("faastruby-server #{args.join(' ')}")
     end
   end
 end

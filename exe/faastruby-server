@@ -1,0 +1,123 @@
+#!/usr/bin/env ruby
+
+require 'sinatra'
+require 'sinatra/multi_route'
+require 'yaml'
+require 'oj'
+require 'faastruby-rpc'
+
+module FaaStRubyFunction
+  def self.call(workspace_name, function_name, event, args)
+    begin
+      load "./#{workspace_name}/#{function_name}/handler.rb"
+      response = handler(event, *args)
+      return response if response.is_a?(FaaStRubyFunction::Response)
+      body = {
+        'error' => "Please use the helpers 'render' or 'respond_with' as your function return value."
+      }
+      respond_with(Oj.dump(body), status: 500, headers: {'Content-Type' => 'application/json'})
+    rescue Exception => e
+      body = {
+        'error' => e.message,
+        'location' => e.backtrace&.first,
+      }
+      respond_with(Oj.dump(body), status: 500, headers: {'Content-Type' => 'application/json'})
+    end
+  end
+  def self.respond_with(body, status: 200, headers: {})
+    r = FaaStRubyFunction::Response.new(:body, :status, :headers)
+    r.new(body, status, headers)
+  end
+
+  def self.render(js: nil, body: nil, inline: nil, html: nil, json: nil, yaml: nil, text: nil, status: 200, headers: {}, content_type: nil)
+    headers["Content-Type"] = content_type if content_type
+    case
+    when json
+      headers["Content-Type"] ||= "application/json"
+      resp_body = json.is_a?(String) ? json : Oj.dump(json)
+    when html, inline
+      headers["Content-Type"] ||= "text/html"
+      resp_body = html
+    when text
+      headers["Content-Type"] ||= "text/plain"
+      resp_body = text
+    when yaml
+      headers["Content-Type"] ||= "application/yaml"
+      resp_body = yaml.to_yaml
+    when body
+      headers["Content-Type"] ||= "application/octet-stream"
+      resp_body = raw
+    when js
+      headers["Content-Type"] ||= "text/javascript"
+      resp_body = js
+    end
+    respond_with(resp_body, status: status, headers: headers)
+  end
+  class Event < Struct
+  end
+
+  class Response < Struct
+  end
+end
+
+class FaaStRubyServer < Sinatra::Application
+  set :port, 3000
+  set :bind, '0.0.0.0'
+  case ARGV.shift
+  when '-p'
+    set :port, ARGV.shift
+  when '-b'
+    set :bind, ARGV.shift
+  end
+  set :server, %w[puma]
+  set :run, false
+  set :show_exceptions, false
+
+  register Sinatra::MultiRoute
+  route :get, :post, :put, :patch, :delete, '/:workspace_name/:function_name' do
+    e = FaaStRubyFunction::Event.new(:body, :query_params, :headers, :context)
+    headers = env.select { |key, value| key.include?('HTTP_') || ['CONTENT_TYPE', 'CONTENT_LENGTH', 'REMOTE_ADDR', 'REQUEST_METHOD', 'QUERY_STRING'].include?(key) }
+    if headers.has_key?("HTTP_FAASTRUBY_RPC")
+      body = nil
+      rpc_args = parse_body(request.body.read, headers['CONTENT_TYPE'], request.request_method) || []
+    else
+      body = parse_body(request.body.read, headers['CONTENT_TYPE'], request.request_method)
+      rpc_args = []
+    end
+    query_params = parse_query(request.query_string)
+    context = set_context(params[:workspace_name], params[:function_name])
+    event = e.new(body, query_params, headers, context)
+    response = FaaStRubyFunction.call(params[:workspace_name], params[:function_name], event, rpc_args)
+    status response.status
+    headers response.headers
+    body response.body
+  end
+
+  def parse_body(body, content_type, method)
+    return nil if method == 'GET'
+    return {} if body.nil? && method != 'GET'
+    return Oj.load(body) if content_type == 'application/json'
+    return body
+  end
+
+  def set_context(workspace_name, function_name)
+    return nil unless File.file?('context.yml')
+    yaml = YAML.load(File.read('context.yml'))
+    return nil unless yaml.has_key?(workspace_name)
+    yaml[workspace_name][function_name]
+  end
+
+  def parse_query(query_string)
+    hash = {}
+    query_string.split('&').each do |param|
+      key, value = params.split('=')
+      hash[key] = value
+    end
+    hash
+  end
+  def self.run?
+    true
+  end
+end
+
+FaaStRubyServer.run! rescue nil # this will suppress some of the errors messages

@@ -57,7 +57,7 @@ EOS
 
         def dir_exists?
           return unless File.directory?(@base_dir)
-          print "The directory '#{@function_name}' already exists. Overwrite files? [y/N] "
+          print "The folder '#{@function_name}' already exists. Overwrite files? [y/N] "
           response = STDIN.gets.chomp
           FaaStRuby::CLI.error("Cancelled", color: nil) unless response == 'y'
         end

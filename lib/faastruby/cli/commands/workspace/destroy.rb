@@ -16,8 +16,10 @@ module FaaStRuby
           warning unless @options['force']
           FaaStRuby::CLI.error("Cancelled") unless @options['force'] == 'y'
           workspace = FaaStRuby::Workspace.new(name: @workspace_name)
+          spinner = spin("Destroying...")
           workspace.destroy
           FaaStRuby::CLI.error(workspace.errors) if workspace.errors.any?
+          spinner.stop("Done!")
           FaaStRuby::Credentials.remove(@workspace_name, @options['credentials_file'])
           puts "Workspace '#{@workspace_name}' was deleted from the server"
         end

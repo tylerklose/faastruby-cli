@@ -17,6 +17,9 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'tty-table', '~> 0.10'
   spec.add_runtime_dependency 'rubyzip', '~> 1.2'
   spec.add_runtime_dependency 'colorize', '~> 0.8'
+  spec.add_runtime_dependency 'sinatra', '~> 2.0'
+  spec.add_runtime_dependency 'sinatra-contrib', '~> 2.0'
+  spec.add_runtime_dependency 'puma', '~> 3.12'
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
   # to allow pushing to a single host or delete this section to allow pushing to any host.

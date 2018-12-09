@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.0 - Dec 9 2018
+- Add spinner feedback when destroying workspace
+- Better error handling when response is not JSON
+- New command `faastruby server` will start a development environment.
+
 ## 0.2.6 - Nov 20 2018
 - Change Ruby minimum version to 2.5.0
 - Disable timeout on HTTP requests.
