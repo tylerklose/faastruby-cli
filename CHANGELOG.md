@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.1 - Dec 9 2018
+- Add faastruby-rpc to Gemfile template and runtime dependencies
+
 ## 0.3.0 - Dec 9 2018
 - Add spinner feedback when destroying workspace
 - Better error handling when response is not JSON

@@ -3,6 +3,7 @@ PATH
   specs:
     faastruby (0.3.0)
       colorize (~> 0.8)
+      faastruby-rpc (~> 0.1)
       oj (~> 3.6)
       puma (~> 3.12)
       rest-client (~> 2.0)
@@ -31,6 +32,8 @@ GEM
     domain_name (0.5.20180417)
       unf (>= 0.0.5, < 1.0.0)
     equatable (0.5.0)
+    faastruby-rpc (0.1.1)
+      oj (~> 3.6)
     hashdiff (0.3.7)
     http-cookie (1.0.3)
       domain_name (~> 0.5)
