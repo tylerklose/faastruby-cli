@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    faastruby (0.2.7)
+    faastruby (0.3.0)
       colorize (~> 0.8)
       oj (~> 3.6)
       puma (~> 3.12)
