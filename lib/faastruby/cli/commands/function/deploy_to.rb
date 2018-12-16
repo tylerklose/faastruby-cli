@@ -1,7 +1,7 @@
 module FaaStRuby
   module Command
     module Function
-      class Deploy < FunctionBaseCommand
+      class DeployTo < FunctionBaseCommand
         def initialize(args)
           @args = args
           @missing_args = []
@@ -14,17 +14,19 @@ module FaaStRuby
         end
 
         def run
+          FaaStRuby::CLI.error('Please fix the problems above and try again') unless bundle_install
           tests_passed = run_tests
           FaaStRuby::CLI.error("Deploy aborted because tests failed and you have 'abort_deploy_when_tests_fail: true' in 'faastruby.yml'") unless tests_passed || !@abort_when_tests_fail
           puts "Warning: Ignoring failed tests because you have 'abort_deploy_when_tests_fail: false' in 'faastruby.yml'".yellow if !tests_passed && !@abort_when_tests_fail
           package_file_name = build_package
-          spinner = spin("Deploying to workspace '#{@workspace_name}'...")
+          spinner = spin("Deploying '#{@workspace_name}/#{@function_name}'")
           workspace = FaaStRuby::Workspace.new(name: @workspace_name).deploy(package_file_name)
           if workspace.errors.any?
             spinner.stop('Failed :(')
             FaaStRuby::CLI.error(workspace.errors)
           end
           spinner.stop('Done!')
+          exit 0
         end
 
         def self.help
@@ -36,6 +38,12 @@ module FaaStRuby
         end
 
         private
+
+        def bundle_install
+          puts '[build] Verifying dependencies'
+          return true unless File.file?('Gemfile')
+          system('bundle check') || system('bundle install')
+        end
 
         def missing_args
           if @args.empty?

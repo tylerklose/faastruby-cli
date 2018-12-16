@@ -21,6 +21,7 @@ module FaaStRuby
         end
 
         def run
+          FaaStRuby::CLI.error('Please fix the problems above and try again') unless bundle_install
           tests_passed = run_tests
           FaaStRuby::CLI.error("Build aborted because tests failed and you have 'abort_build_when_tests_fail: true' in 'faastruby.yml'") unless tests_passed || !@abort_when_tests_fail
           puts "Warning: Ignoring failed tests because you have 'abort_build_when_tests_fail: false' in 'faastruby.yml'".yellow if !tests_passed && !@abort_when_tests_fail
@@ -39,6 +40,12 @@ module FaaStRuby
 
         def build(source, output_file)
           self.class.build(source, output_file)
+        end
+
+        def bundle_install
+          puts '[build] Verifying dependencies'
+          return true unless File.file?('Gemfile')
+          system('bundle check') || system('bundle install')
         end
 
         def run_tests

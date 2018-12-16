@@ -13,7 +13,6 @@ module FaaStRuby
         end
 
         def run
-          dir_exists? || FileUtils.mkdir_p(@base_dir)
           spinner = spin("Requesting credentials...")
           workspace = FaaStRuby::Workspace.create(name: @workspace_name, email: @options['email'])
           spinner.stop("Done!")
@@ -27,6 +26,7 @@ module FaaStRuby
             FaaStRuby::Credentials.add(@workspace_name, workspace.credentials, @options['credentials_file'])
           end
           puts "Workspace '#{@workspace_name}' created"
+          create_dir unless dir_exists?
         end
 
         def self.help
@@ -38,6 +38,11 @@ module FaaStRuby
         end
 
         private
+
+        def create_dir
+          FileUtils.mkdir_p(@base_dir)
+          puts "+ d #{@base_dir}".green
+        end
 
         def dir_exists?
           return false unless File.directory?(@base_dir)

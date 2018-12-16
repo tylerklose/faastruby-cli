@@ -43,7 +43,8 @@ module FaaStRuby
   module Command
     COMMANDS = {
       'new' => FaaStRuby::Command::Function::New,
-      'deploy-to' => FaaStRuby::Command::Function::Deploy,
+      'deploy-to' => FaaStRuby::Command::Function::DeployTo,
+      'deploy' => FaaStRuby::Command::Workspace::Deploy,
       'remove-from' => FaaStRuby::Command::Function::RemoveFrom,
       'update-context' => FaaStRuby::Command::Function::UpdateContext,
       'upgrade' => FaaStRuby::Command::Function::Upgrade,

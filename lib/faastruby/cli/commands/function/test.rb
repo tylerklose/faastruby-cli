@@ -15,18 +15,8 @@ module FaaStRuby
             puts "[skipped] You have no 'test_command' key/value in 'faastruby.yml'. Please consider using rspec!".yellow
             return true
           end
-          spinner = spin("Running tests...")
-          output, status = Open3.capture2e(@test_command)
-          if status == 0
-            spinner.stop('Passed!')
-            puts output
-            return true
-          else
-            spinner.stop('Failed :(')
-            FaaStRuby::CLI.error(output, color: nil) unless do_not_exit
-            puts output if do_not_exit
-            return false
-          end
+          puts "[test] Running tests"
+          system(@test_command)
         end
 
         def self.help

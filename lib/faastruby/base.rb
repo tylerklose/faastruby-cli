@@ -2,8 +2,7 @@ module FaaStRuby
   ROOT_DOMAIN = ENV['FAASTRUBY_ROOT_DOMAIN'] || 'faastruby.io'
   DEFAULT_REGION = 'tor1'
   REGIONS = [
-    'tor1',
-    'sfo2'
+    'tor1'
   ]
   class << self
     attr_accessor :configuration

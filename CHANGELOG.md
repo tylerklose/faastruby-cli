@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.2 - Dec 15 2018
+- Better output for tests
+- `bundle check && bundle install` runs before building a package to make sure Gemfile.lock is updated.
+- New command: `faastruby deploy`. This command is meant to be run in a FaaStRuby Project folder, and will deploy all workspaces and their functions.
+- Updated spec templates with new helper that stubs calls to FaaStRuby server when using `faastruby-rpc`.
+- `render` is now the preferred method to set the return value of functions.
+- Upgraded dependency `faastruby-rpc` to version 0.1.3.
+- Removed region SFO2 (sorry, but the usage was minimal.)
+
 ## 0.3.1 - Dec 9 2018
 - Add faastruby-rpc to Gemfile template and runtime dependencies
 
