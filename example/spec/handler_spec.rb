@@ -10,11 +10,11 @@ describe 'handler(event)' do
   end
   it 'should add the name to the response string' do
     body = handler(event).call.body
-    expect(body).to be == 'Hello, Ruby!'
+    expect(body).to be == "Hello, Ruby!\n"
   end
   it 'should say Hello, World! when name is not present' do
     event = SpecHelper::Event.new(body: nil)
     body = handler(event).call.body
-    expect(body).to be == 'Hello, World!'
+    expect(body).to be == "Hello, World!\n"
   end
 end

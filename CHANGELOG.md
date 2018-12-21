@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.3 - Dec 21 2018
+- `deploy-to` will try to create the workspace if it doesn't exist.
+- Changed template to add a carriage return.
+
 ## 0.3.2 - Dec 15 2018
 - Better output for tests
 - `bundle check && bundle install` runs before building a package to make sure Gemfile.lock is updated.

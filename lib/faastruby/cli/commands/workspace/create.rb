@@ -12,11 +12,11 @@ module FaaStRuby
           @options['credentials_file'] ||= FaaStRuby.credentials_file
         end
 
-        def run
+        def run(create_directory: true, exit_on_error: true)
           spinner = spin("Requesting credentials...")
           workspace = FaaStRuby::Workspace.create(name: @workspace_name, email: @options['email'])
           spinner.stop("Done!")
-          FaaStRuby::CLI.error(workspace.errors) if workspace.errors.any?
+          FaaStRuby::CLI.error(workspace.errors) if workspace.errors.any? && exit_on_error
           if @options['stdout']
             puts "IMPORTANT: Please store the credentials below in a safe place. If you lose them you will not be able to manage your workspace.".yellow
             puts "API_KEY: #{workspace.credentials['api_key']}"
@@ -26,7 +26,7 @@ module FaaStRuby
             FaaStRuby::Credentials.add(@workspace_name, workspace.credentials, @options['credentials_file'])
           end
           puts "Workspace '#{@workspace_name}' created"
-          create_dir unless dir_exists?
+          create_dir if create_directory && !dir_exists?
         end
 
         def self.help

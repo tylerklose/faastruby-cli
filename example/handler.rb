@@ -21,5 +21,5 @@ def handler event
   # The 'Content-Type' header is automatically set when you use 'render'.
   # You can set custom headers using a hash with string keys. Example:
   # render text: 'It Works!', headers: {'TransactionId' => 23928}
-  render text: "Hello, #{data['name'] || 'World'}!"
+  render text: "Hello, #{data['name'] || 'World'}!\n"
 end

@@ -34,13 +34,20 @@ module FaaStRuby
       puts "#{symbol} f #{credentials_file}".colorize(color)
     end
 
-    def self.load_for(workspace_name, cred_file = FaaStRuby.credentials_file)
+    def self.load_for(workspace_name, cred_file = FaaStRuby.credentials_file, exit_on_error: true)
       credentials = load_from_env(workspace_name) || load_credentials_file(cred_file)
-      FaaStRuby::CLI.error("Could not find credentials for '#{workspace_name}' in '#{cred_file}'") unless credentials.has_key?(workspace_name)
+      error_msg = "Could not find credentials for '#{workspace_name}' in '#{cred_file}'"
+      if exit_on_error && !credentials[workspace_name]
+        FaaStRuby::CLI.error(error_msg)
+      elsif !credentials[workspace_name]
+        puts error_msg
+        return false
+      end
       FaaStRuby.configure do |config|
         config.api_key = credentials[workspace_name]['api_key']
         config.api_secret = credentials[workspace_name]['api_secret']
       end
+      return true
     end
 
     def self.load_from_env(workspace_name)

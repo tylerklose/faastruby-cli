@@ -10,10 +10,11 @@ module FaaStRuby
           load_yaml
           @function_name = @yaml_config['name']
           @abort_when_tests_fail = @yaml_config['abort_deploy_when_tests_fail']
-          FaaStRuby::Credentials.load_for(@workspace_name)
+          load_credentials(exit_on_error: false)
         end
 
         def run
+          create_or_use_workspace
           FaaStRuby::CLI.error('Please fix the problems above and try again') unless bundle_install
           tests_passed = run_tests
           FaaStRuby::CLI.error("Deploy aborted because tests failed and you have 'abort_deploy_when_tests_fail: true' in 'faastruby.yml'") unless tests_passed || !@abort_when_tests_fail
@@ -26,6 +27,7 @@ module FaaStRuby
             FaaStRuby::CLI.error(workspace.errors)
           end
           spinner.stop('Done!')
+          puts "Endpoint: #{FaaStRuby.api_host}/#{@workspace_name}/#{@function_name}"
           exit 0
         end
 
@@ -38,6 +40,24 @@ module FaaStRuby
         end
 
         private
+
+        def load_credentials(exit_on_error:)
+          @has_credentials = FaaStRuby::Credentials.load_for(@workspace_name, exit_on_error: exit_on_error)
+        end
+
+        def create_or_use_workspace
+          unless @has_credentials
+            puts "Attemping to create workspace '#{@workspace_name}'"
+            cmd = FaaStRuby::Command::Workspace::Create.new([@workspace_name])
+            cmd.run(create_directory: false, exit_on_error: false)
+            load_credentials(exit_on_error: true)
+            # Give a little bit of time after creating the workspace
+            # for consistency. This is temporary until the API gets patched.
+            spinner = spin("Waiting for the new workspace to be ready...")
+            sleep 2
+            spinner.stop("Done!")
+          end
+        end
 
         def bundle_install
           puts '[build] Verifying dependencies'
