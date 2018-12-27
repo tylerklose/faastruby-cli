@@ -1,3 +1,4 @@
+require 'json'
 module FaaStRuby
   class Credentials # TODO: change it to YAML?
     def self.load_credentials_file(credentials_file = FaaStRuby.credentials_file)
@@ -30,7 +31,7 @@ module FaaStRuby
         color = :green
         symbol = '+'
       end
-      File.open(credentials_file, 'w') {|f| f.write Oj.dump(credentials)}
+      File.open(credentials_file, 'w') {|f| f.write JSON.pretty_generate(credentials)}
       puts "#{symbol} f #{credentials_file}".colorize(color)
     end
 

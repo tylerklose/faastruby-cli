@@ -49,7 +49,7 @@ module FaaStRuby
           unless @has_credentials
             puts "Attemping to create workspace '#{@workspace_name}'"
             cmd = FaaStRuby::Command::Workspace::Create.new([@workspace_name])
-            cmd.run(create_directory: false, exit_on_error: false)
+            cmd.run(create_directory: false, exit_on_error: true)
             load_credentials(exit_on_error: true)
             # Give a little bit of time after creating the workspace
             # for consistency. This is temporary until the API gets patched.
