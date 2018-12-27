@@ -2,16 +2,17 @@ require 'json'
 module FaaStRuby
   class Credentials # TODO: change it to YAML?
     def self.load_credentials_file(credentials_file = FaaStRuby.credentials_file)
-      if File.file?(credentials_file)
-        creds = Oj.load(File.read(credentials_file))
-        return creds if creds.is_a?(Hash)
-        return {}
-      else
-        {}
+      return {} unless File.file?(credentials_file)
+      creds = Oj.load(File.read(credentials_file))
+      if creds.is_a?(Hash)
+        creds.delete_if{|workspace, credentials| credentials.nil?}
+        return creds
       end
+      return {}
     end
 
     def self.add(workspace_name, new_credentials, credentials_file)
+      FaaStRuby::CLI.error("Error trying to save null credentials. You probably found a bug in the gem. Please report it at https://github.com/FaaStRuby/faastruby-cli/issues/new") unless new_credentials
       credentials = load_credentials_file(credentials_file)
       credentials.merge!({workspace_name => new_credentials})
       save_file(credentials, credentials_file)
@@ -31,6 +32,7 @@ module FaaStRuby
         color = :green
         symbol = '+'
       end
+      credentials.delete_if{|workspace, creds| creds.nil?}
       File.open(credentials_file, 'w') {|f| f.write JSON.pretty_generate(credentials)}
       puts "#{symbol} f #{credentials_file}".colorize(color)
     end

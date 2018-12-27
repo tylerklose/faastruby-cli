@@ -14,7 +14,11 @@ module FaaStRuby
           credentials = FaaStRuby::Credentials.load_credentials_file(@options['credentials_file'])
           FaaStRuby::CLI.error("The credentials file '#{@options['credentials_file']}' is empty.") unless credentials.any?
           credentials.each do |workspace, credentials|
-            rows << [workspace, credentials['api_key'], credentials['api_secret']]
+            if credentials
+              rows << [workspace, credentials['api_key'], credentials['api_secret']]
+            else
+              FaaStRuby::Credentials.remove(workspace, @options['credentials_file'])
+            end
           end
           table = TTY::Table.new(['Workspace','API_KEY', 'API_SECRET'], rows)
           puts table.render(:basic)

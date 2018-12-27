@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.5 - Dec 27 2018
+- Clean up credentials file when listing or saving it to remove nulls.
+- Raise error when trying to save null credentials to file.
+- Ignore null entries from credentials hash.
+
 ## 0.3.4 - Dec 27 2018
 - Use `JSON.pretty_generate` when writing to credentials file, so it is more human readable.
 - Fix bug: when creating a workspace from `deploy-to` command, if the workspace existed it would not error, but the deploy would fail and a null entry would go in the credentials file.
