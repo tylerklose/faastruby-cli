@@ -29,8 +29,7 @@ module FaaStRuby
 
     --blank              # Create a blank function
     --force              # Continue if directory already exists and overwrite files
-    --runtime            # Choose the runtime. Options are: crystal:0.27.0,
-                         # ruby:2.5.3 (default) and ruby:2.6.0
+    --runtime            # Choose the runtime. Options are: #{SUPPORTED_RUNTIMES.join(', ')}
 EOS
         end
 
@@ -49,6 +48,7 @@ EOS
               @options['runtime'] = @args.shift
               @options['runtime_name'], @options['runtime_version'] = @options['runtime'].split(':')
               @options['template_path'] = "templates/#{@options['runtime_name']}"
+              FaaStRuby::CLI.error(["Unsupported runtime: #{@options['runtime']}".red, "Supported values are #{SUPPORTED_RUNTIMES.join(", ")}"], color: nil) unless SUPPORTED_RUNTIMES.include?(@options['runtime'])
             when '-f', '--force'
               @options['force'] = true
             when '--blank'

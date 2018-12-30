@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.7 - Dec 29 2018
+- Error when unsupported runtimes are passed to `new`
+
 ## 0.3.6 - Dec 29 2018
 - Add support for different runtimes with `--runtime` to `new` command. Example: `faastruby new hello-world --runtime ruby:2.6.0`
 - Add runtime `ruby:2.6.0`
