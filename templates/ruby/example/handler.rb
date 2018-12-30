@@ -1,10 +1,14 @@
 # require 'cool-gem'
-require 'json'
 
 # To deploy this function, cd into its folder and run:
 # faastruby deploy-to WORKSPACE_NAME
 def handler event
-  data = event.body ? JSON.parse(event.body) : {}
+  # The 'event' argument has the following attributes
+  # event.body - The request body
+  # event.context - The execution context
+  # event.headers - The request headers
+  # event.query_params - The query params
+
   # FUNCTION RESPONSE
   #
   # You can render text, json, yaml, html or js. Example:
@@ -19,5 +23,5 @@ def handler event
   # The 'Content-Type' header is automatically set when you use 'render'.
   # You can set custom headers using a hash with string keys. Example:
   # render text: 'It Works!', headers: {'TransactionId' => 23928}
-  render text: "Hello, #{data['name'] || 'World'}!\n"
+  render text: "Hello, World!\n"
 end

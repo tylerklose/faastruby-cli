@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.0 - Dec 29 2018
+- Faster hello-world Ruby template.
+- Ruby 2.6.0 and Crystal (beta) 0.27.0 released.
+
 ## 0.3.8 - Dec 29 2018
 - Crystal template runs a lot faster.
 

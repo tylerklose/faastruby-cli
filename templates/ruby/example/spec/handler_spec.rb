@@ -2,18 +2,13 @@ require 'spec_helper'
 require 'handler'
 
 describe 'handler(event)' do
-  let(:event) {SpecHelper::Event.new(body: '{"name": "Ruby"}')}
+  let(:event) {SpecHelper::Event.new}
 
   it 'should return Hash, String or Array' do
     body = handler(event).call.body
     expect([String, Hash, Array].include? body.class).to be true
   end
-  it 'should add the name to the response string' do
-    body = handler(event).call.body
-    expect(body).to be == "Hello, Ruby!\n"
-  end
-  it 'should say Hello, World! when name is not present' do
-    event = SpecHelper::Event.new(body: nil)
+  it 'should reply Hello, World!' do
     body = handler(event).call.body
     expect(body).to be == "Hello, World!\n"
   end
