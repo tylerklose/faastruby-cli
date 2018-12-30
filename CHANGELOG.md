@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.8 - Dec 29 2018
+- Crystal template runs a lot faster.
+
 ## 0.3.7 - Dec 29 2018
 - Error when unsupported runtimes are passed to `new`
 

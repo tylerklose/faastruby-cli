@@ -8,7 +8,7 @@ def handler(event : FaaStRuby::Event) : FaaStRuby::Response
   # event.headers : Hash(String, String)
   # event.context : String | Nil
   # query_params : Hash(String, String)
-  data = JSON.parse(event.body.not_nil!) rescue {} of String => String
+  name = event.body ? JSON.parse(event.body.not_nil!)["name"] : "World"
   # FUNCTION RESPONSE
   #
   # You can render text, json, yaml, html or js. Example:
@@ -23,5 +23,5 @@ def handler(event : FaaStRuby::Event) : FaaStRuby::Response
   # The 'Content-Type' header is automatically set when you use 'render'.
   # You can set custom headers using a Hash(String, String). Example:
   # render text: "It Works!", headers: {"TransactionId" => 23928}
-  render text: "Hello, #{data["name"]? || "World"}!\n"
+  render text: "Hello, #{name}!\n"
 end
