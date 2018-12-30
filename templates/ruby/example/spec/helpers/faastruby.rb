@@ -15,7 +15,6 @@ module FaaStRuby
       end
     end
     class Response
-      # @@response = Struct.new(:body, :status, :headers)
       attr_accessor :body, :status, :headers
       @@rendered = false
       def initialize(body, status, headers)

@@ -1,9 +1,7 @@
 # require 'cool-gem'
 require 'json'
 
-# 1) If you don't have a workspace, create one by running:
-# faastruby create-workspace WORKSPACE_NAME
-# 2) To deploy this function, cd into its folder and run:
+# To deploy this function, cd into its folder and run:
 # faastruby deploy-to WORKSPACE_NAME
 def handler event
   data = event.body ? JSON.parse(event.body) : {}

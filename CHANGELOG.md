@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.6 - Dec 29 2018
+- Add support for different runtimes with `--runtime` to `new` command. Example: `faastruby new hello-world --runtime ruby:2.6.0`
+- Add runtime `ruby:2.6.0`
+- Add runtime `crystal:0.27.0`
+
 ## 0.3.5 - Dec 27 2018
 - Clean up credentials file when listing or saving it to remove nulls.
 - Raise error when trying to save null credentials to file.
