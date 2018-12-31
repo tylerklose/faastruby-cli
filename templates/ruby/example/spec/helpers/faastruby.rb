@@ -52,7 +52,7 @@ module FaaStRuby
       resp_body = text
     when yaml
       headers["Content-Type"] ||= "application/yaml"
-      resp_body = yaml.to_yaml
+      resp_body = yaml.is_a?(String) ? yaml : yaml.to_yaml
     when body
       headers["Content-Type"] ||= "application/octet-stream"
       resp_body = raw
