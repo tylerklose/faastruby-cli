@@ -6,57 +6,84 @@ require 'yaml'
 require 'oj'
 require 'faastruby-rpc'
 
-module FaaStRubyFunction
-  def self.call(workspace_name, function_name, event, args)
-    begin
-      load "./#{workspace_name}/#{function_name}/handler.rb"
-      response = handler(event, *args)
-      return response if response.is_a?(FaaStRubyFunction::Response)
-      body = {
-        'error' => "Please use the helpers 'render' or 'respond_with' as your function return value."
-      }
-      respond_with(Oj.dump(body), status: 500, headers: {'Content-Type' => 'application/json'})
-    rescue Exception => e
-      body = {
-        'error' => e.message,
-        'location' => e.backtrace&.first,
-      }
-      respond_with(Oj.dump(body), status: 500, headers: {'Content-Type' => 'application/json'})
+module FaaStRuby
+  class DoubleRenderError < StandardError; end
+end
+
+module FaaStRuby
+  class Runner
+    def initialize
+      @rendered = false
     end
-  end
-  def self.respond_with(body, status: 200, headers: {})
-    r = FaaStRubyFunction::Response.new(:body, :status, :headers)
-    r.new(body, status, headers)
+
+    def call(workspace_name, function_name, event, args)
+      begin
+        load "./#{workspace_name}/#{function_name}/handler.rb"
+        response = handler(event, *args)
+        return response if response.is_a?(FaaStRuby::Response)
+        body = {
+          'error' => "Please use the helpers 'render' or 'respond_with' as your function return value."
+        }
+        FaaStRuby::Response.new(body: Oj.dump(body), status: 500, headers: {'Content-Type' => 'application/json'})
+      rescue Exception => e
+        body = {
+          'error' => e.message,
+          'location' => e.backtrace&.first,
+        }
+        FaaStRuby::Response.new(body: Oj.dump(body), status: 500, headers: {'Content-Type' => 'application/json'})
+      end
+    end
+
+    def rendered!
+      @rendered = true
+    end
+    def rendered?
+      @rendered
+    end
+
+    def respond_with(body, status: 200, headers: {})
+      raise FaaStRuby::DoubleRenderError.new("You called 'render' or 'respond_with' twice in your handler method") if rendered?
+      response = FaaStRuby::Response.new(body: body, status: status, headers: headers)
+      rendered!
+      response
+    end
+
+    def render(js: nil, body: nil, inline: nil, html: nil, json: nil, yaml: nil, text: nil, status: 200, headers: {}, content_type: nil)
+      headers["Content-Type"] = content_type if content_type
+      case
+      when json
+        headers["Content-Type"] ||= "application/json"
+        resp_body = json.is_a?(String) ? json : Oj.dump(json)
+      when html, inline
+        headers["Content-Type"] ||= "text/html"
+        resp_body = html
+      when text
+        headers["Content-Type"] ||= "text/plain"
+        resp_body = text
+      when yaml
+        headers["Content-Type"] ||= "application/yaml"
+        resp_body = yaml.is_a?(String) ? yaml : YAML.load(yaml)
+      when body
+        headers["Content-Type"] ||= "application/octet-stream"
+        resp_body = raw
+      when js
+        headers["Content-Type"] ||= "text/javascript"
+        resp_body = js
+      end
+      respond_with(resp_body, status: status, headers: headers)
+    end
   end
 
-  def self.render(js: nil, body: nil, inline: nil, html: nil, json: nil, yaml: nil, text: nil, status: 200, headers: {}, content_type: nil)
-    headers["Content-Type"] = content_type if content_type
-    case
-    when json
-      headers["Content-Type"] ||= "application/json"
-      resp_body = json.is_a?(String) ? json : Oj.dump(json)
-    when html, inline
-      headers["Content-Type"] ||= "text/html"
-      resp_body = html
-    when text
-      headers["Content-Type"] ||= "text/plain"
-      resp_body = text
-    when yaml
-      headers["Content-Type"] ||= "application/yaml"
-      resp_body = yaml.to_yaml
-    when body
-      headers["Content-Type"] ||= "application/octet-stream"
-      resp_body = raw
-    when js
-      headers["Content-Type"] ||= "text/javascript"
-      resp_body = js
-    end
-    respond_with(resp_body, status: status, headers: headers)
-  end
   class Event < Struct
   end
 
-  class Response < Struct
+  class Response
+    attr_accessor :body, :status, :headers
+    def initialize(body:, status: 200, headers: {})
+      @body = body
+      @status = status
+      @headers = headers
+    end
   end
 end
 
@@ -71,11 +98,11 @@ class FaaStRubyServer < Sinatra::Application
   end
   set :server, %w[puma]
   set :run, false
-  set :show_exceptions, false
+  set :show_exceptions, true
 
   register Sinatra::MultiRoute
   route :get, :post, :put, :patch, :delete, '/:workspace_name/:function_name' do
-    e = FaaStRubyFunction::Event.new(:body, :query_params, :headers, :context)
+    e = FaaStRuby::Event.new(:body, :query_params, :headers, :context)
     headers = env.select { |key, value| key.include?('HTTP_') || ['CONTENT_TYPE', 'CONTENT_LENGTH', 'REMOTE_ADDR', 'REQUEST_METHOD', 'QUERY_STRING'].include?(key) }
     if headers.has_key?("HTTP_FAASTRUBY_RPC")
       body = nil
@@ -87,7 +114,7 @@ class FaaStRubyServer < Sinatra::Application
     query_params = parse_query(request.query_string)
     context = set_context(params[:workspace_name], params[:function_name])
     event = e.new(body, query_params, headers, context)
-    response = FaaStRubyFunction.call(params[:workspace_name], params[:function_name], event, rpc_args)
+    response = FaaStRuby::Runner.new.call(params[:workspace_name], params[:function_name], event, rpc_args)
     status response.status
     headers response.headers
     body response.body

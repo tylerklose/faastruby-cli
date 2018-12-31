@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.3 - Dec 31 2018
+- Updated `faastruby-rpc` dependency to 0.2.0.
+- Improved FaaStRuby Server.
+
 ## 0.4.2 - Dec 30 2018
 - Simplified Crystal Hello World example.
 
