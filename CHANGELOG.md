@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.2 - Dec 30 2018
+- Simplified Crystal Hello World example.
+
 ## 0.4.1 - Dec 30 2018
 - Updated ruby templates.
 
