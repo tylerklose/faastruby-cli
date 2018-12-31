@@ -10,7 +10,7 @@ describe "handler(event)" do
   }
   event = Event.from_json(event_hash.to_json)
 
-  it "should return Hash, String or Array" do
+  it "should return String" do
     body = handler(event).body
     body.class.should eq(String)
   end
