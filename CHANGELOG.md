@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.4 - Jan 3 2019
+- Update faastruby-rpc to 0.2.1
+
 ## 0.4.3 - Dec 31 2018
 - Updated `faastruby-rpc` dependency to 0.2.0.
 - Improved FaaStRuby Server.
