@@ -20,7 +20,7 @@ module FaaStRuby
         end
 
         def self.help
-          'test'.blue
+          'test'.light_cyan
         end
 
         def usage

@@ -43,7 +43,7 @@ module FaaStRuby
         end
 
         def self.help
-          "destroy-workspace".blue + " WORKSPACE_NAME [-y, --yes]"
+          "destroy-workspace".light_cyan + " WORKSPACE_NAME [-y, --yes]"
         end
 
         def usage

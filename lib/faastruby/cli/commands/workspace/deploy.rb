@@ -37,7 +37,7 @@ module FaaStRuby
         end
 
         def self.help
-          "deploy".blue + " [WORKSPACE_FOLDER1] [WORKSPACE_FOLDER2]...    # Deploy all workspaces in the current directory and their functions"
+          "deploy".light_cyan + " [WORKSPACE_FOLDER1] [WORKSPACE_FOLDER2]...    # Deploy all workspaces in the current directory and their functions"
         end
 
         def usage

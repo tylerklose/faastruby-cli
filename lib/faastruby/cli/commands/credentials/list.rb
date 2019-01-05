@@ -25,7 +25,7 @@ module FaaStRuby
         end
 
         def self.help
-          "list-credentials".blue + " [-c CREDENTIALS_FILE]"
+          "list-credentials".light_cyan + " [-c CREDENTIALS_FILE]"
         end
 
         def usage

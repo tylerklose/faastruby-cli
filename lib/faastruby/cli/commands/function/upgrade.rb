@@ -57,7 +57,7 @@ module FaaStRuby
         end
 
         def self.help
-          "upgrade".blue
+          "upgrade".light_cyan
         end
 
         def usage

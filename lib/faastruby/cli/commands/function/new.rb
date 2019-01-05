@@ -24,7 +24,7 @@ module FaaStRuby
         end
 
         def self.help
-          "new".blue + " FUNCTION_NAME [--blank] [--force] [--runtime]" +
+          "new".light_cyan + " FUNCTION_NAME [--blank] [--force] [--runtime]" +
           <<-EOS
 
     --blank              # Create a blank function

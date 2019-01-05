@@ -12,8 +12,7 @@ module FaaStRuby
         puts
         puts 'help, -h, --help     # Displays this help'
         puts '-v                   # Print version and exit'
-        puts '--region tor1|sfo2   # Specify a region'
-        puts
+        puts '--region tor1        # Specify a region. "tor1" (default) is the only region available'
         workspaces = ["Workspaces:"]
         functions = ["Functions:"]
         credentials = ["Credentials:"]

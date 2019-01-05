@@ -26,7 +26,7 @@ module FaaStRuby
         end
 
         def self.help
-          "list-workspace".blue + " WORKSPACE_NAME"
+          "list-workspace".light_cyan + " WORKSPACE_NAME"
         end
 
         def usage

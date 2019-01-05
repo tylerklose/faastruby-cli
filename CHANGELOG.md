@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.5 - Jan 5 2019
+- Change help terminal colors for better readability
+- Add png, jpeg, css, svg, gif and icon mime-types to `render`
+
 ## 0.4.4 - Jan 3 2019
 - Update faastruby-rpc to 0.2.1
 

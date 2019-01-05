@@ -26,7 +26,7 @@ module FaaStRuby
         end
 
         def self.help
-          "update-context".blue + " WORKSPACE_NAME [-d, --data 'STRING'] [--stdin]"
+          "update-context".light_cyan + " WORKSPACE_NAME [-d, --data 'STRING'] [--stdin]"
         end
 
         def usage

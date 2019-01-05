@@ -31,7 +31,7 @@ module FaaStRuby
         end
 
         def self.help
-          'run'.blue + ' WORKSPACE_NAME [OPTIONS]' +
+          'run'.light_cyan + ' WORKSPACE_NAME [OPTIONS]' +
           <<-EOS
 
     Options:

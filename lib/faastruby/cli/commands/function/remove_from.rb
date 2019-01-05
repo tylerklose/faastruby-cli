@@ -28,7 +28,7 @@ module FaaStRuby
         end
 
         def self.help
-          "remove-from".blue + " WORKSPACE_NAME [-y, --yes]"
+          "remove-from".light_cyan + " WORKSPACE_NAME [-y, --yes]"
         end
 
         def usage

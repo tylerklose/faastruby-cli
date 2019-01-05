@@ -32,7 +32,7 @@ module FaaStRuby
         end
 
         def self.help
-          "deploy-to".blue + " WORKSPACE_NAME"
+          "deploy-to".light_cyan + " WORKSPACE_NAME"
         end
 
         def usage

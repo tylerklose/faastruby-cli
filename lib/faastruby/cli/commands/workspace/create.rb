@@ -30,7 +30,7 @@ module FaaStRuby
         end
 
         def self.help
-          "create-workspace".blue + " WORKSPACE_NAME [--stdout|-c, --credentials-file CREDENTIALS_FILE] [-e, --email YOUR_EMAIL_ADDRESS]"
+          "create-workspace".light_cyan + " WORKSPACE_NAME [--stdout|-c, --credentials-file CREDENTIALS_FILE] [-e, --email YOUR_EMAIL_ADDRESS]"
         end
 
         def usage

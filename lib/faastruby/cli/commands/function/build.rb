@@ -29,7 +29,7 @@ module FaaStRuby
         end
 
         def self.help
-          "build".blue + " [-s, --source SOURCE_DIR] [-o, --output-file OUTPUT_FILE]"
+          "build".light_cyan + " [-s, --source SOURCE_DIR] [-o, --output-file OUTPUT_FILE]"
         end
 
         def usage

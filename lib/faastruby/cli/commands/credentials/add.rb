@@ -19,7 +19,7 @@ module FaaStRuby
         end
 
         def self.help
-          "add-credentials".blue + " WORKSPACE_NAME -k API_KEY -s API_SECRET [-c CREDENTIALS_FILE]"
+          "add-credentials".light_cyan + " WORKSPACE_NAME -k API_KEY -s API_SECRET [-c CREDENTIALS_FILE]"
         end
 
         def usage
