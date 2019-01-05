@@ -111,7 +111,7 @@ EOS
           end
           {
             'name' => @function_name,
-            'runtime' => @options['runtime'],
+            'runtime' => @options['runtime'] || 'ruby:2.5.3',
             'test_command' => test_command,
             'abort_build_when_tests_fail' => true,
             'abort_deploy_when_tests_fail' => true

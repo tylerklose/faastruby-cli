@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.6 - Jan 5 2019
+- Default value when no runtime is provided to `new`
+
 ## 0.4.5 - Jan 5 2019
 - Change help terminal colors for better readability
 - Add png, jpeg, css, svg, gif and icon mime-types to `render`
