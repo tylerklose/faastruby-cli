@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.8 - Jan 8 2019
+- Use the actual param rather than the Sinatra::Params object
+
 ## 0.4.7 - Jan 8 2019
 - `create-workspace` will not create a folder on current dir, unless specified with `--create-local-dir`
 

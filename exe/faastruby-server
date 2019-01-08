@@ -187,7 +187,7 @@ class FaaStRubyServer < Sinatra::Application
   def parse_query(query_string)
     hash = {}
     query_string.split('&').each do |param|
-      key, value = params.split('=')
+      key, value = param.split('=')
       hash[key] = value
     end
     hash
