@@ -26,11 +26,11 @@ module FaaStRuby
             FaaStRuby::Credentials.add(@workspace_name, workspace.credentials, @options['credentials_file'])
           end
           puts "Workspace '#{@workspace_name}' created"
-          create_dir if create_directory && !dir_exists?
+          create_dir if @options['create_local_dir'] && create_directory && !dir_exists?
         end
 
         def self.help
-          "create-workspace".light_cyan + " WORKSPACE_NAME [--stdout|-c, --credentials-file CREDENTIALS_FILE] [-e, --email YOUR_EMAIL_ADDRESS]"
+          "create-workspace".light_cyan + " WORKSPACE_NAME [--create-local-dir] [--stdout] [-c, --credentials-file CREDENTIALS_FILE] [-e, --email YOUR_EMAIL_ADDRESS]"
         end
 
         def usage
@@ -68,6 +68,8 @@ module FaaStRuby
             #   @options['credentials_file'] = @args.shift
             when '--stdout'
               @options['stdout'] = true
+            when '--create-local-dir'
+              @options['create_local_dir'] = true
             when '-c', '--credentials-file'
               @options['credentials_file'] = @args.shift
             when '-e', '--email'

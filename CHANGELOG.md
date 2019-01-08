@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.7 - Jan 8 2019
+- `create-workspace` will not create a folder on current dir, unless specified with `--create-local-dir`
+
 ## 0.4.6 - Jan 5 2019
 - Default value when no runtime is provided to `new`
 
