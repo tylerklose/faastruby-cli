@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.9 - Jan 13 2019
+- Changes in `faastruby server` 
+  - Cleaned up code
+  - Logs are easier to read
+  - Function responses show up in the log
+  - Support for events with `publish`
+
 ## 0.4.8 - Jan 8 2019
 - Use the actual param rather than the Sinatra::Params object
 

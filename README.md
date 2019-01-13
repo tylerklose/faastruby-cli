@@ -8,28 +8,22 @@ CLI tool for managing workspaces and functions hosted at [FaaStRuby](https://faa
 ## What is FaaStRuby?
 FaaStRuby is a serverless platform built for Ruby developers.
 
-* [Tutorial](https://faastruby.io/tutorial.html)
+* [Tutorial](https://faastruby.io/getting-started)
 
 ## Try it
 
 1. Install the gem:
 
 ```
-$ gem install faastruby
+~$ gem install faastruby
 ```
 
-2. Create a workspace to deploy your functions. The workspace name must be unique (like a username).
+2. Create a function and deploy it to a workspace:
 
 ```
-$ faastruby create-workspace awesome-prod
-```
-
-3. Create a function and deploy it to your workspace:
-
-```
-$ faastruby new my-first-function
-$ cd my-first-function
-$ faastruby deploy-to awesome-prod
+~$ faastruby new hello-world
+~$ cd hello-world
+~/hello-world$ faastruby deploy-to awesome-prod
 ◐ Running tests... Passed!
 ...
 
@@ -38,20 +32,14 @@ Finished in 0.00563 seconds (files took 0.15076 seconds to load)
 
 ◐ Building package... Done!
 ◐ Deploying to workspace 'awesome-prod'... Done!
+Endpoint: https://api.tor1.faastruby.io/awesome-prod/hello-world
 ```
 
-4. Run it:
+3. Run it:
 
 ```
-$ faastruby run awesome-prod --json '{"name":"Ruby"}'
-Hello, Ruby!
-```
-
-You can also generate a CURL command:
-
-```
-$ faastruby run awesome-prod --json '{"name":"Ruby"}' --header 'My-Header: value' --query 'foo=bar' --query 'baz=fox' --curl
-curl -X POST -H 'Content-Type: application/json' -H 'My-Header: value' -d '{"name":"Ruby"}' 'https://api.faastruby.io/awesome-prod/my-first-function?foo=bar&baz=fox'
+~/hello-world$ curl https://api.tor1.faastruby.io/awesome-prod/hello-world
+Hello, World!
 ```
 
 Build lots of functions and share them with fellow Ruby devs!
