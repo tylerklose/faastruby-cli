@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.10 - Jan 14 2019
+- Fix command `faastruby server`
+
 ## 0.4.9 - Jan 13 2019
 - Changes in `faastruby server` 
   - Cleaned up code

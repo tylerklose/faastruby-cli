@@ -19,6 +19,7 @@ when '-b', '-o'
 end
 set :server, %w[puma]
 set :show_exceptions, true
+set :run, true
 
 register Sinatra::MultiRoute
 route :get, :post, :put, :patch, :delete, '/:workspace_name/:function_name' do
@@ -71,4 +72,3 @@ end
 def self.run?
   true
 end
-
