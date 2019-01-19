@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.11 - Jan 19 2019
+- Fix wrong working directory when running functions locally with `faastruby server`
+
 ## 0.4.10 - Jan 14 2019
 - Fix command `faastruby server`
 

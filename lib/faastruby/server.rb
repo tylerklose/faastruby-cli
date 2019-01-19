@@ -1,4 +1,5 @@
 module FaaStRuby
+  PROJECT_ROOT = Dir.pwd
   class DoubleRenderError < StandardError; end
   class EventChannel
     @@channels = {}
@@ -91,9 +92,10 @@ module FaaStRuby
     end
 
     def call(workspace_name, function_name, event, args)
-      @path = "#{workspace_name}/#{function_name}"
+      @path = "#{FaaStRuby::PROJECT_ROOT}/#{workspace_name}/#{function_name}"
       begin
-        load "./#{workspace_name}/#{function_name}/handler.rb"
+        load "#{@path}/handler.rb"
+        Dir.chdir(@path)
         response = handler(event, *args)
         return response if response.is_a?(FaaStRuby::Response)
         body = {
