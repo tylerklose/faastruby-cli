@@ -1,4 +1,4 @@
 require "spec"
-require "./helpers/faastruby"
+require "faastruby-spec-helper"
 require "../src/handler"
 include FaaStRuby

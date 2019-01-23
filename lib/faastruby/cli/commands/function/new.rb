@@ -149,6 +149,12 @@ EOS
               @function_name => {
                 'main' => 'src/handler.cr'
               }
+            },
+            'development_dependencies' => {
+              'faastruby-spec-helper' => {
+                'github' => 'faastruby/faastruby-spec-helper.cr',
+                'version' => '~> 0.1.0'
+              }
             }
           }.to_yaml
           write_file("#{@base_dir}/shard.yml", shards)

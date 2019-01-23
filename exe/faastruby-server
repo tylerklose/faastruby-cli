@@ -34,7 +34,7 @@ route :get, :post, :put, :patch, :delete, '/:workspace_name/:function_name' do
   end
   query_params = parse_query(request.query_string)
   context = set_context(params[:workspace_name], params[:function_name])
-  event = FaaStRuby::Event.new(body, query_params, headers, context)
+  event = FaaStRuby::Event.new(body: body, query_params: query_params, headers: headers, context: context)
   response = FaaStRuby::Runner.new.call(params[:workspace_name], params[:function_name], event, rpc_args)
   status response.status
   headers response.headers

@@ -2,7 +2,12 @@ require 'spec_helper'
 require 'handler'
 
 describe 'handler(event)' do
-  # let(:event) {SpecHelper::Event.new(body: 'Hello', context: 'secret_data', headers: {'MyHeader' => true}, query_params: {'foo' => 'bar'})}
+  let(:event) {Event.new(
+    body: nil,
+    query_params: {},
+    headers: {},
+    context: nil
+  )}
 
   xit 'write some tests here' do
     # function_return = handler(event).call
