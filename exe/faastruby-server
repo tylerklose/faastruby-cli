@@ -22,7 +22,7 @@ set :show_exceptions, true
 set :run, true
 
 register Sinatra::MultiRoute
-route :get, :post, :put, :patch, :delete, '/:workspace_name/:function_name' do
+route :head, :get, :post, :put, :patch, :delete, '/:workspace_name/:function_name' do
   path = "#{params[:workspace_name]}/#{params[:function_name]}"
   headers = env.select { |key, value| key.include?('HTTP_') || ['CONTENT_TYPE', 'CONTENT_LENGTH', 'REMOTE_ADDR', 'REQUEST_METHOD', 'QUERY_STRING'].include?(key) }
   if headers.has_key?("HTTP_FAASTRUBY_RPC")

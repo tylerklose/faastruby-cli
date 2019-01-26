@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.12 - Jan 26 2019
+Special thanks to [Sean Earle](https://github.com/HellRok) for fixing those bugs!
+- FaaStRuby Server: Respond with css content type [PR-4](https://github.com/FaaStRuby/faastruby-cli/pull/4)
+- Setup the server to respond to HEAD requests [PR-3](https://github.com/FaaStRuby/faastruby-cli/pull/3)
+
 ## 0.4.11 - Jan 19 2019
 - Fix wrong working directory when running functions locally with `faastruby server`
 
