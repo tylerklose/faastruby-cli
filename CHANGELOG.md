@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.12 - Jan 26 2019
+Special thanks to @HellRok for fixing those bugs!
+
+- FaaStRuby Server: Respond with css content type (#4) 
+- Setup the server to respond to HEAD requests (#3)
+
 ## 0.4.11 - Jan 19 2019
 - Fix wrong working directory when running functions locally with `faastruby server`
 
