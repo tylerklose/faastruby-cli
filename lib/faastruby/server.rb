@@ -127,6 +127,7 @@ module FaaStRuby
 
     def render(
         js: nil,
+        css: nil,
         body: nil,
         inline: nil,
         html: nil,
@@ -167,6 +168,9 @@ module FaaStRuby
       when js
         headers["Content-Type"] ||= "text/javascript"
         resp_body = js
+      when css
+        headers["Content-Type"] ||= "text/css"
+        resp_body = css
       when png
         headers["Content-Type"] ||= "image/png"
         resp_body = Base64.urlsafe_encode64(png)
