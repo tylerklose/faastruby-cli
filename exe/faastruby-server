@@ -7,6 +7,7 @@ require 'faastruby/server'
 require 'sinatra'
 require 'sinatra/multi_route'
 require 'colorize'
+
 FaaStRuby::EventHub.listen_for_events!
 
 set :port, 3000
@@ -22,6 +23,7 @@ set :show_exceptions, true
 set :run, true
 
 register Sinatra::MultiRoute
+
 route :head, :get, :post, :put, :patch, :delete, '/:workspace_name/:function_name' do
   path = "#{params[:workspace_name]}/#{params[:function_name]}"
   headers = env.select { |key, value| key.include?('HTTP_') || ['CONTENT_TYPE', 'CONTENT_LENGTH', 'REMOTE_ADDR', 'REQUEST_METHOD', 'QUERY_STRING'].include?(key) }
@@ -44,7 +46,7 @@ route :head, :get, :post, :put, :patch, :delete, '/:workspace_name/:function_nam
     response_body = response.body
   end
   puts "[#{path}] #=> status=#{response.status} body=#{response_body.inspect} headers=#{Oj.dump response.headers}".light_blue
-  body response_body
+  body response_body  
 end
 
 def parse_body(body, content_type, method)

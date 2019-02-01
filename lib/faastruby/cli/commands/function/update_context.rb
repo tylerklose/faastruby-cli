@@ -14,7 +14,7 @@ module FaaStRuby
         end
 
         def run
-          spinner = spin("Uploading context data to '#{@workspace_name}'...")
+          spinner = spin("Uploading context data for function '#{@function_name}' to workspace '#{@workspace_name}'...")
           workspace = FaaStRuby::Workspace.new(name: @workspace_name)
           function = FaaStRuby::Function.new(name: @function_name, workspace: workspace)
           function.update(new_context: @options['data'])
@@ -52,7 +52,7 @@ module FaaStRuby
             when '-d', '--data'
               @options['data'] = @args.shift
             when '--stdin'
-              @options['data'] = STDIN.gets.chomp
+              @options['data'] = STDIN.read
             else
               FaaStRuby::CLI.error("Unknown argument: #{option}")
             end

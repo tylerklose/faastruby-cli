@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.4.14 - Feb 1 2019
+- Ruby functions now use a spec helper from `faastruby` gem.
+- Crystal functions now use the shard `faastruby-spec-helper` to assist on tests.
+- Mock `publish` method on tests.
+- Wrap functions in anonymous module to avoid concurrency problems.
+- Read all STDIN when updating context with --stdin [PR-5](https://github.com/FaaStRuby/faastruby-cli/pull/5) | Thanks [Justin](https://github.com/presidentbeef)!
+- `shards install` runs when building crystal function before deploy
+- Better message when updating the function context
+- Fixed output when creating a function with `faastruby new`
+
+A new version of the platform API was released in tandem to address the issue that would erase contexts when a function is redeployed. Thanks [Justin](https://github.com/presidentbeef) again for pointing that out. 
+
 ## 0.4.12 - Jan 26 2019
 Special thanks to [Sean Earle](https://github.com/HellRok) for fixing those bugs!
 - FaaStRuby Server: Respond with css content type [PR-4](https://github.com/FaaStRuby/faastruby-cli/pull/4)

@@ -82,8 +82,6 @@ EOS
           when 'ruby'
             puts "+ d #{@base_dir}".green
             puts "+ d #{@base_dir}/spec".green
-            puts "+ d #{@base_dir}/spec/helpers".green
-            puts "+ f #{@base_dir}/spec/helpers/faastruby.rb".green
             puts "+ f #{@base_dir}/spec/handler_spec.rb".green
             puts "+ f #{@base_dir}/spec/spec_helper.rb".green
             puts "+ f #{@base_dir}/Gemfile".green
@@ -91,8 +89,6 @@ EOS
           when 'crystal'
             puts "+ d #{@base_dir}".green
             puts "+ d #{@base_dir}/spec".green
-            puts "+ d #{@base_dir}/spec/helpers".green
-            puts "+ f #{@base_dir}/spec/helpers/faastruby.cr".green
             puts "+ f #{@base_dir}/spec/handler_spec.cr".green
             puts "+ f #{@base_dir}/spec/spec_helper.cr".green
             puts "+ d #{@base_dir}/src".green
