@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.15 - Feb 2 2019
+- Add support for Crystal 0.27.1 and Ruby 2.6.1
+
 ## 0.4.14 - Feb 1 2019
 - Ruby functions now use a spec helper from `faastruby` gem.
 - Crystal functions now use the shard `faastruby-spec-helper` to assist on tests.
