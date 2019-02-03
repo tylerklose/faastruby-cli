@@ -3,7 +3,7 @@
 
 * Looking for help? [Ask a question](https://meta.stackoverflow.com/questions/ask?tags=FaaStRuby,Serverless,Ruby,FaaS).
 
-[Changelog](https://github.com/FaaStRuby/faastruby-cli/blob/master/CHANGELOG.md)
+* [Changelog](https://github.com/FaaStRuby/faastruby-cli/blob/master/CHANGELOG.md)
 
 # faastruby-cli
 
