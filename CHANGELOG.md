@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.17 - Feb 4 2019
+- Fix bug when cloning git repos with --template git:...
+
 ## 0.4.16 - Feb 4 2019
 - Add support for function templates
 - Add cli_version to `faastruby.yml`

@@ -66,7 +66,8 @@ EOS
             when '--template'
               FaaStRuby::CLI.error("Option '--template' can't be used with '--blank' or '--runtime'.".red) if @options['runtime'] || @options['blank_template']
               template = @args.shift
-              type, source = template.split(':')
+              type, *source = template.split(':')
+              source = source.join(':')
               @options['template'] = FaaStRuby::Template.new(type: type, source: source)
             when '--runtime'
               FaaStRuby::CLI.error("Option '--template' can't be used with '--blank' or '--runtime'.".red) if @options['template']
