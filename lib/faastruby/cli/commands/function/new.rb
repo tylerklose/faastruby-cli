@@ -106,6 +106,7 @@ EOS
             test_command = 'rspec'
           end
           {
+            'cli_version' => FaaStRuby::VERSION,
             'name' => @function_name,
             'runtime' => @options['runtime'] || 'ruby:2.5.3',
             'test_command' => test_command,

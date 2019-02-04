@@ -23,22 +23,22 @@ module FaaStRuby
         return
       end
       start_server(args) if command == 'server'
-      check_version
+      # check_version
       check_region
       error("Unknown command: #{command}") unless FaaStRuby::Command::COMMANDS.has_key?(command)
       FaaStRuby::Command::COMMANDS[command].new(args).run
     end
 
-    def self.check_version
-      latest = RestClient.get('https://faastruby.io/gem/minimum.txt').body rescue '0.0.1'
-      if Gem::Version.new(FaaStRuby::VERSION) < Gem::Version.new(latest)
-        FaaStRuby.error([
-          "You are using an old version of the gem. Please run 'gem update faastruby'.".red,
-          "Installed version: #{FaaStRuby::VERSION}",
-          "Latest version: #{latest}"
-        ], color: nil)
-      end
-    end
+    # def self.check_version
+    #   latest = RestClient.get('https://faastruby.io/gem/minimum.txt').body rescue '0.0.1'
+    #   if Gem::Version.new(FaaStRuby::VERSION) < Gem::Version.new(latest)
+    #     FaaStRuby.error([
+    #       "You are using an old version of the gem. Please run 'gem update faastruby'.".red,
+    #       "Installed version: #{FaaStRuby::VERSION}",
+    #       "Latest version: #{latest}"
+    #     ], color: nil)
+    #   end
+    # end
 
     def self.check_region
       ENV['FAASTRUBY_REGION'] ||= DEFAULT_REGION
