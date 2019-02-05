@@ -100,6 +100,11 @@ module FaaStRuby
         def build_package
           source = '.'
           output_file = "#{@function_name}.zip"
+          spinner = spin("Running 'before_deploy' tasks...")
+          @yaml_config['before_deploy']&.each do |command|
+            puts `#{command}`
+          end
+          spinner.stop(' Done!')
           FaaStRuby::Command::Function::Build.build(source, output_file, true)
           output_file
         end
