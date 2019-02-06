@@ -1,7 +1,10 @@
 # Changelog
 
-## 0.4.18 - Unreleased
-- New key on faastruby.yml - `before_deploy` allows you to specify commands to run locally before building and uploading the function package.
+## 0.4.19 - Unreleased
+- New key on faastruby.yml - `before_build` allows you to specify commands to run locally before building and uploading the function package.
+
+## 0.4.18 - Feb 6 2019
+- Bumps runtime crystal:0.27.1 to crystal:0.27.2
 
 ## 0.4.17 - Feb 4 2019
 - Fix bug when cloning git repos with --template git:...

@@ -11,7 +11,7 @@ require 'erb'
 module FaaStRuby
   FAASTRUBY_YAML = 'faastruby.yml'
   SPINNER_FORMAT = :spin_2
-  SUPPORTED_RUNTIMES = ['ruby:2.5.3', 'ruby:2.6.0', 'ruby:2.6.1', 'crystal:0.27.0', 'crystal:0.27.1']
+  SUPPORTED_RUNTIMES = ['ruby:2.5.3', 'ruby:2.6.0', 'ruby:2.6.1', 'crystal:0.27.0', 'crystal:0.27.2']
   class CLI
     def self.error(message, color: :red)
       message.each {|m| STDERR.puts m.colorize(color)} if message.is_a?(Array)
