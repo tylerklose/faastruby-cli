@@ -52,8 +52,8 @@ module FaaStRuby
         private
 
         def build(source, output_file)
-          spinner = spin("Running 'before_deploy' tasks...")
-          @yaml_config['before_deploy']&.each do |command|
+          spinner = spin("Running 'before_build' tasks...")
+          @yaml_config['before_build']&.each do |command|
             puts `#{command}`
           end
           spinner.stop(' Done!')
