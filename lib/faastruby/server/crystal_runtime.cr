@@ -1,7 +1,6 @@
 require "base64"
 require "json"
 require "yaml"
-require "benchmark"
 
 module FaaStRuby
   macro require_handler

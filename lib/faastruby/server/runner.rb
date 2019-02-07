@@ -23,34 +23,38 @@ module FaaStRuby
         runtime, version = (YAML.load(File.read('faastruby.yml'))['runtime'] || 'ruby:2.5.3').split(':')
         case runtime
         when 'ruby'
-          response = call_ruby(event)
+          time, response = call_ruby(event, args)
         when 'crystal'
-          response = call_crystal(event)
+          time, response = call_crystal(event, args)
         else
           puts "[Runner] ERROR: could not determine runtime for function #{@short_path}.".red
         end
-        return response if response.is_a?(FaaStRuby::Response)
+        return [time, response] if response.is_a?(FaaStRuby::Response)
         body = {
           'error' => "Please use the helpers 'render' or 'respond_with' as your function return value."
         }
-        FaaStRuby::Response.new(body: Oj.dump(body), status: 500, headers: {'Content-Type' => 'application/json'})
+        [time, FaaStRuby::Response.new(body: Oj.dump(body), status: 500, headers: {'Content-Type' => 'application/json'})]
       rescue Exception => e
         STDOUT.puts e.full_message
         body = {
           'error' => e.message,
           'location' => e.backtrace&.first,
         }
-        FaaStRuby::Response.new(body: Oj.dump(body), status: 500, headers: {'Content-Type' => 'application/json'})
+        [0.0, FaaStRuby::Response.new(body: Oj.dump(body), status: 500, headers: {'Content-Type' => 'application/json'})]
       end
     end
-    def call_ruby(event)
+    def call_ruby(event, args)
       function = load_function("#{@path}/handler.rb")
       runner = FunctionObject.new(@short_path)
       runner.extend(function)
+      time_start = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond)
       response = runner.handler(event, *args)
+      time_finish = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond)
+      time = (time_finish - time_start).round(2)
+      [time, response]
     end
 
-    def call_crystal(event)
+    def call_crystal(event, args)
       ####
       # This is a hack to address the bug https://github.com/crystal-lang/crystal/issues/7052
       event.query_params.each do |k, v|
@@ -65,6 +69,7 @@ module FaaStRuby
       cmd = "#{@path}/handler"
       # STDOUT.puts "Running #{cmd}"
       output = nil
+      time_start = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond)
       Open3.popen2(cmd) do |stdin, stdout, status|
         stdin.puts payload
         stdout.each_line do |line|
@@ -76,15 +81,18 @@ module FaaStRuby
           end
         end
       end
+      time_finish = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond)
+      time = (time_finish - time_start).round(2)
       tag, o = output.split(',')
       decoded_response = Base64.urlsafe_decode64(o)
       response_obj = Oj.load(decoded_response)
       # STDOUT.puts response_obj
-      FaaStRuby::Response.new(
+      response = FaaStRuby::Response.new(
         body: response_obj['response'],
         status: response_obj['status'],
         headers: response_obj['headers']
       )
+      [time, response]
     end
   end
 end

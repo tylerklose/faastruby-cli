@@ -7,26 +7,17 @@ require 'sinatra'
 require 'sinatra/multi_route'
 require 'colorize'
 require 'filewatcher'
+require 'securerandom'
 module FaaStRuby
   SERVER_ROOT = Dir.pwd
   FaaStRuby::EventHub.listen_for_events!
   FaaStRuby::Sentinel.start!
   class Server < Sinatra::Base
-    # set :port, 3000
-    # set :bind, '0.0.0.0'
-    # case ARGV.shift
-    # when '-p'
-    #   set :port, ARGV.shift
-    # when '-b', '-o'
-    #   set :bind, ARGV.shift
-    # end
-    # set :server, %w[puma]
     set :show_exceptions, true
-    # set :run, true
-
     register Sinatra::MultiRoute
 
     route :head, :get, :post, :put, :patch, :delete, '/:workspace_name/:function_name' do
+      request_uuid = SecureRandom.uuid
       path = "#{params[:workspace_name]}/#{params[:function_name]}"
       headers = env.select { |key, value| key.include?('HTTP_') || ['CONTENT_TYPE', 'CONTENT_LENGTH', 'REMOTE_ADDR', 'REQUEST_METHOD', 'QUERY_STRING'].include?(key) }
       if headers.has_key?("HTTP_FAASTRUBY_RPC")
@@ -38,9 +29,9 @@ module FaaStRuby
       end
       query_params = parse_query(request.query_string)
       context = set_context(params[:workspace_name], params[:function_name])
-      puts "[#{path}] <=# body=\"#{body}\" headers=#{headers} query_params=#{query_params}".black.on_light_green
       event = FaaStRuby::Event.new(body: body, query_params: query_params, headers: headers, context: context)
-      response = FaaStRuby::Runner.new.call(params[:workspace_name], params[:function_name], event, rpc_args)
+      puts "[#{path.underline}] [#{request_uuid.underline}] <=[REQUEST: #{headers['REQUEST_METHOD']} #{request.fullpath}] body=\"#{body}\" query_params=#{query_params} headers=#{headers}".black.on_light_cyan
+      time, response = FaaStRuby::Runner.new.call(params[:workspace_name], params[:function_name], event, rpc_args)
       status response.status
       headers response.headers
       if response.binary?
@@ -48,7 +39,7 @@ module FaaStRuby
       else
         response_body = response.body
       end
-      puts "[#{path}] #=> status=#{response.status} body=#{response_body.inspect} headers=#{Oj.dump response.headers}".black.on_light_blue
+      puts "[#{path.underline}] [#{request_uuid.underline}] [RESPONSE: #{time}ms]=> status=#{response.status} body=#{response_body.inspect} headers=#{Oj.dump response.headers}".black.on_light_blue
       body response_body  
     end
 

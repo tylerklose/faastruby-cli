@@ -48,7 +48,10 @@ module FaaStRuby
     end
 
     def self.start_server(args)
-      exec("faastruby-server #{args.join(' ')}")
+      server_dir = "#{Gem::Specification.find_by_name("faastruby").gem_dir}/lib/faastruby/server"
+      config_ru = "#{server_dir}/config.ru"
+      puma_config = "#{server_dir}/puma.rb"
+      exec "puma -C #{puma_config} #{args.join(' ')} #{config_ru}"
     end
   end
 end
