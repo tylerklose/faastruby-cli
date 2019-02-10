@@ -2,6 +2,7 @@
 
 ## 0.4.19 - Unreleased
 - New key on faastruby.yml - `before_build` allows you to specify commands to run locally before building and uploading the function package.
+- New command: `update-workspace WORKSPACE_NAME --runners INT` - set the number of runners for a workspace.
 
 ## 0.4.18 - Feb 6 2019
 - Bumps runtime crystal:0.27.1 to crystal:0.27.2

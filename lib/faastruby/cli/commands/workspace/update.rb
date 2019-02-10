@@ -1,33 +1,26 @@
 module FaaStRuby
   module Command
     module Workspace
-      class List < WorkspaceBaseCommand
+      class Update < WorkspaceBaseCommand
         def initialize(args)
           @args = args
           @missing_args = []
           FaaStRuby::CLI.error(@missing_args, color: nil) if missing_args.any?
           @workspace_name = @args.shift
           FaaStRuby::Credentials.load_for(@workspace_name)
+          parse_options
         end
 
-        def run
-          workspace = FaaStRuby::Workspace.new(name: @workspace_name).fetch
+        def run(create_directory: true, exit_on_error: true)
+          spinner = spin("Updating the number of runners to #{@options['runners_max']}...")
+          workspace = FaaStRuby::Workspace.new(name: @workspace_name)
+          workspace.update_runners(@options['runners_max'])
           FaaStRuby::CLI.error(workspace.errors) if workspace.errors.any?
-          puts "Allocated Runners: #{workspace.runners_max}" if workspace.runners_max
-          print_functions_table(workspace.functions)
-        end
-
-        def print_functions_table(functions)
-          no_functions unless functions.any?
-          rows = functions.map do |function_name|
-            [function_name, "#{FaaStRuby.api_host}/#{@workspace_name}/#{function_name}"]
-          end
-          table = TTY::Table.new(['FUNCTION','ENDPOINT'], rows)
-          puts table.render(:basic)
+          spinner.stop("Done!")
         end
 
         def self.help
-          "list-workspace".light_cyan + " WORKSPACE_NAME"
+          "update-workspace".light_cyan + " WORKSPACE_NAME --runners N   # Assign N runners to the workspace."
         end
 
         def usage
@@ -45,9 +38,17 @@ module FaaStRuby
           @missing_args
         end
 
-        def no_functions
-          puts "The workspace '#{@workspace_name}' has no functions."
-          exit 0
+        def parse_options
+          @options = {}
+          while @args.any?
+            option = @args.shift
+            case option
+            when '--runners'
+              @options['runners_max'] = @args.shift
+            else
+              FaaStRuby.error("Unknown argument: #{option}")
+            end
+          end
         end
       end
     end

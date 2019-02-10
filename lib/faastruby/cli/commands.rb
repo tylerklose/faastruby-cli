@@ -50,6 +50,7 @@ module FaaStRuby
       'upgrade' => FaaStRuby::Command::Function::Upgrade,
       'build' => FaaStRuby::Command::Function::Build,
       'create-workspace' => FaaStRuby::Command::Workspace::Create,
+      'update-workspace' => FaaStRuby::Command::Workspace::Update,
       'destroy-workspace' => FaaStRuby::Command::Workspace::Destroy,
       'list-workspace' => FaaStRuby::Command::Workspace::List,
       'test' => FaaStRuby::Command::Function::Test,

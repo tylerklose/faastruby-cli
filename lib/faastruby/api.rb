@@ -39,10 +39,18 @@ module FaaStRuby
       end
     end
 
-    # def update_workspace(workspace_name, payload)
-    #   url = "#{@api_url}/workspaces/#{workspace_name}"
-    #   parse RestClient.patch(url, Oj.dump(payload), @headers)
-    # end
+    def update_runners(workspace_name:, runners_max:)
+      url = "#{@api_url}/workspaces/#{workspace_name}/runners"
+      payload = {'runners_max' => runners_max}
+      parse RestClient::Request.execute(method: :patch, timeout: @timeout, url: url, headers: @headers, payload: Oj.dump(payload))
+    rescue RestClient::ExceptionWithResponse => err
+      case err.http_code
+      when 301, 302, 307
+        err.response.follow_redirection
+      else
+        parse err.response
+      end
+    end
 
     def get_workspace_info(workspace_name)
       url = "#{@api_url}/workspaces/#{workspace_name}"

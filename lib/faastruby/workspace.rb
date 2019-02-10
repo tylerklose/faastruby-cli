@@ -18,6 +18,7 @@ module FaaStRuby
         workspace.errors += ['(422) Unprocessable Entity', response.body]
       when 200, 201
         workspace.credentials = response.body['credentials']
+        workspace.runners_max = response.body['runners_max']
       else
         workspace.errors << "(#{response.code}) Error"
       end
@@ -26,7 +27,7 @@ module FaaStRuby
     ###################
 
     ##### Instance methods
-    attr_accessor :name, :errors, :functions, :email, :object, :credentials, :updated_at, :created_at, :status_code, :provider
+    attr_accessor :name, :errors, :functions, :email, :object, :credentials, :updated_at, :created_at, :status_code, :provider, :runners_max, :runners_current
 
     def destroy
       response = @api.destroy_workspace(@name)
@@ -49,6 +50,14 @@ module FaaStRuby
       self
     end
 
+    def update_runners(value)
+      response = @api.update_runners(workspace_name: @name, runners_max: value)
+      @runners_max = response.body['runners_max'] rescue nil
+      @status_code = response.code
+      @errors += response.errors if response.errors.any?
+      self
+    end
+
     def fetch
       response = @api.get_workspace_info(@name)
       @status_code = response.code
@@ -67,6 +76,8 @@ module FaaStRuby
       @updated_at = attributes['updated_at']
       @created_at = attributes['created_at']
       @provider = attributes['provider']
+      @runners_max = attributes['runners_max']
+      @runners_current = attributes['runners_current']
     end
   end
 end

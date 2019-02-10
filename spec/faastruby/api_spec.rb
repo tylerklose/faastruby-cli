@@ -45,6 +45,22 @@ RSpec.describe FaaStRuby::API do
     end
   end
 
+  describe '#update_runners' do
+    before do
+      @url_path = "#{FAASTRUBY_HOST}/v2/workspaces/test-workspace/runners"
+      @fake_api.stub_update_runners(name: 'test-workspace', runners_max: 5)
+      @api_response = @api.update_runners(workspace_name: 'test-workspace', runners_max: 5)
+    end
+    it 'makes a request' do
+      expect(WebMock).to have_requested(:patch, @url_path)
+    end
+    it 'returns a struct with body, errors and status code' do
+      expect(@api_response.body).to_not be_nil
+      expect(@api_response.code).to eq(200)
+      expect(@api_response.errors).to eq([])
+    end
+  end
+
   describe '#get_workspace_info' do
     before do
       @url_path = "#{FAASTRUBY_HOST}/v2/workspaces/test-workspace"

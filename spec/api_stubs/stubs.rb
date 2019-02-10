@@ -7,23 +7,25 @@ module FaaStRuby
       def initialize()
       end
 
-      def create_workspace_response(name = 'test-workspace', email = nil, provider = nil)
+      def create_workspace_response(name = 'test-workspace', email = nil, provider = nil, runners_max = nil)
         hash = {
           'object' => 'workspace',
           'name' => name,
           'credentials' => credentials_example,
           'created_at' => '2018-10-22 19:02:51 +0000',
           'errors' => [],
-          'updated_at' => '2018-10-22 19:02:52 +0000'
+          'updated_at' => '2018-10-22 19:02:52 +0000',
+          'runners_max' => 99,
+          'runners_current' => 0
         }
-
+        hash['runners_max'] = runners_max if runners_max
         hash['email'] = email if email
         hash['provider'] = provider if provider
         hash
       end
 
-      def get_workspace_response(name = 'test-workspace', email = nil, provider = nil)
-        hash = create_workspace_response(name, email, provider)
+      def get_workspace_response(name = 'test-workspace', email = nil, provider = nil, runners_max = nil)
+        hash = create_workspace_response(name, email, provider, runners_max)
         hash.delete('created_at')
         hash['credentials'].delete('api_secret')
         hash
@@ -75,6 +77,10 @@ module FaaStRuby
 
       def stub_update_function(method: :patch, function_name:, workspace_name:, status: 200, context:)
         stub_request(method, "#{FAASTRUBY_HOST}/v2/workspaces/#{workspace_name}/functions/#{function_name}").with(body: context.to_json).to_return(body: function_response(context['context']).to_json, status: status)
+      end
+
+      def stub_update_runners(method: :patch, name:, status: 200, runners_max:)
+        stub_request(method, "#{FAASTRUBY_HOST}/v2/workspaces/#{name}/runners").with(body: {'runners_max' => runners_max}.to_json).to_return(body: get_workspace_response(name, nil, nil, runners_max).to_json, status: status)
       end
     end
   end

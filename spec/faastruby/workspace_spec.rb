@@ -104,9 +104,37 @@ RSpec.describe FaaStRuby::Workspace do
         expect(@workspace.errors).to be_empty
       end
 
-      it 'success' do
+      it 'fail' do
         @api.stub_deploy_workspace(name: @workspace.name, status: 422)
         @workspace.deploy(@file.path)
+        expect(@workspace.errors).not_to be_empty
+      end
+    end
+
+    describe '#update_runners' do
+      before do
+        @runners_max = 5
+      end
+
+      it 'sets the number of runners' do
+        @api.stub_update_runners(name: @workspace.name, runners_max: @runners_max)
+        @workspace.update_runners(@runners_max)
+        expect(@workspace.runners_max).to eq(@runners_max)
+      end
+
+      it 'returns self' do
+        @api.stub_update_runners(name: @workspace.name, runners_max: @runners_max)
+        expect(@workspace.update_runners(@runners_max)).to eq(@workspace)
+      end
+      it 'success' do
+        @api.stub_update_runners(name: @workspace.name, runners_max: @runners_max)
+        @workspace.update_runners(@runners_max)
+        expect(@workspace.errors).to be_empty
+      end
+
+      it 'fail' do
+        @api.stub_update_runners(name: @workspace.name, runners_max: @runners_max, status: 422)
+        @workspace.update_runners(@runners_max)
         expect(@workspace.errors).not_to be_empty
       end
     end
