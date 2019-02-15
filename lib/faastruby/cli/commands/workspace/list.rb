@@ -13,7 +13,8 @@ module FaaStRuby
         def run
           workspace = FaaStRuby::Workspace.new(name: @workspace_name).fetch
           FaaStRuby::CLI.error(workspace.errors) if workspace.errors.any?
-          puts "Allocated Runners: #{workspace.runners_max}" if workspace.runners_max
+          puts "Allocated Runners: #{workspace.runners_max} (disabled)" if workspace&.runners_max == 0
+          puts "Allocated Runners: #{workspace.runners_max}" if workspace&.runners_max > 0
           print_functions_table(workspace.functions)
         end
 
