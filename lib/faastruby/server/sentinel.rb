@@ -11,6 +11,12 @@ module FaaStRuby
         project_folder = File.expand_path path
         threads[project_folder] = {}
         threads[project_folder]['watcher'] = start_watcher_for(project_folder)
+        handler_file_path = "#{project_folder}/src/handler.cr"
+        Thread.new do
+          sleep 1
+          FileUtils.touch(handler_file_path)
+          Thread.exit
+        end
       end
     end
     def self.start_watcher_for(project_folder)
