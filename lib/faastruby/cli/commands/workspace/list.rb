@@ -21,7 +21,7 @@ module FaaStRuby
         def print_functions_table(functions)
           no_functions unless functions.any?
           rows = functions.map do |function_name|
-            [function_name, "#{FaaStRuby.api_host}/#{@workspace_name}/#{function_name}"]
+            [function_name, "#{FaaStRuby.workspace_host_for(@workspace_name)}/#{function_name}"]
           end
           table = TTY::Table.new(['FUNCTION','ENDPOINT'], rows)
           puts table.render(:basic)

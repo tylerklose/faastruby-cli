@@ -12,7 +12,7 @@ module FaaStRuby
 
         def run(do_not_exit: false)
           unless @test_command
-            puts "[skipped] You have no 'test_command' key/value in 'faastruby.yml'. Please consider using rspec!".yellow
+            # puts "[skipped tests] You have no 'test_command' key/value in 'faastruby.yml'. Please consider using rspec!".yellow
             return true
           end
           puts "[test] Running tests"

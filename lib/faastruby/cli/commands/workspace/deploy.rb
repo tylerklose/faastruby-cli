@@ -7,33 +7,43 @@ module FaaStRuby
           if args.any?
             @args = args
           else
-            @args = Dir.glob('*').select{|f| File.directory?(f)}
+            @args = find_functions
           end
+          @workspace_yaml = YAML.load(File.read('faastruby-workspace.yml'))
         end
 
         def run
           result = []
           errors = false
-          @args.each do |workspace|
-            Dir.chdir workspace
-            functions = Dir.glob('*').select{|f| File.directory?(f)}
-            functions.each do |function|
-              puts "[deploy] Entering folder #{workspace}/#{function}"
-              Dir.chdir function
-              if system("faastruby deploy-to #{workspace}")
-                result << "* #{workspace}/#{function} [Deploy OK]".green
+          root_folder = Dir.pwd
+          pids = []
+          @args.each do |function_path|
+            pids << fork do
+              puts "[#{function_path}] [deploy] Entering folder #{function_path}"
+              Dir.chdir function_path
+              if system("faastruby deploy-to #{@workspace_yaml['name']}")
+                puts "* [#{function_path}] Deploy OK".green
               else
-                result << "* #{workspace}/#{function} [Deploy FAILED]".red
-                errors = true
+                # puts "* [#{function_path}] Deploy FAILED".red
+                # errors = true
+                FaaStRuby::CLI.error("* [#{function_path}] Deploy FAILED", color: nil)
               end
-              Dir.chdir '..'
+              Dir.chdir root_folder
             end
-            Dir.chdir '..'
           end
-          puts "\nResult:"
-          FaaStRuby::CLI.error(result, color: nil) if errors
-          puts result
-          exit 0
+          Process.waitall
+          # puts "\nResult:"
+          # FaaStRuby::CLI.error(result, color: nil) if errors
+          # puts result
+          # exit 0
+        end
+
+        def find_functions
+          Dir.glob("**/faastruby.yml").map do |f|
+            path = f.split('/')
+            path.pop
+            path.join('/')
+          end
         end
 
         def self.help

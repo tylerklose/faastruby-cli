@@ -8,6 +8,7 @@ module FaaStRuby
           FaaStRuby::CLI.error(@missing_args, color: nil) if missing_args.any?
           @workspace_name = @args.shift
           load_yaml
+          @yaml_config['before_build'] ||= []
           @function_name = @yaml_config['name']
           @abort_when_tests_fail = @yaml_config['abort_deploy_when_tests_fail']
           load_credentials(exit_on_error: false)
@@ -31,16 +32,18 @@ module FaaStRuby
           end
           tests_passed = run_tests
           FaaStRuby::CLI.error("Deploy aborted because tests failed and you have 'abort_deploy_when_tests_fail: true' in 'faastruby.yml'") unless tests_passed || !@abort_when_tests_fail
-          puts "Warning: Ignoring failed tests because you have 'abort_deploy_when_tests_fail: false' in 'faastruby.yml'".yellow if !tests_passed && !@abort_when_tests_fail
+          puts "[#{@function_name}] Warning: Ignoring failed tests because you have 'abort_deploy_when_tests_fail: false' in 'faastruby.yml'".yellow if !tests_passed && !@abort_when_tests_fail
           package_file_name = build_package
-          spinner = spin("Deploying '#{@workspace_name}/#{@function_name}'")
+          spinner = spin("[#{@function_name}] Deploying function '#{@function_name}' to workspace '#{@workspace_name}'...")
           workspace = FaaStRuby::Workspace.new(name: @workspace_name).deploy(package_file_name)
           if workspace.errors.any?
             spinner.stop('Failed :(')
+            FileUtils.rm('.package.zip')
             FaaStRuby::CLI.error(workspace.errors)
           end
           spinner.stop('Done!')
-          puts "Endpoint: #{FaaStRuby.api_host}/#{@workspace_name}/#{@function_name}"
+          FileUtils.rm('.package.zip')
+          puts "* [#{@function_name}] Endpoint: #{FaaStRuby.workspace_host_for(@workspace_name)}/#{@function_name}".green
           exit 0
         end
 
@@ -60,7 +63,7 @@ module FaaStRuby
 
         def create_or_use_workspace
           unless @has_credentials
-            puts "Attemping to create workspace '#{@workspace_name}'"
+            puts "[#{@function_name}] Attemping to create workspace '#{@workspace_name}'"
             cmd = FaaStRuby::Command::Workspace::Create.new([@workspace_name])
             cmd.run(create_directory: false, exit_on_error: true)
             load_credentials(exit_on_error: true)
@@ -73,14 +76,14 @@ module FaaStRuby
         end
 
         def shards_install
-          puts '[build] Verifying dependencies'
           return true unless File.file?('shard.yml')
+          puts "[#{@function_name}] [build] Verifying dependencies"
           system('shards check') || system('shards install')
         end
 
         def bundle_install
-          puts '[build] Verifying dependencies'
           return true unless File.file?('Gemfile')
+          puts "[#{@function_name}] [build] Verifying dependencies"
           system('bundle check') || system('bundle install')
         end
 
@@ -99,13 +102,15 @@ module FaaStRuby
 
         def build_package
           source = '.'
-          output_file = "#{@function_name}.zip"
-          spinner = spin("Running 'before_build' tasks...")
-          @yaml_config['before_build']&.each do |command|
-            puts `#{command}`
+          output_file = ".package.zip"
+          if @yaml_config['before_build'].any?
+            spinner = spin("[#{@function_name}] Running 'before_build' tasks...")
+            @yaml_config['before_build']&.each do |command|
+              puts `#{command}`
+            end
+            spinner.stop(' Done!')
           end
-          spinner.stop(' Done!')
-          FaaStRuby::Command::Function::Build.build(source, output_file, true)
+          FaaStRuby::Command::Function::Build.build(source, output_file, @function_name, true)
           output_file
         end
       end

@@ -21,8 +21,10 @@ module FaaStRuby
       end
 
       def load_yaml
-        return YAML.load(File.read(FAASTRUBY_YAML)) if File.file?(FAASTRUBY_YAML)
-        FaaStRuby.error("Could not find file #{FAASTRUBY_YAML}")
+        if File.file?(FAASTRUBY_YAML)
+          return YAML.load(File.read(FAASTRUBY_YAML)) 
+        end
+        FaaStRuby::CLI.error("Could not find file #{FAASTRUBY_YAML}")
       end
 
       def spin(message)

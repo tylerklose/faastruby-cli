@@ -46,7 +46,7 @@ module FaaStRuby
             when '--runners'
               @options['runners_max'] = @args.shift
             else
-              FaaStRuby.error("Unknown argument: #{option}")
+              FaaStRuby::CLI.error("Unknown argument: #{option}")
             end
           end
         end

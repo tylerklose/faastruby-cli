@@ -1,5 +1,6 @@
 module FaaStRuby
   ROOT_DOMAIN = ENV['FAASTRUBY_ROOT_DOMAIN'] || 'faastruby.io'
+  WORKSPACE_BASE_HOST = ENV['FAASTRUBY_WORKSPACE_BASE_HOST'] || 'faast.cloud'
   DEFAULT_REGION = 'tor1'
   REGIONS = [
     'tor1'
@@ -33,6 +34,10 @@ module FaaStRuby
 
   def self.api_host
     ENV['FAASTRUBY_HOST'] || "https://api.#{region}.#{ROOT_DOMAIN}"
+  end
+
+  def self.workspace_host_for(workspace_name)
+    "https://#{workspace_name}.#{region}.#{WORKSPACE_BASE_HOST}"
   end
 
   def self.credentials_file

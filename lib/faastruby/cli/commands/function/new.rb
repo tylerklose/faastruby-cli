@@ -11,7 +11,11 @@ module FaaStRuby
           @base_dir ||= @function_name
           @options['runtime_name'] ||= 'ruby'
           @options['runtime_version'] ||= '2.5.3'
-          @options['template'] ||= FaaStRuby::Template.new(type: 'local', source: Template.gem_template_path_for('example', runtime: @options['runtime_name']))
+          if @options['blank_template']
+            @options['template'] = FaaStRuby::Template.new(type: 'local', source: Template.gem_template_path_for('example-blank', runtime: @options['runtime_name'] || 'ruby'))
+          else
+            @options['template'] ||= FaaStRuby::Template.new(type: 'local', source: Template.gem_template_path_for('example', runtime: @options['runtime_name']))
+          end
         end
 
         def run
@@ -70,7 +74,7 @@ EOS
               source = source.join(':')
               @options['template'] = FaaStRuby::Template.new(type: type, source: source)
             when '--runtime'
-              FaaStRuby::CLI.error("Option '--template' can't be used with '--blank' or '--runtime'.".red) if @options['template']
+              FaaStRuby::CLI.error("Option '--runtime' can't be used with '--template' or '--blank'.".red) if @options['template']
               @options['runtime'] = @args.shift
               @options['runtime_name'], @options['runtime_version'] = @options['runtime'].split(':')
               template_name = @options['blank_template'] ? 'example-blank' : 'example'
@@ -79,9 +83,9 @@ EOS
             when '-f', '--force'
               @options['force'] = true
             when '--blank'
-              FaaStRuby::CLI.error("Option '--template' can't be used with '--blank' or '--runtime'.".red) if @options['template']
+              FaaStRuby::CLI.error("Option '--blank' can't be used with '--blank' or '--template'.".red) if @options['template']
               @options['blank_template'] = true
-              @options['template'] = FaaStRuby::Template.new(type: 'local', source: Template.gem_template_path_for('example-blank', runtime: @options['runtime_name'] || 'ruby'))
+              # @options['blank_template'] = FaaStRuby::Template.new(type: 'local', source: Template.gem_template_path_for('example-blank', runtime: @options['runtime_name'] || 'ruby'))
             else
               FaaStRuby::CLI.error(["Unknown argument: #{option}".red, usage], color: nil)
             end
@@ -105,14 +109,23 @@ EOS
           else
             test_command = 'rspec'
           end
-          {
-            'cli_version' => FaaStRuby::VERSION,
-            'name' => @function_name,
-            'runtime' => @options['runtime'] || 'ruby:2.5.3',
-            'test_command' => test_command,
-            'abort_build_when_tests_fail' => true,
-            'abort_deploy_when_tests_fail' => true
-          }
+          if @options['blank_template']
+            {
+              'cli_version' => FaaStRuby::VERSION,
+              'name' => @function_name,
+              'runtime' => @options['runtime'] || 'ruby:2.5.3'
+            }
+          else
+            {
+              'cli_version' => FaaStRuby::VERSION,
+              'name' => @function_name,
+              'before_build' => [],
+              'runtime' => @options['runtime'] || 'ruby:2.5.3',
+              'test_command' => test_command,
+              'abort_build_when_tests_fail' => true,
+              'abort_deploy_when_tests_fail' => true
+            }
+          end
         end
 
         def write_yaml
@@ -120,6 +133,7 @@ EOS
         end
 
         def post_tasks(runtime_name)
+          return true if @options['blank_template']
           update_readme
           puts `git init #{@base_dir}` if @options['git_init']
           case runtime_name

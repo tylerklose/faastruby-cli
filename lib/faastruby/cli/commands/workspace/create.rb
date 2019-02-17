@@ -13,19 +13,24 @@ module FaaStRuby
         end
 
         def run(create_directory: true, exit_on_error: true)
-          spinner = spin("Requesting credentials...")
-          workspace = FaaStRuby::Workspace.create(name: @workspace_name, email: @options['email'])
-          spinner.stop("Done!")
-          FaaStRuby::CLI.error(workspace.errors) if workspace.errors.any? && exit_on_error
-          if @options['stdout']
-            puts "IMPORTANT: Please store the credentials below in a safe place. If you lose them you will not be able to manage your workspace.".yellow
-            puts "API_KEY: #{workspace.credentials['api_key']}"
-            puts "API_SECRET: #{workspace.credentials['api_secret']}"
-          else
-            puts "Writing credentials to #{@options['credentials_file']}"
-            FaaStRuby::Credentials.add(@workspace_name, workspace.credentials, @options['credentials_file'])
+          unless @options['skip_creation']
+            spinner = spin("Requesting credentials...")
+            workspace = FaaStRuby::Workspace.create(name: @workspace_name, email: @options['email'])
+            if workspace.errors.any? && exit_on_error
+              spinner.stop("Error")
+              FaaStRuby::CLI.error(workspace.errors)
+            end
+            spinner.stop("Done!")
+            if @options['stdout']
+              puts "IMPORTANT: Please store the credentials below in a safe place. If you lose them you will not be able to manage your workspace.".yellow
+              puts "API_KEY: #{workspace.credentials['api_key']}"
+              puts "API_SECRET: #{workspace.credentials['api_secret']}"
+            else
+              puts "Writing credentials to #{@options['credentials_file']}"
+              FaaStRuby::Credentials.add(@workspace_name, workspace.credentials, @options['credentials_file'])
+            end
+            puts "Workspace '#{@workspace_name}' created"
           end
-          puts "Workspace '#{@workspace_name}' created"
           create_dir if @options['create_local_dir'] && create_directory && !dir_exists?
         end
 
@@ -42,11 +47,15 @@ module FaaStRuby
         def create_dir
           FileUtils.mkdir_p(@base_dir)
           puts "+ d #{@base_dir}".green
+          File.open("#{@base_dir}/faastruby-workspace.yml", 'w') do |file|
+            file.puts "name: #{@workspace_name}"
+          end
+          puts "+ f #{@base_dir}/faastruby-workspace.yml".green
         end
 
         def dir_exists?
           return false unless File.directory?(@base_dir)
-          puts "Local folder '#{@workspace_name}' already exists."
+          puts "Error: Local folder '#{@workspace_name}' already exists.".red
           true
         end
 
@@ -68,14 +77,17 @@ module FaaStRuby
             #   @options['credentials_file'] = @args.shift
             when '--stdout'
               @options['stdout'] = true
-            when '--create-local-dir'
+            when '--create-local-dir',
               @options['create_local_dir'] = true
+            when '--local-only'
+              @options['create_local_dir'] = true
+              @options['skip_creation'] = true
             when '-c', '--credentials-file'
               @options['credentials_file'] = @args.shift
             when '-e', '--email'
               @options['email'] = @args.shift
             else
-              FaaStRuby.error("Unknown argument: #{option}")
+              FaaStRuby::CLI.error("Unknown argument: #{option}")
             end
           end
         end

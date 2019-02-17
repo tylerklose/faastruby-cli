@@ -3,8 +3,8 @@ module FaaStRuby
     module Function
       class Build < FunctionBaseCommand
 
-        def self.build(source, output_file, quiet = false)
-          spinner = spin("Building package...")
+        def self.build(source, output_file, function_name, quiet = false)
+          spinner = spin("[#{function_name}] Building package...")
           FaaStRuby::Package.new(source, output_file).build
           spinner.stop('Done!')
           puts "+ f #{output_file}".green unless quiet
@@ -13,6 +13,7 @@ module FaaStRuby
         def initialize(args)
           @args = args
           load_yaml
+          @yaml_config['before_build'] ||= []
           @function_name = @yaml_config['name']
           @abort_when_tests_fail = @yaml_config['abort_build_when_tests_fail']
           parse_options
@@ -37,7 +38,7 @@ module FaaStRuby
           end
           tests_passed = run_tests
           FaaStRuby::CLI.error("Build aborted because tests failed and you have 'abort_build_when_tests_fail: true' in 'faastruby.yml'") unless tests_passed || !@abort_when_tests_fail
-          puts "Warning: Ignoring failed tests because you have 'abort_build_when_tests_fail: false' in 'faastruby.yml'".yellow if !tests_passed && !@abort_when_tests_fail
+          puts "[#{@function_name}] Warning: Ignoring failed tests because you have 'abort_build_when_tests_fail: false' in 'faastruby.yml'".yellow if !tests_passed && !@abort_when_tests_fail
           build(@options['source'], @options['output_file'])
         end
 
@@ -52,7 +53,7 @@ module FaaStRuby
         private
 
         def build(source, output_file)
-          spinner = spin("Running 'before_build' tasks...")
+          spinner = spin("[#{@function_name}] Running 'before_build' tasks...")
           @yaml_config['before_build']&.each do |command|
             puts `#{command}`
           end
@@ -61,14 +62,14 @@ module FaaStRuby
         end
 
         def shards_install
-          puts '[build] Verifying dependencies'
           return true unless File.file?('shard.yml')
+          puts "[#{@function_name}] [build] Verifying dependencies"
           system('shards check') || system('shards install')
         end
 
         def bundle_install
-          puts '[build] Verifying dependencies'
           return true unless File.file?('Gemfile')
+          puts "[#{@function_name}] [build] Verifying dependencies"
           system('bundle check') || system('bundle install')
         end
 
