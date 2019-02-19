@@ -7,6 +7,7 @@ module FaaStRuby
           @missing_args = []
           FaaStRuby::CLI.error(@missing_args, color: nil) if missing_args.any?
           @workspace_name = @args.shift
+          validate_name
           @base_dir = "./#{@workspace_name}"
           parse_options
           @options['credentials_file'] ||= FaaStRuby.credentials_file
@@ -66,6 +67,12 @@ module FaaStRuby
           end
           FaaStRuby::CLI.error(["'#{@args.first}' is not a valid workspace name.".red, usage], color: nil) if @args.first =~ /^-.*/
           @missing_args
+        end
+
+        def validate_name
+          unless @workspace_name.match(/^#{WORKSPACE_NAME_REGEX}$/)
+            FaaStRuby::CLI.error("The workspace name must have between 3 and 15 characters, and can only have letters, numbers and dashes.")
+          end
         end
 
         def parse_options

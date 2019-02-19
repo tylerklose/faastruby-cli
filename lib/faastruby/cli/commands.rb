@@ -7,9 +7,10 @@ module FaaStRuby
         spinner
       end
 
-      def write_file(path, content, mode = 'w')
-        File.open(path, mode){|f| f.write(content) }
-        message = "#{mode == 'w' ? '+' : '~'} f #{path}"
+      def write_file(path, content, mode = 'w', print_base_dir: false)
+        base_dir = print_base_dir ? "#{print_base_dir}/" : ""
+        File.open(path, mode){|f| f.write(content)}
+        message = "#{mode == 'w' ? '+' : '~'} f #{base_dir}#{path}"
         puts message.green if mode == 'w'
         puts message.yellow if mode == 'w+' || mode == 'a'
       end
@@ -38,6 +39,7 @@ require 'faastruby/cli/credentials'
 require 'faastruby/cli/commands/function'
 require 'faastruby/cli/commands/workspace'
 require 'faastruby/cli/commands/credentials'
+require 'faastruby/cli/commands/project'
 require 'faastruby/cli/commands/help'
 require 'faastruby/cli/commands/version'
 
@@ -46,7 +48,6 @@ module FaaStRuby
     COMMANDS = {
       'new' => FaaStRuby::Command::Function::New,
       'deploy-to' => FaaStRuby::Command::Function::DeployTo,
-      'deploy' => FaaStRuby::Command::Workspace::Deploy,
       'remove-from' => FaaStRuby::Command::Function::RemoveFrom,
       'update-context' => FaaStRuby::Command::Function::UpdateContext,
       'upgrade' => FaaStRuby::Command::Function::Upgrade,
@@ -55,6 +56,8 @@ module FaaStRuby
       'update-workspace' => FaaStRuby::Command::Workspace::Update,
       'destroy-workspace' => FaaStRuby::Command::Workspace::Destroy,
       'list-workspace' => FaaStRuby::Command::Workspace::List,
+      'new-project' => FaaStRuby::Command::Project::New,
+      'deploy' => FaaStRuby::Command::Project::Deploy,
       'test' => FaaStRuby::Command::Function::Test,
       'run' => FaaStRuby::Command::Function::Run,
       'add-credentials' => FaaStRuby::Command::Credentials::Add,

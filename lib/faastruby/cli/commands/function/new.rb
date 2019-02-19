@@ -7,6 +7,7 @@ module FaaStRuby
           @missing_args = []
           FaaStRuby::CLI.error(@missing_args, color: nil) if missing_args.any?
           @function_name = @args.shift
+          FaaStRuby::CLI.error("The function name must have at least one character and can only contain letters, numbers, -, _, . and /. Names with just a period are not allowed. Invalid name: #{@function_name}") unless name_valid?
           parse_options
           @base_dir ||= @function_name
           @options['runtime_name'] ||= 'ruby'
@@ -18,8 +19,8 @@ module FaaStRuby
           end
         end
 
-        def run
-          @options['template'].install(to: @base_dir, force: @options['force'])
+        def run(print_base_dir: false)
+          @options['template'].install(to: @base_dir, force: @options['force'], print_base_dir: print_base_dir)
           faastruby_yaml = "#{@base_dir}/faastruby.yml"
           if File.file?(faastruby_yaml)
             @yaml_content = YAML.load(File.read(faastruby_yaml))
@@ -30,7 +31,7 @@ module FaaStRuby
           else
             @yaml_content = yaml_for(@options['runtime_name'])
           end
-          write_yaml
+          write_yaml(print_base_dir: print_base_dir)
           post_tasks(@options['runtime_name'])
         end
 
@@ -83,9 +84,9 @@ EOS
             when '-f', '--force'
               @options['force'] = true
             when '--blank'
+              @options['template'] = nil
               FaaStRuby::CLI.error("Option '--blank' can't be used with '--blank' or '--template'.".red) if @options['template']
               @options['blank_template'] = true
-              # @options['blank_template'] = FaaStRuby::Template.new(type: 'local', source: Template.gem_template_path_for('example-blank', runtime: @options['runtime_name'] || 'ruby'))
             else
               FaaStRuby::CLI.error(["Unknown argument: #{option}".red, usage], color: nil)
             end
@@ -128,8 +129,8 @@ EOS
           end
         end
 
-        def write_yaml
-          write_file("#{@function_name}/faastruby.yml", @yaml_content.to_yaml)
+        def write_yaml(print_base_dir: false)
+          write_file("#{@function_name}/faastruby.yml", @yaml_content.to_yaml, print_base_dir: print_base_dir)
         end
 
         def post_tasks(runtime_name)
@@ -155,6 +156,7 @@ EOS
         end
 
         def bundle_install
+          return true unless File.file?("#{@base_dir}/Gemfile")
           spinner = spin("Installing gems...")
           system("bundle install --gemfile=#{@base_dir}/Gemfile > /dev/null")
           spinner.stop('Done!')
@@ -181,9 +183,23 @@ EOS
         end
 
         def shards_install
+          return true unless File.file?("#{@base_dir}/shard.yml")
           spinner = spin("Installing shards...")
           system("cd #{@base_dir} && shards install > /dev/null")
           spinner.stop('Done!')
+        end
+
+        def name_valid?
+          return false unless @function_name.match(/^#{FUNCTION_NAME_REGEX}$/)
+          while @function_name.match(/\.\./) || @function_name.match(/^\.\//) || @function_name.match(/(^\/|\/$)/)
+            @function_name.gsub!('..', '.')
+            @function_name.gsub!(/^\.\//, '')
+            @function_name.gsub!(/(^\/|\/$)/, '')
+          end
+          if @function_name == '.' || @function_name == '' || @function_name.match(/\.\./)
+            return false
+          end
+          return true
         end
       end
     end

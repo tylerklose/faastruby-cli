@@ -15,12 +15,15 @@ module FaaStRuby
       eval "Module.new do; #{File.read(path)};end"
     end
 
-    def call(workspace_name, function_name, event, args)
-      @short_path = "#{workspace_name}/#{function_name}"
-      @path = "#{FaaStRuby::PROJECT_ROOT}/#{workspace_name}/#{function_name}"
+    def call(short_path, event, args)
+      @short_path = short_path
+      @path = "#{FaaStRuby::PROJECT_ROOT}/#{short_path}"
+      # unless File.file?("#{@path}/faastruby.yml")
+      #   @path = YAML.load(File.read("#{PROJECT_ROOT}/#{PROJECT_YAML_FILE}"))['error_pages']['404_to']
+      # end
+      # puts @path
       begin
-        Dir.chdir(@path)
-        runtime, version = (YAML.load(File.read('faastruby.yml'))['runtime'] || 'ruby:2.5.3').split(':')
+        runtime, version = (YAML.load(File.read("#{@path}/faastruby.yml"))['runtime'] || 'ruby:2.5.3').split(':')
         case runtime
         when 'ruby'
           time, response = call_ruby(event, args)
@@ -48,7 +51,10 @@ module FaaStRuby
       runner = FunctionObject.new(@short_path)
       runner.extend(function)
       time_start = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond)
-      response = runner.handler(event, *args)
+      response = CHDIR_MUTEX.synchronize do
+        Dir.chdir(@path)
+        runner.handler(event, *args)
+      end
       time_finish = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond)
       time = (time_finish - time_start).round(2)
       [time, response]
@@ -70,7 +76,7 @@ module FaaStRuby
       # STDOUT.puts "Running #{cmd}"
       output = nil
       time_start = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond)
-      Open3.popen2(cmd) do |stdin, stdout, status|
+      Open3.popen2(cmd, chdir: @path) do |stdin, stdout, status|
         stdin.puts payload
         stdout.each_line do |line|
           if line[0..1] == 'R,'

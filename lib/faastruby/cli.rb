@@ -9,6 +9,8 @@ require 'faastruby/cli/template'
 require 'erb'
 
 module FaaStRuby
+  FUNCTION_NAME_REGEX = '[a-zA-Z\-_0-9\/\.]{1,}'
+  WORKSPACE_NAME_REGEX = '[a-zA-Z0-9_]{1}[a-zA-Z0-9\-]{1,}[a-zA-Z0-9_]{1}'
   FAASTRUBY_YAML = 'faastruby.yml'
   SPINNER_FORMAT = :spin_2
   SUPPORTED_RUNTIMES = ['ruby:2.5.3', 'ruby:2.6.0', 'ruby:2.6.1', 'crystal:0.27.0', 'crystal:0.27.2']
@@ -25,6 +27,7 @@ module FaaStRuby
         return
       end
       start_server(args) if command == 'server'
+      start_tmuxinator if command == 'mux'
       # check_version
       check_region
       error("Unknown command: #{command}") unless FaaStRuby::Command::COMMANDS.has_key?(command)
@@ -52,6 +55,14 @@ module FaaStRuby
       config_ru = "#{server_dir}/config.ru"
       puma_config = "#{server_dir}/puma.rb"
       exec "puma -C #{puma_config} #{args.join(' ')} #{config_ru}"
+    end
+    def self.start_tmuxinator
+      if system("tmux -V > /dev/null")
+        project_name = YAML.load(File.read("project.yml"))['name']
+        exec("tmuxinator start #{project_name} -p tmuxinator.yml")
+      else
+        error("To use 'faastruby mux' you need to have 'tmux' installed.", color: nil)
+      end
     end
   end
 end

@@ -12,7 +12,8 @@ module FaaStRuby
       @source = source
     end
 
-    def install(to:, force: false)
+    def install(to:, force: false, print_base_dir: false)
+      @output_prefix = print_base_dir ? "#{print_base_dir}/" : ""
       @target = to
       @force = force
       FaaStRuby::CLI.error("Could not determine the target path for template '#{type}:#{source}'. Please report this bug at https://github.com/FaaStRuby/faastruby-cli/issues", color: nil) unless target
@@ -40,12 +41,11 @@ module FaaStRuby
     end
 
     def install_from_folder(folder)
-      # puts "installing from folder #{folder}"
       if File.directory?(target)
-        puts "! d #{target}".yellow
+        puts "! d #{@output_prefix}#{target}".yellow
       else
         FileUtils.mkdir_p(target)
-        puts "+ d #{target}".green
+        puts "+ d #{@output_prefix}#{target}".green
       end
       Dir.glob("**/*", base: folder).each do |entry|
         full_source_path = "#{folder}/#{entry}"
@@ -58,10 +58,10 @@ module FaaStRuby
 
     def create_dir(dir)
       if File.directory?(dir)
-        puts "! d #{dir}".yellow
+        puts "! d #{@output_prefix}#{dir}".yellow
       else
         FileUtils.mkdir_p(dir)
-        puts "+ d #{dir}".green
+        puts "+ d #{@output_prefix}#{dir}".green
       end
     end
 
@@ -72,7 +72,7 @@ module FaaStRuby
         return(puts "[skipped] #{destination}") unless ['y', 'Y'].include?(answer)
       end
       FileUtils.cp(source, destination)
-      puts "+ f #{destination}".green
+      puts "+ f #{@output_prefix}#{destination}".green
     end
 
     def local?

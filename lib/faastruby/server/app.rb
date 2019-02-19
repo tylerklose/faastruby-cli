@@ -10,15 +10,24 @@ require 'filewatcher'
 require 'securerandom'
 module FaaStRuby
   SERVER_ROOT = Dir.pwd
+  PROJECT_YAML_FILE = 'project.yml'
   FaaStRuby::EventHub.listen_for_events!
   FaaStRuby::Sentinel.start!
   class Server < Sinatra::Base
     set :show_exceptions, true
     register Sinatra::MultiRoute
 
-    route :head, :get, :post, :put, :patch, :delete, '/:workspace_name/:function_name' do
+    route :head, :get, :post, :put, :patch, :delete, '/*' do
       request_uuid = SecureRandom.uuid
-      path = "#{params[:workspace_name]}/#{params[:function_name]}"
+      splat = params['splat'][0]
+      case 
+      when splat == ''
+        path = YAML.load(File.read("#{PROJECT_ROOT}/#{PROJECT_YAML_FILE}"))['root_to']
+      when !File.file?("#{PROJECT_ROOT}/#{splat}/faastruby.yml")
+        path = YAML.load(File.read("#{PROJECT_ROOT}/#{PROJECT_YAML_FILE}"))['404_to']
+      else
+        path = splat
+      end
       headers = env.select { |key, value| key.include?('HTTP_') || ['CONTENT_TYPE', 'CONTENT_LENGTH', 'REMOTE_ADDR', 'REQUEST_METHOD', 'QUERY_STRING'].include?(key) }
       if headers.has_key?("HTTP_FAASTRUBY_RPC")
         body = nil
@@ -28,10 +37,10 @@ module FaaStRuby
         rpc_args = []
       end
       query_params = parse_query(request.query_string)
-      context = set_context(params[:workspace_name], params[:function_name])
+      context = set_context(path)
       event = FaaStRuby::Event.new(body: body, query_params: query_params, headers: headers, context: context)
-      puts "[#{path.underline}] [#{request_uuid.underline}] <=[REQUEST: #{headers['REQUEST_METHOD']} #{request.fullpath}] body=\"#{body}\" query_params=#{query_params} headers=#{headers}".black.on_light_cyan
-      time, response = FaaStRuby::Runner.new.call(params[:workspace_name], params[:function_name], event, rpc_args)
+      puts "#{Time.now} [#{path.underline}] [#{request_uuid.underline}] <=[REQUEST: #{headers['REQUEST_METHOD']} #{request.fullpath}] body=\"#{body}\" query_params=#{query_params} headers=#{headers}".black.on_light_cyan
+      time, response = FaaStRuby::Runner.new.call(path, event, rpc_args)
       status response.status
       headers response.headers
       if response.binary?
@@ -39,7 +48,7 @@ module FaaStRuby
       else
         response_body = response.body
       end
-      puts "[#{path.underline}] [#{request_uuid.underline}] [RESPONSE: #{time}ms]=> status=#{response.status} body=#{response_body.inspect} headers=#{Oj.dump response.headers}".black.on_light_blue
+      puts "#{Time.now} [#{path.underline}] [#{request_uuid.underline}] [RESPONSE: #{time}ms]=> status=#{response.status} body=#{response_body.inspect} headers=#{Oj.dump response.headers}".black.on_light_blue
       body response_body  
     end
 
@@ -50,11 +59,13 @@ module FaaStRuby
       return body
     end
 
-    def set_context(workspace_name, function_name)
-      return nil unless File.file?('context.yml')
-      yaml = YAML.load(File.read('context.yml'))
-      return nil unless yaml.has_key?(workspace_name)
-      yaml[workspace_name][function_name]
+    def set_context(path)
+      return nil
+      # this should read from faastruby-workspace.yml
+      # return nil unless File.file?('context.yml')
+      # yaml = YAML.load(File.read('context.yml'))
+      # return nil unless yaml.has_key?(workspace_name)
+      # yaml[workspace_name][function_name]
     end
 
     def parse_query(query_string)

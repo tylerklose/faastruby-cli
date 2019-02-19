@@ -1,7 +1,7 @@
 module FaaStRuby
   module Command
-    module Workspace
-      class Deploy < WorkspaceBaseCommand
+    module Project
+      class Deploy < ProjectBaseCommand
         def initialize(args)
           @errors = []
           if args.any?
@@ -9,7 +9,7 @@ module FaaStRuby
           else
             @args = find_functions
           end
-          @workspace_yaml = YAML.load(File.read('faastruby-workspace.yml'))
+          @project_yaml = YAML.load(File.read(PROJECT_YAML_FILE))
         end
 
         def run
@@ -21,21 +21,15 @@ module FaaStRuby
             pids << fork do
               puts "[#{function_path}] [deploy] Entering folder #{function_path}"
               Dir.chdir function_path
-              if system("faastruby deploy-to #{@workspace_yaml['name']}")
+              if system("faastruby deploy-to #{@project_yaml['name']}")
                 puts "* [#{function_path}] Deploy OK".green
               else
-                # puts "* [#{function_path}] Deploy FAILED".red
-                # errors = true
                 FaaStRuby::CLI.error("* [#{function_path}] Deploy FAILED", color: nil)
               end
               Dir.chdir root_folder
             end
           end
           Process.waitall
-          # puts "\nResult:"
-          # FaaStRuby::CLI.error(result, color: nil) if errors
-          # puts result
-          # exit 0
         end
 
         def find_functions
@@ -47,7 +41,7 @@ module FaaStRuby
         end
 
         def self.help
-          "deploy".light_cyan + " [WORKSPACE_FOLDER1] [WORKSPACE_FOLDER2]...    # Deploy all workspaces in the current directory and their functions"
+          "deploy".light_cyan + " [FUNCTION1] [FUNCTION2]    # Deploy all or some functions in the project."
         end
 
         def usage

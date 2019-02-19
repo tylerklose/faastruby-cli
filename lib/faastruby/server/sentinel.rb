@@ -1,43 +1,117 @@
+# Here 'project_folder' is the function folder.
 require 'open3'
 require 'tempfile'
 require 'pathname'
 module FaaStRuby
   module Sentinel
-    def self.threads
-      @@threads ||= {}
+    @@threads = {}
+    MUTEX = Mutex.new
+    def self.add_thread(project, key, value)
+      MUTEX.synchronize do
+        @@threads[project] ||= {}
+        @@threads[project][key] = value
+      end
+    end
+    def self.get_thread(project)
+      MUTEX.synchronize do
+        @@threads[project]
+      end
+    end
+    def self.get_threads
+      MUTEX.synchronize do
+        @@threads
+      end
     end
     def self.start!
       find_crystal_projects.each do |path|
         project_folder = File.expand_path path
-        threads[project_folder] = {}
-        threads[project_folder]['watcher'] = start_watcher_for(project_folder)
-        handler_file_path = "#{project_folder}/src/handler.cr"
-        Thread.new do
+        add_thread(project_folder, 'watcher', start_watcher_for(project_folder))
+        # This will force compile when the server starts
+        trigger("#{project_folder}/faastruby.yml")
+      end
+      
+      # watch for new projects
+      Thread.new do
+        puts "#{Time.now} [WatchDog] Watching for new functions...".yellow
+        Filewatcher.new(["#{PROJECT_ROOT}/**/handler.cr", "#{PROJECT_ROOT}/**/handler.rb"]).watch do |filename, event|
+          path = filename.split('/')
+          file = path.pop
+          project_folder = path.join('/')
           sleep 1
-          FileUtils.touch(handler_file_path)
-          Thread.exit
+          if project_folder.match(/src$/) && File.file?("#{project_folder}/../faastruby.yml") && File.file?("#{project_folder}/handler.cr")
+            project_folder.sub!(/\/src$/, '') 
+            trigger_compile = true
+          end
+          if event == :created 
+            unless File.file?("#{project_folder}/faastruby.yml")
+              write_yaml(project_folder, runtime: default_runtime(file))
+            end
+            case file
+            when 'handler.cr'
+              puts "#{Time.now} [WatchDog] New Crystal function detected at '#{project_folder}'.".yellow
+              add_thread(project_folder, 'watcher', start_watcher_for(project_folder))
+              trigger(filename) if trigger_compile
+            when 'handler.rb'
+              puts "#{Time.now} [WatchDog] New Ruby function detected at '#{project_folder}'.".yellow
+              puts "#{Time.now} [WatchDog] File created: '#{project_folder}/faastruby.yml'".yellow
+            end
+          end
         end
       end
     end
-    def self.start_watcher_for(project_folder)
+
+    def self.default_runtime(handler)
+      case handler
+      when 'handler.rb'
+        return DEFAULT_RUBY_RUNTIME
+      when 'handler.cr'
+        return DEFAULT_CRYSTAL_RUNTIME
+      end
+    end
+
+    def self.trigger(file)
       Thread.new do
-        handler_path = "#{project_folder}/src/handler"
+        sleep 1
+        FileUtils.touch(file)
+        Thread.exit
+      end
+    end
+    def self.write_yaml(project_folder, runtime:)
+      function_name = (project_folder.split('/') - PROJECT_ROOT.split('/')).join('/')
+      hash = {
+        'cli_version' => FaaStRuby::VERSION,
+        'name' => function_name,
+        'runtime' => runtime
+      }
+      File.write("#{project_folder}/faastruby.yml", hash.to_yaml)
+      puts "#{Time.now} [WatchDog] File created: '#{project_folder}/faastruby.yml'".yellow
+    end
+    def self.start_watcher_for(project_folder)
+      puts "#{Time.now} [Watchdog] Watching function '#{project_folder}' for changes.".yellow
+      Thread.new do
+        handler_path = File.file?("#{project_folder}/handler.cr") ? "#{project_folder}/handler" : "#{project_folder}/src/handler" 
         Filewatcher.new("#{project_folder}/", exclude: ["#{project_folder}/handler", "#{project_folder}/handler.dwarf"]).watch do |filename, event|
-          if threads[project_folder]['running']&.alive?
-            Thread.kill(threads[project_folder]['running'])
-            puts "[WatchDog] Previous Job for '#{project_folder}' aborted".yellow
+          thr = get_thread(project_folder)['running']
+          if thr&.alive?
+            Thread.kill(thr)
+            puts "#{Time.now} [WatchDog] Previous Job for '#{project_folder}' aborted".yellow
           end
-          threads[project_folder]['running'] = Thread.new {CrystalBuild.new(project_folder, handler_path, before_build: true).start}
+          if event == :deleted
+            puts "#{Time.now} [WatchDog] Function '#{project_folder}' deleted. Disabling watcher.".yellow
+            Thread.kill(get_thread(project_folder)['watcher'])
+            next
+          end
+          add_thread(project_folder, 'running', Thread.new {CrystalBuild.new(project_folder, handler_path, before_build: true).start})
         end
       end
-      puts "[Watchdog] Watching function '#{project_folder}' for changes.".yellow
     end
 
     def self.find_crystal_projects
       directories = Dir.glob('**/faastruby.yml').map do |yaml_file|
-        base_dir = yaml_file.split(File::SEPARATOR)[0..1].join('/')
+        base_dir = yaml_file.split('/')
+        base_dir.pop
         yaml = YAML.load(File.read yaml_file)
-        base_dir if yaml['runtime']&.match(/^crystal:/)
+        yaml['runtime']&.match(/^crystal:/) ? base_dir.join('/') : nil
       end
       directories.compact
     end
@@ -57,19 +131,21 @@ module FaaStRuby
       Thread.report_on_exception = false
       Dir.chdir(@directory)
       job_id = SecureRandom.uuid
-      puts "[WatchDog] Job #{job_id} started: ".yellow + "Compiling function #{@directory}"
+      puts "#{Time.now} [WatchDog] Job #{job_id} started: ".yellow + "Compiling function #{@directory}"
       @pre_compile.each do |cmd|
-        puts "[WatchDog] Job #{job_id} running before_build: ".yellow + cmd
+        puts "#{Time.now} [WatchDog] Job #{job_id} running before_build: ".yellow + cmd
         output, status = Open3.capture2e(cmd)
-        unless status.exitstatus == 0
+        success = status.exitstatus == 0
+        unless success
           puts output
-          puts "[WatchDog] Job #{job_id} completed: ".yellow + status.to_s   
+          puts "#{Time.now} [WatchDog] Job #{job_id} failed: ".yellow + status.to_s   
           return false
         end
       end
       output, status = Open3.capture2e(@env, @cmd)
-      puts output unless status.exitstatus == 0
-      puts "[WatchDog] Job #{job_id} completed: ".yellow + status.to_s   
+      success = status.exitstatus == 0
+      puts output unless success
+      puts "#{Time.now} [WatchDog] Job #{job_id} #{success ? 'completed' : 'failed'}: ".yellow + status.to_s   
     end
   end
 end

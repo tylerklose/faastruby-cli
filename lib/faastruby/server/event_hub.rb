@@ -25,8 +25,8 @@ module FaaStRuby
           channel.subscribe(path)
         end
       end
-      puts "[EventHub] Channel subscriptions: #{EventChannel.channels}".yellow
-      puts "[EventHub] If you modify 'faastruby.yml' in any function, you will need to restart the server to apply the changes.".yellow 
+      puts "#{Time.now} [EventHub] Channel subscriptions: #{EventChannel.channels}".yellow
+      puts "#{Time.now} [EventHub] If you modify 'faastruby.yml' in any function, you will need to restart the server to apply the changes.".yellow 
     end
 
     def self.listen_for_events!
@@ -35,16 +35,16 @@ module FaaStRuby
         loop do
           encoded_channel, encoded_data = @@queue.pop.split(',')
           channel = EventChannel.new(Base64.urlsafe_decode64(encoded_channel))
-          puts "[EventHub] Event channel=#{channel.name.inspect}".yellow
+          puts "#{Time.now} [EventHub] Event channel=#{channel.name.inspect}".yellow
           channel.subscribers.each do |s|
             subscriber = Subscriber.new(s)
-            puts "[EventHub] Trigger function=#{subscriber.path.inspect} base64_payload=#{encoded_data.inspect}".yellow
+            puts "#{Time.now} [EventHub] Trigger function=#{subscriber.path.inspect} base64_payload=#{encoded_data.inspect}".yellow
             response = subscriber.call(encoded_data)
-            puts "[#{subscriber.path}] #=> status=#{response.status} body=#{response.body.inspect} headers=#{Oj.dump response.headers}".light_blue
+            puts "#{Time.now} [#{subscriber.path}] #=> status=#{response.status} body=#{response.body.inspect} headers=#{Oj.dump response.headers}".light_blue
           end
         end
       end
-      puts "[EventHub] Events thread started.".yellow
+      puts "#{Time.now} [EventHub] Events thread started.".yellow
     end
   end
 end
