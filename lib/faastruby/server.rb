@@ -1,9 +1,12 @@
 module FaaStRuby
   PROJECT_ROOT = Dir.pwd
   CHDIR_MUTEX = Mutex.new
-  DEFAULT_CRYSTAL_RUNTIME = 'crystal:0.27.2'
-  DEFAULT_RUBY_RUNTIME = 'ruby:2.6.1'
+  CRYSTAL_VERSION = `crystal -v|head -n1|cut -f2 -d' '` || CRYSTAL_LATEST
+  DEFAULT_CRYSTAL_RUNTIME = "crystal:#{CRYSTAL_VERSION}"
+  DEFAULT_RUBY_RUNTIME = "ruby:#{RUBY_VERSION}"
   require 'faastruby/version'
+  require 'faastruby/supported_runtimes'
+  require 'faastruby/server/logger'
   require 'faastruby/server/concurrency_controller'
   require 'faastruby/server/errors'
   require 'faastruby/server/event_channel'

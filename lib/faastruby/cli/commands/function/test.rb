@@ -15,7 +15,7 @@ module FaaStRuby
             # puts "[skipped tests] You have no 'test_command' key/value in 'faastruby.yml'. Please consider using rspec!".yellow
             return true
           end
-          puts "[test] Running tests"
+          # puts "[test] Running tests"
           system(@test_command)
         end
 

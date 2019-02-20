@@ -77,9 +77,11 @@ module FaaStRuby
       end
     end
 
-    def deploy(workspace_name:, package:)
+    def deploy(workspace_name:, package:, root_to:, error_404_to:)
       url = "#{@api_url}/workspaces/#{workspace_name}/deploy"
       payload = {package: File.new(package, 'rb')}
+      payload[:root_to] = root_to if root_to
+      payload[:error_404_to] = error_404_to if error_404_to
       parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, payload: payload, headers: @credentials)
     rescue RestClient::ExceptionWithResponse => err
       case err.http_code

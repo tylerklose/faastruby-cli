@@ -7,6 +7,18 @@ module FaaStRuby
         'assets/styles' => "local:#{FaaStRuby::Template.gem_template_path_for('web-css', runtime: 'ruby')}",
         'assets/js' => "local:#{FaaStRuby::Template.gem_template_path_for('web-js', runtime: 'ruby')}"
       }
+      def self.templates_for(kind)
+        t = {
+          'root' => "local:#{FaaStRuby::Template.gem_template_path_for("#{kind}-root", runtime: 'ruby')}",
+          'error_pages/404' => "local:#{FaaStRuby::Template.gem_template_path_for("#{kind}-404", runtime: 'ruby')}"
+        }
+        case kind
+        when 'web'
+          t['assets/styles'] = "local:#{FaaStRuby::Template.gem_template_path_for("#{kind}-css", runtime: 'ruby')}"
+          t['assets/js'] = "local:#{FaaStRuby::Template.gem_template_path_for("#{kind}-js", runtime: 'ruby')}"
+        end
+        return t
+      end
       class New < ProjectBaseCommand
         def initialize(args)
           @args = args
@@ -17,6 +29,7 @@ module FaaStRuby
           @base_dir = "./#{@project_name}"
           parse_options
           @options['credentials_file'] ||= PROJECT_CREDENTIALS_FILE
+          @options['project_type'] ||= 'web'
         end
 
         def run
@@ -33,7 +46,7 @@ module FaaStRuby
         end
 
         def self.help
-          "create-project".light_cyan + " project_name [--local-only]"
+          "new-project".light_cyan + " PROJECT_NAME"
         end
 
         def usage
@@ -56,7 +69,7 @@ module FaaStRuby
         def install_functions
           current_dir = Dir.pwd
           Dir.chdir(@base_dir)
-          DEFAULT_FUNCTIONS.each do |name, template|
+          Project.templates_for(@options['project_type']).each do |name, template|
             args = [name, '--template', template]
             FaaStRuby::Command::Function::New.new(args).run(print_base_dir: @base_dir)
           end
@@ -129,8 +142,10 @@ module FaaStRuby
           while @args.any?
             option = @args.shift
             case option
-            when '--local-only'
-              @options['skip_create_workspace'] = true
+            when '--web', '-w'
+              @options['project_type'] = 'web'
+            when '--api', '-a'
+              @options['project_type'] = 'api'
             else
               FaaStRuby::CLI.error("Unknown argument: #{option}")
             end

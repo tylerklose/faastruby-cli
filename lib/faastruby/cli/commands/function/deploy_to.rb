@@ -10,6 +10,7 @@ module FaaStRuby
           load_yaml
           @yaml_config['before_build'] ||= []
           @function_name = @yaml_config['name']
+          parse_options
           @abort_when_tests_fail = @yaml_config['abort_deploy_when_tests_fail']
           load_credentials(exit_on_error: false)
         end
@@ -35,7 +36,7 @@ module FaaStRuby
           puts "[#{@function_name}] Warning: Ignoring failed tests because you have 'abort_deploy_when_tests_fail: false' in 'faastruby.yml'".yellow if !tests_passed && !@abort_when_tests_fail
           package_file_name = build_package
           spinner = spin("[#{@function_name}] Deploying function '#{@function_name}' to workspace '#{@workspace_name}'...")
-          workspace = FaaStRuby::Workspace.new(name: @workspace_name).deploy(package_file_name)
+          workspace = FaaStRuby::Workspace.new(name: @workspace_name).deploy(package_file_name, root_to: @options['root_to'], error_404_to: @options['error_404_to'])
           if workspace.errors.any?
             spinner.stop('Failed :(')
             FileUtils.rm('.package.zip')
@@ -43,7 +44,7 @@ module FaaStRuby
           end
           spinner.stop('Done!')
           FileUtils.rm('.package.zip')
-          puts "* [#{@function_name}] Endpoint: #{FaaStRuby.workspace_host_for(@workspace_name)}/#{@function_name}".green
+          puts "* [#{@function_name}] Endpoint: #{FaaStRuby.workspace_host_for(@workspace_name)}/#{@function_name unless @options['root_to']}".green
           exit 0
         end
 
@@ -113,6 +114,22 @@ module FaaStRuby
           FaaStRuby::Command::Function::Build.build(source, output_file, @function_name, true)
           output_file
         end
+
+        def parse_options
+          @options = {}
+          while @args.any?
+            option = @args.shift
+            case option
+            when '--set-root'
+              @options['root_to'] = @function_name
+            when '--set-404'
+              @options['error_404_to'] = @function_name
+            else
+              FaaStRuby::CLI.error("Unknown argument: #{option}")
+            end
+          end
+        end
+
       end
     end
   end

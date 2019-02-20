@@ -5,18 +5,20 @@ require 'base64'
 require 'faastruby/server'
 require 'sinatra'
 require 'sinatra/multi_route'
-require 'colorize'
 require 'filewatcher'
 require 'securerandom'
+require 'rouge'
 module FaaStRuby
   SERVER_ROOT = Dir.pwd
   PROJECT_YAML_FILE = 'project.yml'
+  OUTPUT_MUTEX = Mutex.new
   FaaStRuby::EventHub.listen_for_events!
   FaaStRuby::Sentinel.start!
   class Server < Sinatra::Base
+    include FaaStRuby::Logger
     set :show_exceptions, true
     register Sinatra::MultiRoute
-
+    
     route :head, :get, :post, :put, :patch, :delete, '/*' do
       request_uuid = SecureRandom.uuid
       splat = params['splat'][0]
@@ -36,20 +38,23 @@ module FaaStRuby
         body = parse_body(request.body.read, headers['CONTENT_TYPE'], request.request_method)
         rpc_args = []
       end
+      headers['X-Original-ID'] = request_uuid
       query_params = parse_query(request.query_string)
       context = set_context(path)
       event = FaaStRuby::Event.new(body: body, query_params: query_params, headers: headers, context: context)
-      puts "#{Time.now} [#{path.underline}] [#{request_uuid.underline}] <=[REQUEST: #{headers['REQUEST_METHOD']} #{request.fullpath}] body=\"#{body}\" query_params=#{query_params} headers=#{headers}".black.on_light_cyan
+      puts "[#{path}] <- [REQUEST: #{headers['REQUEST_METHOD']} \"#{request.fullpath}\"] request_id=\"#{request_uuid}\" body=\"#{body}\" query_params=#{query_params} headers=#{headers}"
       time, response = FaaStRuby::Runner.new.call(path, event, rpc_args)
       status response.status
       headers response.headers
       if response.binary?
         response_body = Base64.urlsafe_decode64(response.body)
+        print_body = "Base64(#{response.body})"
       else
         response_body = response.body
+        print_body = response_body
       end
-      puts "#{Time.now} [#{path.underline}] [#{request_uuid.underline}] [RESPONSE: #{time}ms]=> status=#{response.status} body=#{response_body.inspect} headers=#{Oj.dump response.headers}".black.on_light_blue
-      body response_body  
+      puts "[#{path}] -> [RESPONSE: #{time}ms] request_id=\"#{request_uuid}\" status=#{response.status} body=#{print_body.inspect} headers=#{response.headers}"
+      body response_body
     end
 
     def parse_body(body, content_type, method)
@@ -61,7 +66,7 @@ module FaaStRuby
 
     def set_context(path)
       return nil
-      # this should read from faastruby-workspace.yml
+      # this should read from secrets.yml
       # return nil unless File.file?('context.yml')
       # yaml = YAML.load(File.read('context.yml'))
       # return nil unless yaml.has_key?(workspace_name)

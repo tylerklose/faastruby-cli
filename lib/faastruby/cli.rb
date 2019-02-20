@@ -3,6 +3,8 @@ require 'yaml'
 require 'tty-table'
 require 'zip'
 require 'colorize'
+require 'faastruby/version'
+require 'faastruby/supported_runtimes'
 require 'faastruby/cli/commands'
 require 'faastruby/cli/package'
 require 'faastruby/cli/template'
@@ -10,10 +12,10 @@ require 'erb'
 
 module FaaStRuby
   FUNCTION_NAME_REGEX = '[a-zA-Z\-_0-9\/\.]{1,}'
-  WORKSPACE_NAME_REGEX = '[a-zA-Z0-9_]{1}[a-zA-Z0-9\-]{1,}[a-zA-Z0-9_]{1}'
+  WORKSPACE_NAME_REGEX = '[a-zA-Z0-im9_]{1}[a-zA-Z0-9\-]{1,}[a-zA-Z0-9_]{1}'
   FAASTRUBY_YAML = 'faastruby.yml'
   SPINNER_FORMAT = :spin_2
-  SUPPORTED_RUNTIMES = ['ruby:2.5.3', 'ruby:2.6.0', 'ruby:2.6.1', 'crystal:0.27.0', 'crystal:0.27.2']
+  
   class CLI
     def self.error(message, color: :red)
       message.each {|m| STDERR.puts m.colorize(color)} if message.is_a?(Array)
@@ -26,6 +28,7 @@ module FaaStRuby
         FaaStRuby::Command::Help.new(args).run
         return
       end
+      check_ruby_version
       start_server(args) if command == 'server'
       start_tmuxinator if command == 'mux'
       # check_version
@@ -44,6 +47,10 @@ module FaaStRuby
     #     ], color: nil)
     #   end
     # end
+
+    def self.check_ruby_version
+      error("Unsupported Ruby version: #{RUBY_VERSION}\nSupported Ruby versions are: #{SUPPORTED_RUBY.join(", ")}") unless SUPPORTED_RUBY.include?(RUBY_VERSION)
+    end
 
     def self.check_region
       ENV['FAASTRUBY_REGION'] ||= DEFAULT_REGION

@@ -4,11 +4,10 @@ module FaaStRuby
       class Deploy < ProjectBaseCommand
         def initialize(args)
           @errors = []
-          if args.any?
-            @args = args
-          else
-            @args = find_functions
-          end
+          @args = args
+          parse_options
+          @options['functions'] += find_functions unless @options['functions'].any?
+          @options['environment'] ||= 'stage'
           @project_yaml = YAML.load(File.read(PROJECT_YAML_FILE))
         end
 
@@ -17,11 +16,11 @@ module FaaStRuby
           errors = false
           root_folder = Dir.pwd
           pids = []
-          @args.each do |function_path|
+          @options['functions'].each do |function_path|
             pids << fork do
               puts "[#{function_path}] [deploy] Entering folder #{function_path}"
               Dir.chdir function_path
-              if system("faastruby deploy-to #{@project_yaml['name']}")
+              if system("faastruby deploy-to #{@project_yaml['name']}-#{@options['environment']}")
                 puts "* [#{function_path}] Deploy OK".green
               else
                 FaaStRuby::CLI.error("* [#{function_path}] Deploy FAILED", color: nil)
@@ -41,11 +40,26 @@ module FaaStRuby
         end
 
         def self.help
-          "deploy".light_cyan + " [FUNCTION1] [FUNCTION2]    # Deploy all or some functions in the project."
+          "deploy".light_cyan + " [-f FUNCTION1] [-f FUNCTION2] [-e ENVIRONMENT]   # Deploy all or some functions in the project. ENVIRONMENT defaults to 'stage'."
         end
 
         def usage
           "Usage: faastruby #{self.class.help}"
+        end
+
+        def parse_options
+          @options = {'functions' => []}
+          while @args.any?
+            option = @args.shift
+            case option
+            when '--function', '-f'
+              @options['functions'] << @args.shift
+            when '--environment', '-e'
+              @options['environment'] = @args.shift
+            else
+              FaaStRuby::CLI.error("Unknown argument: #{option}")
+            end
+          end
         end
 
       end
