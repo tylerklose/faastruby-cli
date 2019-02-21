@@ -23,6 +23,11 @@ module FaaStRuby
           @yaml_config['runtime'].match(/^crystal/)
         end
 
+        def runtime_name
+          return 'Ruby' if ruby_runtime?
+          return 'Crystal' if crystal_runtime?
+        end
+
         def run
           create_or_use_workspace
           if ruby_runtime?
@@ -35,16 +40,19 @@ module FaaStRuby
           FaaStRuby::CLI.error("Deploy aborted because tests failed and you have 'abort_deploy_when_tests_fail: true' in 'faastruby.yml'") unless tests_passed || !@abort_when_tests_fail
           puts "[#{@function_name}] Warning: Ignoring failed tests because you have 'abort_deploy_when_tests_fail: false' in 'faastruby.yml'".yellow if !tests_passed && !@abort_when_tests_fail
           package_file_name = build_package
-          spinner = spin("[#{@function_name}] Deploying function '#{@function_name}' to workspace '#{@workspace_name}'...")
+          spinner = say("[#{@function_name}] Deploying #{runtime_name} function '#{@function_name}' to workspace '#{@workspace_name}'...", quiet: @options['quiet'])
           workspace = FaaStRuby::Workspace.new(name: @workspace_name).deploy(package_file_name, root_to: @options['root_to'], error_404_to: @options['error_404_to'])
           if workspace.errors.any?
-            spinner.stop('Failed :(')
+            puts ' Failed :(' unless spinner&.stop(' Failed :(')
             FileUtils.rm('.package.zip')
             FaaStRuby::CLI.error(workspace.errors)
           end
-          spinner.stop('Done!')
+          puts ' Done!' unless spinner&.stop(' Done!')
           FileUtils.rm('.package.zip')
+          puts "* [#{@function_name}] Deploy OK".green
+          puts "* [#{@function_name}] Workspace: #{@workspace_name}".green
           puts "* [#{@function_name}] Endpoint: #{FaaStRuby.workspace_host_for(@workspace_name)}/#{@function_name unless @options['root_to']}".green
+          puts '---'
           exit 0
         end
 
@@ -70,9 +78,9 @@ module FaaStRuby
             load_credentials(exit_on_error: true)
             # Give a little bit of time after creating the workspace
             # for consistency. This is temporary until the API gets patched.
-            spinner = spin("Waiting for the new workspace to be ready...")
+            spinner = say("Waiting for the workspace '#{@workspace_name}' to be ready...", quiet: @options['quiet'])
             sleep 2
-            spinner.stop("Done!")
+            puts ' Done!' unless spinner&.stop(' Done!')
           end
         end
 
@@ -105,11 +113,11 @@ module FaaStRuby
           source = '.'
           output_file = ".package.zip"
           if @yaml_config['before_build'].any?
-            spinner = spin("[#{@function_name}] Running 'before_build' tasks...")
+            spinner = say("[#{@function_name}] Running 'before_build' tasks...", quiet: @options['quiet'])
             @yaml_config['before_build']&.each do |command|
               puts `#{command}`
             end
-            spinner.stop(' Done!')
+            puts ' Done!' unless spinner&.stop(' Done!')
           end
           FaaStRuby::Command::Function::Build.build(source, output_file, @function_name, true)
           output_file
@@ -120,6 +128,8 @@ module FaaStRuby
           while @args.any?
             option = @args.shift
             case option
+            when '--quiet', '-q'
+              @options['quiet'] = true
             when '--set-root'
               @options['root_to'] = @function_name
             when '--set-404'

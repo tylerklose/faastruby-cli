@@ -8,6 +8,7 @@ require 'sinatra/multi_route'
 require 'filewatcher'
 require 'securerandom'
 require 'rouge'
+require 'colorize'
 module FaaStRuby
   SERVER_ROOT = Dir.pwd
   PROJECT_YAML_FILE = 'project.yml'
@@ -15,14 +16,14 @@ module FaaStRuby
   FaaStRuby::EventHub.listen_for_events!
   FaaStRuby::Sentinel.start!
   class Server < Sinatra::Base
-    include FaaStRuby::Logger
+    include FaaStRuby::Logger::Requests
     set :show_exceptions, true
     register Sinatra::MultiRoute
-    
+
     route :head, :get, :post, :put, :patch, :delete, '/*' do
       request_uuid = SecureRandom.uuid
       splat = params['splat'][0]
-      case 
+      case
       when splat == ''
         path = YAML.load(File.read("#{PROJECT_ROOT}/#{PROJECT_YAML_FILE}"))['root_to']
       when !File.file?("#{PROJECT_ROOT}/#{splat}/faastruby.yml")
@@ -30,21 +31,26 @@ module FaaStRuby
       else
         path = splat
       end
-      headers = env.select { |key, value| key.include?('HTTP_') || ['CONTENT_TYPE', 'CONTENT_LENGTH', 'REMOTE_ADDR', 'REQUEST_METHOD', 'QUERY_STRING'].include?(key) }
-      if headers.has_key?("HTTP_FAASTRUBY_RPC")
+      # headers = env.select {|key, value| key.include?('HTTP_') || ['CONTENT_TYPE', 'CONTENT_LENGTH', 'REMOTE_ADDR', 'REQUEST_METHOD', 'QUERY_STRING'].include?(key) }
+      headers = parse_headers(env)
+      if headers.has_key?("Faastruby-Rpc")
         body = nil
-        rpc_args = parse_body(request.body.read, headers['CONTENT_TYPE'], request.request_method) || []
+        rpc_args = parse_body(request.body.read, headers['Content-Type'], request.request_method) || []
       else
-        body = parse_body(request.body.read, headers['CONTENT_TYPE'], request.request_method)
+        body = parse_body(request.body.read, headers['Content-Type'], request.request_method)
         rpc_args = []
       end
-      headers['X-Original-ID'] = request_uuid
+      headers['X-Request-Id'] = request_uuid
+      original_request_id = headers['X-Original-Request-Id']
       query_params = parse_query(request.query_string)
       context = set_context(path)
       event = FaaStRuby::Event.new(body: body, query_params: query_params, headers: headers, context: context)
-      puts "[#{path}] <- [REQUEST: #{headers['REQUEST_METHOD']} \"#{request.fullpath}\"] request_id=\"#{request_uuid}\" body=\"#{body}\" query_params=#{query_params} headers=#{headers}"
+      puts "[#{path}] <- [REQUEST: #{headers['Request-Method']} \"#{request.fullpath}\"] request_id=\"#{request_uuid}\" body=\"#{body}\" query_params=#{query_params} headers=#{headers}"
       time, response = FaaStRuby::Runner.new.call(path, event, rpc_args)
       status response.status
+      response.headers['X-Request-Id'] = request_uuid
+      response.headers['X-Original-Request-Id'] = original_request_id if original_request_id
+      response.headers['X-Execution-time'] = "#{time}ms"
       headers response.headers
       if response.binary?
         response_body = Base64.urlsafe_decode64(response.body)
@@ -80,6 +86,14 @@ module FaaStRuby
         hash[key] = value
       end
       hash
+    end
+
+    def parse_headers(env)
+      Hash[*env.select {|k,v| k.start_with? 'HTTP_'}
+        .collect {|k,v| [k.sub(/^HTTP_/, ''), v]}
+        .collect {|k,v| [k.split('_').collect{|a|k == 'DNT' ? k : k.capitalize}.join('-'), v]}
+        .sort
+        .flatten]
     end
   end
 end

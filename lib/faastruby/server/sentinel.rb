@@ -1,10 +1,10 @@
-# Here 'project_folder' is the function folder.
+# Here 'function_folder' is the function folder.
 require 'open3'
 require 'tempfile'
 require 'pathname'
 module FaaStRuby
   module Sentinel
-    extend FaaStRuby::Logger
+    extend FaaStRuby::Logger::System
     @@threads = {}
     MUTEX = Mutex.new
     def self.add_thread(project, key, value)
@@ -30,36 +30,36 @@ module FaaStRuby
 
     def self.start!
       find_crystal_projects.each do |path|
-        project_folder = File.expand_path path
-        add_thread(project_folder, 'watcher', start_watcher_for(project_folder))
+        function_folder = File.expand_path path
+        add_thread(function_folder, 'watcher', start_watcher_for(function_folder))
         # This will force compile when the server starts
-        trigger("#{project_folder}/faastruby.yml")
+        trigger("#{function_folder}/faastruby.yml")
       end
-      
+
       # watch for new projects
       Thread.new do
         puts "#{tag} Watching for new functions..."
         Filewatcher.new(["#{PROJECT_ROOT}/**/handler.cr", "#{PROJECT_ROOT}/**/handler.rb"]).watch do |filename, event|
           path = filename.split('/')
           file = path.pop
-          project_folder = path.join('/')
+          function_folder = path.join('/')
           sleep 1
-          if project_folder.match(/src$/) && File.file?("#{project_folder}/../faastruby.yml") && File.file?("#{project_folder}/handler.cr")
-            project_folder.sub!(/\/src$/, '') 
+          if function_folder.match(/src$/) && File.file?("#{function_folder}/../faastruby.yml") && File.file?("#{function_folder}/handler.cr")
+            function_folder.sub!(/\/src$/, '')
             trigger_compile = true
           end
-          if event == :created 
-            unless File.file?("#{project_folder}/faastruby.yml")
-              write_yaml(project_folder, runtime: default_runtime(file))
+          if event == :created
+            unless File.file?("#{function_folder}/faastruby.yml")
+              write_yaml(function_folder, runtime: default_runtime(file))
             end
             case file
             when 'handler.cr'
-              puts "#{tag} New Crystal function detected at '#{project_folder}'."
-              add_thread(project_folder, 'watcher', start_watcher_for(project_folder))
+              puts "#{tag} New Crystal function detected at '#{function_folder}'."
+              add_thread(function_folder, 'watcher', start_watcher_for(function_folder))
               trigger(filename) if trigger_compile
             when 'handler.rb'
-              puts "#{tag} New Ruby function detected at '#{project_folder}'."
-              puts "#{tag} File created: '#{project_folder}/faastruby.yml'"
+              puts "#{tag} New Ruby function detected at '#{function_folder}'."
+              puts "#{tag} File created: '#{function_folder}/faastruby.yml'"
             end
           end
         end
@@ -82,32 +82,32 @@ module FaaStRuby
         Thread.exit
       end
     end
-    def self.write_yaml(project_folder, runtime:)
-      function_name = (project_folder.split('/') - PROJECT_ROOT.split('/')).join('/')
+    def self.write_yaml(function_folder, runtime:)
+      function_name = (function_folder.split('/') - PROJECT_ROOT.split('/')).join('/')
       hash = {
         'cli_version' => FaaStRuby::VERSION,
         'name' => function_name,
         'runtime' => runtime
       }
-      File.write("#{project_folder}/faastruby.yml", hash.to_yaml)
-      puts "#{tag} File created: '#{project_folder}/faastruby.yml'"
+      File.write("#{function_folder}/faastruby.yml", hash.to_yaml)
+      puts "#{tag} File created: '#{function_folder}/faastruby.yml'"
     end
-    def self.start_watcher_for(project_folder)
-      puts "#{tag} Watching function '#{project_folder}' for changes."
+    def self.start_watcher_for(function_folder)
+      puts "#{tag} Watching function '#{function_folder}' for changes."
       Thread.new do
-        handler_path = File.file?("#{project_folder}/handler.cr") ? "#{project_folder}/handler" : "#{project_folder}/src/handler" 
-        Filewatcher.new("#{project_folder}/", exclude: ["#{project_folder}/handler", "#{project_folder}/handler.dwarf"]).watch do |filename, event|
-          thr = get_thread(project_folder)['running']
+        handler_path = File.file?("#{function_folder}/handler.cr") ? "#{function_folder}/handler" : "#{function_folder}/src/handler"
+        Filewatcher.new("#{function_folder}/", exclude: ["#{function_folder}/handler", "#{function_folder}/handler.dwarf"]).watch do |filename, event|
+          thr = get_thread(function_folder)['running']
           if thr&.alive?
             Thread.kill(thr)
-            puts "#{tag} Previous Job for '#{project_folder}' aborted"
+            puts "#{tag} Previous Job for '#{function_folder}' aborted"
           end
           if event == :deleted
-            puts "#{tag} Function '#{project_folder}' deleted. Disabling watcher."
-            Thread.kill(get_thread(project_folder)['watcher'])
+            puts "#{tag} Function '#{function_folder}' deleted. Disabling watcher."
+            Thread.kill(get_thread(function_folder)['watcher'])
             next
           end
-          add_thread(project_folder, 'running', Thread.new {CrystalBuild.new(project_folder, handler_path, before_build: true).start})
+          add_thread(function_folder, 'running', Thread.new {CrystalBuild.new(function_folder, handler_path, before_build: true).start})
         end
       end
     end
@@ -123,7 +123,7 @@ module FaaStRuby
     end
   end
   class CrystalBuild
-    include FaaStRuby::Logger
+    include FaaStRuby::Logger::System
     def initialize(directory, handler_path, before_build: false)
       @directory = directory
       @runtime_path = Pathname.new "#{Gem::Specification.find_by_name("faastruby").gem_dir}/lib/faastruby/server/crystal_runtime.cr"
@@ -134,7 +134,7 @@ module FaaStRuby
       @pre_compile = @before_build ? (YAML.load(File.read("#{directory}/faastruby.yml"))["before_build"] || []) : []
       @cmd = "crystal build #{@runtime_path} -o handler"
     end
-    
+
     def start
       Thread.report_on_exception = false
       Dir.chdir(@directory)

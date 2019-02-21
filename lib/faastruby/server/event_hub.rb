@@ -1,6 +1,6 @@
 module FaaStRuby
   class EventHub
-    extend FaaStRuby::Logger
+    extend FaaStRuby::Logger::System
     @@queue = Queue.new
     def self.queue
       @@queue
@@ -16,7 +16,7 @@ module FaaStRuby
 
     def self.load_subscribers
       Dir.glob('*/*/faastruby.yml').each do |file|
-        workspace_name, function_name, _ = file.split('/') 
+        workspace_name, function_name, _ = file.split('/')
         path = "#{workspace_name}/#{function_name}"
         config = YAML.load(File.read(file))
         next unless config['channels'].is_a?(Array)
@@ -27,7 +27,7 @@ module FaaStRuby
         end
       end
       puts "#{tag} Channel subscriptions: #{EventChannel.channels}"
-      puts "#{tag} If you modify 'faastruby.yml' in any function, you will need to restart the server to apply the changes." 
+      puts "#{tag} If you modify 'faastruby.yml' in any function, you will need to restart the server to apply the changes."
     end
 
     def self.listen_for_events!

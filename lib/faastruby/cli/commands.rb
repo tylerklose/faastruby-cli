@@ -15,6 +15,11 @@ module FaaStRuby
         puts message.yellow if mode == 'w+' || mode == 'a'
       end
 
+      def say(message, quiet: false)
+        return puts message if quiet
+        spin(message)
+      end
+
       def spin(message)
         spinner = TTY::Spinner.new(":spinner #{message}", format: SPINNER_FORMAT)
         spinner.auto_spin
@@ -23,7 +28,7 @@ module FaaStRuby
 
       def load_yaml
         if File.file?(FAASTRUBY_YAML)
-          return YAML.load(File.read(FAASTRUBY_YAML)) 
+          return YAML.load(File.read(FAASTRUBY_YAML))
         end
         FaaStRuby::CLI.error("Could not find file #{FAASTRUBY_YAML}")
       end

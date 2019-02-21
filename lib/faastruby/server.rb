@@ -1,9 +1,13 @@
 module FaaStRuby
+  def self.get_crystal_version
+    ver = `crystal -v|head -n1|cut -f2 -d' '`&.chomp
+    ver == '' ? CRYSTAL_LATEST : ver
+  end
   PROJECT_ROOT = Dir.pwd
   CHDIR_MUTEX = Mutex.new
-  CRYSTAL_VERSION = `crystal -v|head -n1|cut -f2 -d' '` || CRYSTAL_LATEST
-  DEFAULT_CRYSTAL_RUNTIME = "crystal:#{CRYSTAL_VERSION}"
-  DEFAULT_RUBY_RUNTIME = "ruby:#{RUBY_VERSION}"
+  CRYSTAL_VERSION = get_crystal_version.freeze
+  DEFAULT_CRYSTAL_RUNTIME = "crystal:#{CRYSTAL_VERSION}".freeze
+  DEFAULT_RUBY_RUNTIME = "ruby:#{RUBY_VERSION}".freeze
   require 'faastruby/version'
   require 'faastruby/supported_runtimes'
   require 'faastruby/server/logger'

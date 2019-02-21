@@ -71,7 +71,7 @@ module FaaStRuby
           Dir.chdir(@base_dir)
           Project.templates_for(@options['project_type']).each do |name, template|
             args = [name, '--template', template]
-            FaaStRuby::Command::Function::New.new(args).run(print_base_dir: @base_dir)
+            FaaStRuby::Command::Function::New.new(args).run(print_base_dir: @base_dir, blank_template: true)
           end
           Dir.chdir(current_dir)
         end

@@ -19,7 +19,8 @@ module FaaStRuby
           end
         end
 
-        def run(print_base_dir: false)
+        def run(print_base_dir: false, blank_template: false)
+          @options['blank_template'] ||= blank_template
           @options['template'].install(to: @base_dir, force: @options['force'], print_base_dir: print_base_dir)
           faastruby_yaml = "#{@base_dir}/faastruby.yml"
           if File.file?(faastruby_yaml)
