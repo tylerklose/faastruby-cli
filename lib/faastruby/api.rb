@@ -77,7 +77,7 @@ module FaaStRuby
       end
     end
 
-    def deploy(workspace_name:, package:, root_to:, error_404_to:)
+    def deploy(workspace_name:, package:, root_to: nil, error_404_to: nil)
       url = "#{@api_url}/workspaces/#{workspace_name}/deploy"
       payload = {package: File.new(package, 'rb')}
       payload[:root_to] = root_to if root_to

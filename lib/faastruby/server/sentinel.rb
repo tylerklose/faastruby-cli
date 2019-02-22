@@ -29,9 +29,17 @@ module FaaStRuby
     end
 
     def self.start!
-      find_crystal_projects.each do |path|
+      projects = find_projects
+      if ENV['SYNC']
+        projects['ruby'].each do |path|
+          function_folder = File.expand_path path
+          add_thread(function_folder, 'sync', start_sync_for(function_folder, runtime: 'ruby'))
+        end
+      end
+      projects['crystal'].each do |path|
         function_folder = File.expand_path path
         add_thread(function_folder, 'watcher', start_watcher_for(function_folder))
+        add_thread(function_folder, 'sync', start_sync_for(function_folder, runtime: 'crystal')) if ENV['SYNC']
         # This will force compile when the server starts
         trigger("#{function_folder}/faastruby.yml")
       end
@@ -49,18 +57,23 @@ module FaaStRuby
             trigger_compile = true
           end
           if event == :created
-            unless File.file?("#{function_folder}/faastruby.yml")
+            if File.file?("#{function_folder}/faastruby.yml")
+              merge_yaml(function_folder, runtime: default_runtime(file))
+            else
               write_yaml(function_folder, runtime: default_runtime(file))
             end
             case file
             when 'handler.cr'
               puts "#{tag} New Crystal function detected at '#{function_folder}'."
+
               add_thread(function_folder, 'watcher', start_watcher_for(function_folder))
+              add_thread(function_folder, 'sync', start_sync_for(function_folder, runtime: 'crystal')) if ENV['SYNC']
               trigger(filename) if trigger_compile
             when 'handler.rb'
               puts "#{tag} New Ruby function detected at '#{function_folder}'."
-              puts "#{tag} File created: '#{function_folder}/faastruby.yml'"
+              add_thread(function_folder, 'sync', start_sync_for(function_folder, runtime: 'ruby')) if ENV['SYNC']
             end
+            puts "#{tag} File created: '#{function_folder}/faastruby.yml'"
           end
         end
       end
@@ -82,16 +95,34 @@ module FaaStRuby
         Thread.exit
       end
     end
-    def self.write_yaml(function_folder, runtime:)
+    def self.merge_yaml(function_folder, runtime:)
+      yaml = YAML.load(File.read("#{function_folder}/faastruby.yml"))
+      write_yaml(function_folder, runtime: runtime, original: yaml)
+    end
+    def self.write_yaml(function_folder, runtime:, original: nil)
       function_name = (function_folder.split('/') - PROJECT_ROOT.split('/')).join('/')
       hash = {
         'cli_version' => FaaStRuby::VERSION,
         'name' => function_name,
         'runtime' => runtime
       }
+      hash = original.merge(hash) if original
       File.write("#{function_folder}/faastruby.yml", hash.to_yaml)
       puts "#{tag} File created: '#{function_folder}/faastruby.yml'"
     end
+
+    def self.start_sync_for(function_folder, runtime:)
+      puts "#{tag} Sync activated for function '#{function_folder}'."
+      Thread.new do
+        case runtime
+        when 'ruby'
+          RubySync.new(function_folder).start
+        when 'crystal'
+          CrystalSync.new(function_folder).start
+        end
+      end
+    end
+
     def self.start_watcher_for(function_folder)
       puts "#{tag} Watching function '#{function_folder}' for changes."
       Thread.new do
@@ -112,14 +143,22 @@ module FaaStRuby
       end
     end
 
-    def self.find_crystal_projects
-      directories = Dir.glob('**/faastruby.yml').map do |yaml_file|
+    def self.find_projects
+      crystal_functions = []
+      ruby_functions = []
+      directories = Dir.glob('**/faastruby.yml').each do |yaml_file|
         base_dir = yaml_file.split('/')
         base_dir.pop
         yaml = YAML.load(File.read yaml_file)
-        yaml['runtime']&.match(/^crystal:/) ? base_dir.join('/') : nil
+        dir = base_dir.join('/')
+        case yaml['runtime']
+        when /^crystal:/
+          crystal_functions << dir
+        when /^ruby:/
+          ruby_functions << dir
+        end
       end
-      directories.compact
+      {'crystal' => crystal_functions, 'ruby' => ruby_functions}
     end
   end
   class CrystalBuild
@@ -154,6 +193,20 @@ module FaaStRuby
       success = status.exitstatus == 0
       puts "#{tag} #{output}" unless success
       puts "#{tag} Job ID=\"#{job_id}\" #{success ? 'completed' : 'failed'}: #{status}"
+    end
+  end
+
+  class CrystalSync
+
+    def start
+    end
+  end
+
+  class RubySync
+    def initialize(function_folder)
+    end
+
+    def start
     end
   end
 end

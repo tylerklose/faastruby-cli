@@ -58,10 +58,18 @@ module FaaStRuby
     end
 
     def self.start_server(args)
+      parsed = []
+      parsed << 'SYNC=true' if args.delete('--sync')
+      args.each_with_index do |arg, i|
+        if (arg == '--environment' || arg == '-e')
+          args.delete_at(i)
+          parsed << "ENVIRONMENT=#{args.delete_at(i+1)}"
+        end
+      end
       server_dir = "#{Gem::Specification.find_by_name("faastruby").gem_dir}/lib/faastruby/server"
       config_ru = "#{server_dir}/config.ru"
       puma_config = "#{server_dir}/puma.rb"
-      exec "puma -C #{puma_config} #{args.join(' ')} #{config_ru}"
+      exec "#{parsed.join('')} puma -C #{puma_config} #{args.join(' ')} #{config_ru}"
     end
     def self.start_tmuxinator
       if system("tmux -V > /dev/null")

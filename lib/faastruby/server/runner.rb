@@ -10,7 +10,7 @@ module FaaStRuby
     def path
       @path
     end
-    
+
     def load_function(path)
       eval "Module.new do; #{File.read(path)};end"
     end
@@ -47,12 +47,12 @@ module FaaStRuby
       end
     end
     def call_ruby(event, args)
-      function = load_function("#{@path}/handler.rb")
       runner = FunctionObject.new(@short_path)
-      runner.extend(function)
       time_start = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond)
       response = CHDIR_MUTEX.synchronize do
         Dir.chdir(@path)
+        function = load_function("#{@path}/handler.rb")
+        runner.extend(function)
         runner.handler(event, *args)
       end
       time_finish = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond)

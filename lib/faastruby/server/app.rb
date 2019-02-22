@@ -41,11 +41,12 @@ module FaaStRuby
         rpc_args = []
       end
       headers['X-Request-Id'] = request_uuid
+      headers['Request-Method'] = request.request_method
       original_request_id = headers['X-Original-Request-Id']
       query_params = parse_query(request.query_string)
       context = set_context(path)
       event = FaaStRuby::Event.new(body: body, query_params: query_params, headers: headers, context: context)
-      puts "[#{path}] <- [REQUEST: #{headers['Request-Method']} \"#{request.fullpath}\"] request_id=\"#{request_uuid}\" body=\"#{body}\" query_params=#{query_params} headers=#{headers}"
+      puts "[#{path}] <- [REQUEST: #{request.request_method} \"#{request.fullpath}\"] request_id=\"#{request_uuid}\" body=\"#{body}\" query_params=#{query_params} headers=#{headers}"
       time, response = FaaStRuby::Runner.new.call(path, event, rpc_args)
       status response.status
       response.headers['X-Request-Id'] = request_uuid
