@@ -1,4 +1,5 @@
 require 'json'
+require 'colorize'
 module FaaStRuby
   class Credentials # TODO: change it to YAML?
     def self.load_credentials_file(credentials_file = FaaStRuby.credentials_file)

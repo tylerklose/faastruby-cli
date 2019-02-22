@@ -1,6 +1,8 @@
+require 'open3'
 module FaaStRuby
   module Command
     module Project
+      require 'faastruby/cli/commands/project/base_command'
       require 'faastruby/server/logger'
       class Deploy < ProjectBaseCommand
         extend FaaStRuby::Logger

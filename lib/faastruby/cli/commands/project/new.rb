@@ -1,6 +1,8 @@
 module FaaStRuby
   module Command
     module Project
+      require 'faastruby/cli/commands/project/base_command'
+      require 'faastruby/cli/template'
       DEFAULT_FUNCTIONS = {
         'root' => "local:#{FaaStRuby::Template.gem_template_path_for('web-root', runtime: 'ruby')}",
         'error_pages/404' => "local:#{FaaStRuby::Template.gem_template_path_for('web-404', runtime: 'ruby')}",
@@ -75,7 +77,7 @@ module FaaStRuby
           end
           Dir.chdir(current_dir)
         end
-        
+
         def create_config
           File.write("#{@base_dir}/#{PROJECT_YAML_FILE}", default_project_file)
           puts "+ f #{@base_dir}/#{PROJECT_YAML_FILE}".green

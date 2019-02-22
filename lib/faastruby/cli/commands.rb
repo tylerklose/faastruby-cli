@@ -1,76 +1,87 @@
 module FaaStRuby
   module Command
-    class BaseCommand
-      def self.spin(message)
-        spinner = TTY::Spinner.new(":spinner #{message}", format: SPINNER_FORMAT)
-        spinner.auto_spin
-        spinner
-      end
-
-      def write_file(path, content, mode = 'w', print_base_dir: false)
-        base_dir = print_base_dir ? "#{print_base_dir}/" : ""
-        File.open(path, mode){|f| f.write(content)}
-        message = "#{mode == 'w' ? '+' : '~'} f #{base_dir}#{path}"
-        puts message.green if mode == 'w'
-        puts message.yellow if mode == 'w+' || mode == 'a'
-      end
-
-      def say(message, quiet: false)
-        return puts message if quiet
-        spin(message)
-      end
-
-      def spin(message)
-        spinner = TTY::Spinner.new(":spinner #{message}", format: SPINNER_FORMAT)
-        spinner.auto_spin
-        spinner
-      end
-
-      def load_yaml
-        if File.file?(FAASTRUBY_YAML)
-          return YAML.load(File.read(FAASTRUBY_YAML))
-        end
-        FaaStRuby::CLI.error("Could not find file #{FAASTRUBY_YAML}")
-      end
-
-      def spin(message)
-        self.class.spin(message)
-      end
-    end
-  end
-end
-
-require 'faastruby/cli/credentials'
-require 'faastruby/cli/commands/function'
-require 'faastruby/cli/commands/workspace'
-require 'faastruby/cli/commands/credentials'
-require 'faastruby/cli/commands/project'
-require 'faastruby/cli/commands/help'
-require 'faastruby/cli/commands/version'
-
-module FaaStRuby
-  module Command
+    require 'faastruby/cli/base_command'
+    require 'faastruby/cli/credentials'
     COMMANDS = {
-      'new' => FaaStRuby::Command::Function::New,
-      'deploy-to' => FaaStRuby::Command::Function::DeployTo,
-      'remove-from' => FaaStRuby::Command::Function::RemoveFrom,
-      'update-context' => FaaStRuby::Command::Function::UpdateContext,
-      'upgrade' => FaaStRuby::Command::Function::Upgrade,
-      'build' => FaaStRuby::Command::Function::Build,
-      'create-workspace' => FaaStRuby::Command::Workspace::Create,
-      'update-workspace' => FaaStRuby::Command::Workspace::Update,
-      'destroy-workspace' => FaaStRuby::Command::Workspace::Destroy,
-      'list-workspace' => FaaStRuby::Command::Workspace::List,
-      'new-project' => FaaStRuby::Command::Project::New,
-      'deploy' => FaaStRuby::Command::Project::Deploy,
-      'test' => FaaStRuby::Command::Function::Test,
-      'run' => FaaStRuby::Command::Function::Run,
-      'add-credentials' => FaaStRuby::Command::Credentials::Add,
-      'list-credentials' => FaaStRuby::Command::Credentials::List,
-      'help' => FaaStRuby::Command::Help,
-      '-h' => FaaStRuby::Command::Help,
-      '--help' => FaaStRuby::Command::Help,
-      '-v' => FaaStRuby::Command::Version
+      'new' => Proc.new do
+        require 'faastruby/cli/commands/function/new'
+        FaaStRuby::Command::Function::New
+      end,
+      'deploy-to' => Proc.new do
+        require 'faastruby/cli/commands/function/deploy_to'
+        FaaStRuby::Command::Function::DeployTo
+      end,
+      'remove-from' => Proc.new do
+        require 'faastruby/cli/commands/function/remove_from'
+        FaaStRuby::Command::Function::RemoveFrom
+      end,
+      'update-context' => Proc.new do
+        require 'faastruby/cli/commands/function/update_context'
+        FaaStRuby::Command::Function::UpdateContext
+      end,
+      'upgrade' => Proc.new do
+        require 'faastruby/cli/commands/function/upgrade'
+        FaaStRuby::Command::Function::Upgrade
+      end,
+      'build' => Proc.new do
+        require 'faastruby/cli/commands/function/build'
+        FaaStRuby::Command::Function::Build
+      end,
+      'create-workspace' => Proc.new do
+        require 'faastruby/cli/commands/workspace/create'
+        FaaStRuby::Command::Workspace::Create
+      end,
+      'update-workspace' => Proc.new do
+        require 'faastruby/cli/commands/workspace/update'
+        FaaStRuby::Command::Workspace::Update
+      end,
+      'destroy-workspace' => Proc.new do
+        require 'faastruby/cli/commands/workspace/destroy'
+        FaaStRuby::Command::Workspace::Destroy
+      end,
+      'list-workspace' => Proc.new do
+        require 'faastruby/cli/commands/workspace/list'
+        FaaStRuby::Command::Workspace::List
+      end,
+      'new-project' => Proc.new do
+        require 'faastruby/cli/commands/project/new'
+        FaaStRuby::Command::Project::New
+      end,
+      'deploy' => Proc.new do
+        require 'faastruby/cli/commands/project/deploy'
+        FaaStRuby::Command::Project::Deploy
+      end,
+      'test' => Proc.new do
+        require 'faastruby/cli/commands/function/test'
+        FaaStRuby::Command::Function::Test
+      end,
+      'run' => Proc.new do
+        require 'faastruby/cli/commands/function/run'
+        FaaStRuby::Command::Function::Run
+      end,
+      'add-credentials' => Proc.new do
+        require 'faastruby/cli/commands/credentials/add'
+        FaaStRuby::Command::Credentials::Add
+      end,
+      'list-credentials' => Proc.new do
+        require 'faastruby/cli/commands/credentials/list'
+        FaaStRuby::Command::Credentials::List
+      end,
+      'help' => Proc.new do
+        FaaStRuby::Command::Help
+      end,
+      '-h' => Proc.new do
+        require 'faastruby/cli/commands/help'
+        FaaStRuby::Command::Help
+      end,
+      '--help' => Proc.new do
+        require 'faastruby/cli/commands/help'
+        FaaStRuby::Command::Help
+      end,
+      '-v' => Proc.new do
+        require 'faastruby/cli/commands/version'
+        FaaStRuby::Command::Version
+      end
     }
   end
 end

@@ -1,3 +1,4 @@
+require 'zip'
 module FaaStRuby
   class Package
     # Initialize with the directory to zip and the location of the output archive.

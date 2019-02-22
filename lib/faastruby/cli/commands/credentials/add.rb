@@ -1,6 +1,7 @@
 module FaaStRuby
   module Command
     module Credentials
+      require 'faastruby/cli/commands/credentials/base_command'
       class Add < CredentialsBaseCommand
         def initialize(args)
           @args = args

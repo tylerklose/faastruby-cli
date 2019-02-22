@@ -1,5 +1,6 @@
 module FaaStRuby
   module Command
+    require 'faastruby/cli/commands'
     class Help < BaseCommand
       def initialize(args)
         @args = args
@@ -18,13 +19,13 @@ module FaaStRuby
         credentials = ["Credentials:"]
         FaaStRuby::Command::COMMANDS.each do |command, klass|
           next if command == 'upgrade'
-          next if klass.to_s.match(/.+Command::Help$/)
-          next if klass.to_s.match(/.+Command::Version$/)
-          section = functions if klass.to_s.match(/.+::Function::.+/)
-          section = workspaces if klass.to_s.match(/.+::Workspace::.+/)
-          section = credentials if klass.to_s.match(/.+::Credentials::.+/)
+          next if klass.call.to_s.match(/.+Command::Help$/)
+          next if klass.call.to_s.match(/.+Command::Version$/)
+          section = functions if klass.call.to_s.match(/.+::Function::.+/)
+          section = workspaces if klass.call.to_s.match(/.+::Workspace::.+/)
+          section = credentials if klass.call.to_s.match(/.+::Credentials::.+/)
           section ||= []
-          section << "  #{klass.help}"
+          section << "  #{klass.call.help}"
         end
         puts workspaces
         puts

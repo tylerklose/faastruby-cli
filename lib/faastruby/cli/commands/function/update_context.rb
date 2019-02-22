@@ -1,6 +1,7 @@
 module FaaStRuby
   module Command
     module Function
+      require 'faastruby/cli/commands/function/base_command'
       class UpdateContext < FunctionBaseCommand
         def initialize(args)
           @args = args

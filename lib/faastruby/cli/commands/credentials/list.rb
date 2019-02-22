@@ -1,6 +1,8 @@
+require 'tty-table'
 module FaaStRuby
   module Command
     module Credentials
+      require 'faastruby/cli/commands/credentials/base_command'
       class List < CredentialsBaseCommand
         def initialize(args)
           @args = args

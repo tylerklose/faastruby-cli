@@ -6,6 +6,3 @@ module FaaStRuby
     end
   end
 end
-
-require 'faastruby/cli/commands/credentials/add'
-require 'faastruby/cli/commands/credentials/list'

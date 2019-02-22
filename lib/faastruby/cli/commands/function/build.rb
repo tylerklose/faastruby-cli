@@ -1,8 +1,10 @@
 module FaaStRuby
   module Command
     module Function
+      require 'faastruby/cli/commands/function/base_command'
+      require 'faastruby/cli/commands/function/test'
+      require 'faastruby/cli/package'
       class Build < FunctionBaseCommand
-
         def self.build(source, output_file, function_name, quiet = false)
           # msg = "[#{function_name}] Building package..."
           # quiet ? puts(msg) : spinner = spin(msg)
@@ -59,7 +61,7 @@ module FaaStRuby
             puts `#{command}`
           end
           spinner.stop(' Done!')
-          self.class.build(source, output_file)
+          self.class.build(source, output_file, @function_name)
         end
 
         def shards_install

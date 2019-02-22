@@ -1,6 +1,11 @@
+require 'erb'
 module FaaStRuby
+  require 'faastruby/version'
   module Command
     module Function
+      require 'faastruby/supported_runtimes'
+      require 'faastruby/cli/commands/function/base_command'
+      require 'faastruby/cli/template'
       class New < FunctionBaseCommand
         def initialize(args)
           @args = args

@@ -1,6 +1,7 @@
 module FaaStRuby
   module Command
     module Function
+      require 'faastruby/cli/commands/function/base_command'
       class Upgrade < FunctionBaseCommand
         def initialize(args)
           @args = args

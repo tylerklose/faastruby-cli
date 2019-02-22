@@ -1,6 +1,7 @@
 module FaaStRuby
   module Command
     module Workspace
+      require 'faastruby/cli/commands/workspace/base_command'
       class Destroy < WorkspaceBaseCommand
         def initialize(args)
           @args = args

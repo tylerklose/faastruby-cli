@@ -1,6 +1,9 @@
 module FaaStRuby
   module Command
     module Function
+      require 'faastruby/cli/commands/function/base_command'
+      require 'faastruby/cli/commands/function/test'
+      require 'faastruby/cli/commands/function/build'
       class DeployTo < FunctionBaseCommand
         def initialize(args)
           @args = args
