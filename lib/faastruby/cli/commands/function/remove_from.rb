@@ -8,16 +8,21 @@ module FaaStRuby
           @missing_args = []
           FaaStRuby::CLI.error(@missing_args, color: nil) if missing_args.any?
           @workspace_name = @args.shift
-          load_yaml
-          @function_name = @yaml_config['name']
-          FaaStRuby::Credentials.load_for(@workspace_name)
           parse_options
+          load_yaml
+          @function_name = @options['function_name'] || @yaml_config['name']
+          FaaStRuby::Credentials.load_for(@workspace_name)
+        end
+
+        def load_yaml
+          return true if @options['function_name']
+          super
         end
 
         def run
           warning unless @options['force']
           FaaStRuby::CLI.error("Cancelled") unless @options['force'] == 'y'
-          spinner = spin("Removing function from workspace '#{@workspace_name}'...")
+          spinner = spin("Removing function '#{@function_name}' from workspace '#{@workspace_name}'...")
           workspace = FaaStRuby::Workspace.new(name: @workspace_name)
           function = FaaStRuby::Function.new(name: @function_name, workspace: workspace)
           function.destroy
@@ -52,6 +57,8 @@ module FaaStRuby
             case option
             when '-y', '--yes'
               @options['force'] = 'y'
+            when '--function'
+              @options['function_name'] = @args.shift
             else
               FaaStRuby::CLI.error(["Unknown argument: #{option}".red, usage], color: nil)
             end

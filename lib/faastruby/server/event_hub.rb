@@ -27,7 +27,7 @@ module FaaStRuby
         end
       end
       puts "#{tag} Channel subscriptions: #{EventChannel.channels}"
-      puts "#{tag} If you modify 'faastruby.yml' in any function, you will need to restart the server to apply the changes."
+      puts "#{tag} Please restart the server if you modify channel subscriptions in 'faastruby.yml' for any function."
     end
 
     def self.listen_for_events!

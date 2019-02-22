@@ -90,7 +90,7 @@ module FaaStRuby
             'name' => @project_name,
             'environments' => ['prod', 'stage'],
             'root_to' => 'root',
-            '404_to' => 'error_pages/404'
+            'error_404_to' => 'error_pages/404'
           }.to_yaml
         end
 

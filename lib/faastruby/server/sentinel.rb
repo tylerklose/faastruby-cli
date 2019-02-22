@@ -2,20 +2,24 @@
 require 'open3'
 require 'tempfile'
 require 'pathname'
+require 'yaml'
 module FaaStRuby
   module Sentinel
+    DEPLOY_ENVIRONMENT = ENV['DEPLOY_ENVIRONMENT'] || 'stage'
+    PROJECT_NAME = YAML.load(File.read("project.yml"))['name']
+    WORKSPACE = "#{PROJECT_NAME}-#{DEPLOY_ENVIRONMENT}"
     extend FaaStRuby::Logger::System
     @@threads = {}
     MUTEX = Mutex.new
-    def self.add_thread(project, key, value)
+    def self.add_thread(function_folder, key, value)
       MUTEX.synchronize do
-        @@threads[project] ||= {}
-        @@threads[project][key] = value
+        @@threads[function_folder] ||= {}
+        @@threads[function_folder][key] = value
       end
     end
-    def self.get_thread(project)
+    def self.get_thread(function_folder)
       MUTEX.synchronize do
-        @@threads[project]
+        @@threads[function_folder]
       end
     end
     def self.get_threads
@@ -29,19 +33,20 @@ module FaaStRuby
     end
 
     def self.start!
-      projects = find_projects
+      functions = find_functions
       if ENV['SYNC']
-        projects['ruby'].each do |path|
+        puts "#{tag} Sync mode enabled. Your functions will be auto-deployed to the workspace '#{WORKSPACE}'."
+        functions['ruby'].each do |path|
           function_folder = File.expand_path path
-          add_thread(function_folder, 'sync', start_sync_for(function_folder, runtime: 'ruby'))
+          add_thread(function_folder, 'sync', start_sync_for(function_folder))
         end
       end
-      projects['crystal'].each do |path|
+      functions['crystal'].each do |path|
         function_folder = File.expand_path path
         add_thread(function_folder, 'watcher', start_watcher_for(function_folder))
-        add_thread(function_folder, 'sync', start_sync_for(function_folder, runtime: 'crystal')) if ENV['SYNC']
         # This will force compile when the server starts
         trigger("#{function_folder}/faastruby.yml")
+        add_thread(function_folder, 'sync', start_sync_for(function_folder, delay: 1)) if ENV['SYNC']
       end
 
       # watch for new projects
@@ -51,7 +56,7 @@ module FaaStRuby
           path = filename.split('/')
           file = path.pop
           function_folder = path.join('/')
-          sleep 1
+          sleep 0.5
           if function_folder.match(/src$/) && File.file?("#{function_folder}/../faastruby.yml") && File.file?("#{function_folder}/handler.cr")
             function_folder.sub!(/\/src$/, '')
             trigger_compile = true
@@ -65,15 +70,14 @@ module FaaStRuby
             case file
             when 'handler.cr'
               puts "#{tag} New Crystal function detected at '#{function_folder}'."
-
+              File.write(filename, "def handler(event : FaaStRuby::Event) : FaaStRuby::Response\n  # Write code here\n\nend")
               add_thread(function_folder, 'watcher', start_watcher_for(function_folder))
-              add_thread(function_folder, 'sync', start_sync_for(function_folder, runtime: 'crystal')) if ENV['SYNC']
               trigger(filename) if trigger_compile
             when 'handler.rb'
               puts "#{tag} New Ruby function detected at '#{function_folder}'."
-              add_thread(function_folder, 'sync', start_sync_for(function_folder, runtime: 'ruby')) if ENV['SYNC']
+              File.write(filename, "def handler(event)\n  # Write code here\n\nend")
             end
-            puts "#{tag} File created: '#{function_folder}/faastruby.yml'"
+            add_thread(function_folder, 'sync', start_sync_for(function_folder)) if ENV['SYNC']
           end
         end
       end
@@ -90,7 +94,7 @@ module FaaStRuby
 
     def self.trigger(file)
       Thread.new do
-        sleep 1
+        sleep 0.5
         FileUtils.touch(file)
         Thread.exit
       end
@@ -111,15 +115,29 @@ module FaaStRuby
       puts "#{tag} File created: '#{function_folder}/faastruby.yml'"
     end
 
-    def self.start_sync_for(function_folder, runtime:)
-      puts "#{tag} Sync activated for function '#{function_folder}'."
+    def self.start_sync_for(function_folder, delay: false)
+      # puts "#{tag} Sync activated for function '#{function_folder}'."
       Thread.new do
-        case runtime
-        when 'ruby'
-          RubySync.new(function_folder).start
-        when 'crystal'
-          CrystalSync.new(function_folder).start
+        start_sync(function_folder, delay: delay)
+      end
+    end
+
+    def self.start_sync(function_folder, delay: false)
+      sleep delay if delay
+      function_name = (function_folder.split('/') - PROJECT_ROOT.split('/')).join('/')
+      Filewatcher.new("#{function_folder}/", exclude: ["#{function_folder}/handler", "#{function_folder}/handler.dwarf", "#{function_folder}/.package.zip"]).watch do |filename, event|
+        thr = get_thread(function_folder)['deploying']
+        if thr&.alive?
+          Thread.kill(thr)
+          puts "#{tag} Previous Deploy for '#{function_folder}' aborted"
         end
+        if event == :deleted
+          puts "#{tag} Function '#{function_folder}' deleted. Removing from the cloud and disabling sync."
+          Thread.kill(get_thread(function_folder)['sync'])
+          system("faastruby remove-from #{WORKSPACE} -y --function #{function_name}")
+          next
+        end
+        add_thread(function_folder, 'deploying', Thread.new {system("cd #{function_folder} && faastruby deploy-to #{WORKSPACE}")})
       end
     end
 
@@ -127,7 +145,7 @@ module FaaStRuby
       puts "#{tag} Watching function '#{function_folder}' for changes."
       Thread.new do
         handler_path = File.file?("#{function_folder}/handler.cr") ? "#{function_folder}/handler" : "#{function_folder}/src/handler"
-        Filewatcher.new("#{function_folder}/", exclude: ["#{function_folder}/handler", "#{function_folder}/handler.dwarf"]).watch do |filename, event|
+        Filewatcher.new("#{function_folder}/", exclude: ["#{function_folder}/handler", "#{function_folder}/handler.dwarf", "#{function_folder}/.package.zip"]).watch do |filename, event|
           thr = get_thread(function_folder)['running']
           if thr&.alive?
             Thread.kill(thr)
@@ -143,7 +161,7 @@ module FaaStRuby
       end
     end
 
-    def self.find_projects
+    def self.find_functions
       crystal_functions = []
       ruby_functions = []
       directories = Dir.glob('**/faastruby.yml').each do |yaml_file|
@@ -193,20 +211,6 @@ module FaaStRuby
       success = status.exitstatus == 0
       puts "#{tag} #{output}" unless success
       puts "#{tag} Job ID=\"#{job_id}\" #{success ? 'completed' : 'failed'}: #{status}"
-    end
-  end
-
-  class CrystalSync
-
-    def start
-    end
-  end
-
-  class RubySync
-    def initialize(function_folder)
-    end
-
-    def start
     end
   end
 end
