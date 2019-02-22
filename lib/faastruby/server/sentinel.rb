@@ -206,7 +206,7 @@ module FaaStRuby
             Thread.kill(thr)
             puts "#{tag} Previous Job for '#{function_name}' aborted"
           end
-          if event == :deleted && filename == function_folder
+          if event == :deleted && (filename == function_folder || filename.match(/#{function_folder}\/(handler\.cr|faastruby.yml)/))
             puts "#{tag} Disabling watcher for function '#{function_name}'."
             Thread.kill(get_thread(function_folder, 'watcher'))
             next
