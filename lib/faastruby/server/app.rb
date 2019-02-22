@@ -27,7 +27,7 @@ module FaaStRuby
       when splat == ''
         path = YAML.load(File.read("#{PROJECT_ROOT}/#{PROJECT_YAML_FILE}"))['root_to']
       when !File.file?("#{PROJECT_ROOT}/#{splat}/faastruby.yml")
-        path = YAML.load(File.read("#{PROJECT_ROOT}/#{PROJECT_YAML_FILE}"))['404_to']
+        path = YAML.load(File.read("#{PROJECT_ROOT}/#{PROJECT_YAML_FILE}"))['error_404_to']
       else
         path = splat
       end
@@ -55,10 +55,10 @@ module FaaStRuby
       headers response.headers
       if response.binary?
         response_body = Base64.urlsafe_decode64(response.body)
-        print_body = "Base64(#{response.body})"
+        print_body = "Base64(#{response.body[0..70]}...)"
       else
         response_body = response.body
-        print_body = response_body
+        print_body = "#{response_body[0..70]}..."
       end
       puts "[#{path}] -> [RESPONSE: #{time}ms] request_id=\"#{request_uuid}\" status=#{response.status} body=#{print_body.inspect} headers=#{response.headers}"
       body response_body

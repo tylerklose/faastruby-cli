@@ -35,8 +35,8 @@ module FaaStRuby
       @errors += response.errors if response.errors.any?
     end
 
-    def deploy(package_file_name, root_to: false, error_404_to: false)
-      response = @api.deploy(workspace_name: @name, package: package_file_name, root_to: root_to, error_404_to: error_404_to)
+    def deploy(package_file_name, root_to: false, error_404_to: false, context: false)
+      response = @api.deploy(workspace_name: @name, package: package_file_name, root_to: root_to, error_404_to: error_404_to, context: context)
       @status_code = response.code
       @errors += response.errors if response.errors.any?
       self

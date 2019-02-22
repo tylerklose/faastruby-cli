@@ -70,7 +70,7 @@ end
 
 FaaStRuby.require_handler
 
-def render(icon : Bytes? = nil, jpeg : Bytes? = nil, gif : Bytes? = nil, png : Bytes? = nil, io : Bytes? = nil, css : String? = nil, svg : String? = nil, js : String? = nil, inline : String? = nil, html : String? = nil, json : String? = nil, yaml : String? = nil, text : String? = nil, status : Int32 = 200, headers : Hash(String, String) = {} of String => String, content_type : String? = nil, binary : Bool = false)
+def render(icon : String? = nil, jpeg : String? = nil, gif : String? = nil, png : String? = nil, io : Bytes? = nil, css : String? = nil, svg : String? = nil, js : String? = nil, inline : String? = nil, html : String? = nil, json : String? = nil, yaml : String? = nil, text : String? = nil, status : Int32 = 200, headers : Hash(String, String) = {} of String => String, content_type : String? = nil, binary : Bool = false)
   headers["Content-Type"] = content_type if content_type
   bin = false
   case
@@ -95,22 +95,26 @@ def render(icon : Bytes? = nil, jpeg : Bytes? = nil, gif : Bytes? = nil, png : B
     return FaaStRuby::Response.new(io: io, status: status, headers: headers, binary: bin)
   when png
     headers["Content-Type"] ||= "image/png"
-    resp_body = Base64.urlsafe_encode(png, false)
+    file = File.open(png, "rb"){|f| f.gets_to_end}
+    resp_body = Base64.urlsafe_encode(file, false)
     bin = true
   when svg
     headers["Content-Type"] ||= "image/svg+xml"
     resp_body = svg
   when jpeg
     headers["Content-Type"] ||= "image/jpeg"
-    resp_body = Base64.urlsafe_encode(jpeg, false)
+    file = File.open(jpeg, "rb"){|f| f.gets_to_end}
+    resp_body = Base64.urlsafe_encode(file, false)
     bin = true
   when gif
     headers["Content-Type"] ||= "image/gif"
-    resp_body = Base64.urlsafe_encode(gif, false)
+    file = File.open(gif, "rb"){|f| f.gets_to_end}
+    resp_body = Base64.urlsafe_encode(file, false)
     bin = true
   when icon
     headers["Content-Type"] ||= "image/x-icon"
-    resp_body = Base64.urlsafe_encode(icon, false)
+    file = File.read(icon)
+    resp_body = Base64.urlsafe_encode(file, false)
     bin = true
   when css
     headers["Content-Type"] ||= "text/css"

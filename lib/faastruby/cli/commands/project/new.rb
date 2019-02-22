@@ -3,6 +3,8 @@ module FaaStRuby
     module Project
       require 'faastruby/cli/commands/project/base_command'
       require 'faastruby/cli/template'
+      require 'faastruby/cli/commands/function/new'
+
       DEFAULT_FUNCTIONS = {
         'root' => "local:#{FaaStRuby::Template.gem_template_path_for('web-root', runtime: 'ruby')}",
         'error_pages/404' => "local:#{FaaStRuby::Template.gem_template_path_for('web-404', runtime: 'ruby')}",
@@ -63,7 +65,7 @@ module FaaStRuby
         end
 
         def git_init
-          File.write("#{@base_dir}/.gitignore", ".credentials.yml")
+          File.write("#{@base_dir}/.gitignore", "secrets.yml")
           puts "+ f #{@base_dir}/.gitignore".green
           puts `git init #{@base_dir}`
         end
@@ -81,17 +83,34 @@ module FaaStRuby
         def create_config
           File.write("#{@base_dir}/#{PROJECT_YAML_FILE}", default_project_file)
           puts "+ f #{@base_dir}/#{PROJECT_YAML_FILE}".green
-          File.write("#{@base_dir}/tmuxinator.yml", tmuxinator_config)
-          puts "+ f #{@base_dir}/tmuxinator.yml".green
+          if @options['tmux']
+            File.write("#{@base_dir}/tmuxinator.yml", tmuxinator_config)
+            puts "+ f #{@base_dir}/tmuxinator.yml".green
+          end
+          File.write("#{@base_dir}/secrets.yml", default_secrets_file)
+          puts "+ f #{@base_dir}/#{PROJECT_YAML_FILE}".green
+        end
+
+        def default_secrets_file
+          [
+            'secrets:',
+            '  # Add secrets here and they will be available inside the function as "event.context"',
+            '  # Example:',
+            '  # pages/root:',
+            '  #  a_secret: bfe76f4557ffc2de901cb24e0f87436f',
+            '  #  another_secret: 4d1c281e.619a2489c.8b5d.dd945616d324'
+          ].join("\n")
         end
 
         def default_project_file
-          {
-            'name' => @project_name,
-            'environments' => ['prod', 'stage'],
-            'root_to' => 'root',
-            'error_404_to' => 'error_pages/404'
-          }.to_yaml
+          [
+            '# The project name',
+            "name: #{@project_name}",
+            '# Set the root route to the function with name "root"',
+            'root_to: root',
+            '# Invoke the function with name "error_pages/404" as 404 response',
+            'error_404_to: error_pages/404'
+          ].join("\n")
         end
 
         def tmuxinator_config
@@ -144,6 +163,8 @@ module FaaStRuby
           while @args.any?
             option = @args.shift
             case option
+            when '--tmux'
+              @options['tmux'] = true
             when '--web', '-w'
               @options['project_type'] = 'web'
             when '--api', '-a'

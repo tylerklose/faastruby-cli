@@ -57,7 +57,7 @@ module FaaStRuby
             case option
             when '-y', '--yes'
               @options['force'] = 'y'
-            when '--function'
+            when '--function', '-f'
               @options['function_name'] = @args.shift
             else
               FaaStRuby::CLI.error(["Unknown argument: #{option}".red, usage], color: nil)

@@ -107,6 +107,28 @@ EOS
           @missing_args
         end
 
+        def yaml_comments
+          [
+            '## You can add commands to run locally before building the deployment package.',
+            "## Some use cases are:",
+            "## * minifying Javascript/CSS",
+            "## * downloading a file to be included in the package.",
+            "# before_build:",
+            "#   - curl https://some.url --output some.file",
+            "#   - uglifyjs your.js -c -m -o your.min.js",
+            '',
+            '# To schedule periodic runs, follow the example below:',
+            '# schedule:',
+            '#   job1:',
+            '#     when: every 2 hours',
+            '#     body: {"foo": "bar"}',
+            '#     method: POST',
+            '#     query_params: {"param": "value"}',
+            '#     headers: {"Content-Type": "application/json"}',
+            '#   job2: ...'
+          ].join("\n")
+        end
+
         def yaml_for(runtime_name)
           case runtime_name
           when 'crystal'
@@ -128,15 +150,13 @@ EOS
               'name' => @function_name,
               'before_build' => [],
               'runtime' => @options['runtime'] || 'ruby:2.5.3',
-              'test_command' => test_command,
-              'abort_build_when_tests_fail' => true,
-              'abort_deploy_when_tests_fail' => true
+              'test_command' => test_command
             }
           end
         end
 
         def write_yaml(print_base_dir: false)
-          write_file("#{@function_name}/faastruby.yml", @yaml_content.to_yaml, print_base_dir: print_base_dir)
+          write_file("#{@function_name}/faastruby.yml", @yaml_content.to_yaml, print_base_dir: print_base_dir, extra_content: yaml_comments)
         end
 
         def post_tasks(runtime_name)

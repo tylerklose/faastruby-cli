@@ -9,9 +9,12 @@ module FaaStRuby
         spinner
       end
 
-      def write_file(path, content, mode = 'w', print_base_dir: false)
+      def write_file(path, content, mode = 'w', print_base_dir: false, extra_content: nil)
         base_dir = print_base_dir ? "#{print_base_dir}/" : ""
-        File.open(path, mode){|f| f.write(content)}
+        File.open(path, mode) do |f|
+          f.write(content)
+          f.write(extra_content) if extra_content
+        end
         message = "#{mode == 'w' ? '+' : '~'} f #{base_dir}#{path}"
         puts message.green if mode == 'w'
         puts message.yellow if mode == 'w+' || mode == 'a'

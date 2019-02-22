@@ -18,10 +18,6 @@ module FaaStRuby
     def call(short_path, event, args)
       @short_path = short_path
       @path = "#{FaaStRuby::PROJECT_ROOT}/#{short_path}"
-      # unless File.file?("#{@path}/faastruby.yml")
-      #   @path = YAML.load(File.read("#{PROJECT_ROOT}/#{PROJECT_YAML_FILE}"))['error_pages']['404_to']
-      # end
-      # puts @path
       begin
         runtime, version = (YAML.load(File.read("#{@path}/faastruby.yml"))['runtime'] || 'ruby:2.5.3').split(':')
         case runtime
@@ -96,7 +92,8 @@ module FaaStRuby
       response = FaaStRuby::Response.new(
         body: response_obj['response'],
         status: response_obj['status'],
-        headers: response_obj['headers']
+        headers: response_obj['headers'],
+        binary: response_obj['binary']
       )
       [time, response]
     end

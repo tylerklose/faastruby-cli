@@ -4,17 +4,20 @@ module FaaStRuby
       require 'faastruby/cli/commands/function/base_command'
       require 'faastruby/cli/commands/function/test'
       require 'faastruby/cli/commands/function/build'
+      require 'faastruby/cli/commands/workspace/create'
       class DeployTo < FunctionBaseCommand
         def initialize(args)
           @args = args
           @missing_args = []
           FaaStRuby::CLI.error(@missing_args, color: nil) if missing_args.any?
           @workspace_name = @args.shift
+          parse_options
           load_yaml
           @yaml_config['before_build'] ||= []
           @function_name = @yaml_config['name']
-          parse_options
-          @abort_when_tests_fail = @yaml_config['abort_deploy_when_tests_fail']
+          @options['root_to'] = @function_name if @options['is_root']
+          @options['error_404_to'] = @function_name if @options['is_404']
+          @abort_when_tests_fail = true #@yaml_config['abort_deploy_when_tests_fail']
           load_credentials(exit_on_error: false)
         end
 
@@ -39,12 +42,10 @@ module FaaStRuby
           if crystal_runtime?
             FaaStRuby::CLI.error('Please fix the problems above and try again') unless shards_install
           end
-          tests_passed = run_tests
-          FaaStRuby::CLI.error("Deploy aborted because tests failed and you have 'abort_deploy_when_tests_fail: true' in 'faastruby.yml'") unless tests_passed || !@abort_when_tests_fail
-          puts "[#{@function_name}] Warning: Ignoring failed tests because you have 'abort_deploy_when_tests_fail: false' in 'faastruby.yml'".yellow if !tests_passed && !@abort_when_tests_fail
+          FaaStRuby::CLI.error("Deploy aborted because 'test_command' exited non-zero.") unless run_tests
           package_file_name = build_package
           spinner = say("[#{@function_name}] Deploying #{runtime_name} function '#{@function_name}' to workspace '#{@workspace_name}'...", quiet: @options['quiet'])
-          workspace = FaaStRuby::Workspace.new(name: @workspace_name).deploy(package_file_name, root_to: @options['root_to'], error_404_to: @options['error_404_to'])
+          workspace = FaaStRuby::Workspace.new(name: @workspace_name).deploy(package_file_name, root_to: @options['root_to'], error_404_to: @options['error_404_to'], context: @options['context'])
           if workspace.errors.any?
             puts ' Failed :(' unless spinner&.stop(' Failed :(')
             FileUtils.rm('.package.zip')
@@ -109,6 +110,7 @@ module FaaStRuby
         end
 
         def run_tests
+          return true unless @yaml_config['test_command']
           FaaStRuby::Command::Function::Test.new(true).run(do_not_exit: true)
         end
 
@@ -131,12 +133,16 @@ module FaaStRuby
           while @args.any?
             option = @args.shift
             case option
+            when '-f', '--function'
+              Dir.chdir @args.shift
+            when '--context'
+              @options['context'] = @args.shift
             when '--quiet', '-q'
               @options['quiet'] = true
             when '--set-root'
-              @options['root_to'] = @function_name
+              @options['is_root'] = true
             when '--set-404'
-              @options['error_404_to'] = @function_name
+              @options['is_404'] = true
             else
               FaaStRuby::CLI.error("Unknown argument: #{option}")
             end

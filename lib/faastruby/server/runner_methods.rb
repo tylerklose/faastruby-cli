@@ -52,7 +52,7 @@ module FaaStRuby
         resp_body = bin ? Base64.urlsafe_encode64(body) : body
       when data
         headers["Content-Type"] ||= "application/octet-stream"
-        resp_body = Base64.urlsafe_encode64(data)
+        resp_body = Base64.urlsafe_encode64(data, padding: false)
         bin = true
       when js
         headers["Content-Type"] ||= "text/javascript"
@@ -62,22 +62,22 @@ module FaaStRuby
         resp_body = css
       when png
         headers["Content-Type"] ||= "image/png"
-        resp_body = Base64.urlsafe_encode64(png)
+        resp_body = Base64.urlsafe_encode64(File.binread(png), padding: false)
         bin = true
       when svg
         headers["Content-Type"] ||= "image/svg+xml"
         resp_body = svg
       when jpeg
         headers["Content-Type"] ||= "image/jpeg"
-        resp_body = Base64.urlsafe_encode64(jpeg)
+        resp_body = Base64.urlsafe_encode64(File.binread(jpeg), padding: false)
         bin = true
       when gif
         headers["Content-Type"] ||= "image/gif"
-        resp_body = Base64.urlsafe_encode64(gif)
+        resp_body = Base64.urlsafe_encode64(File.binread(gif), padding: false)
         bin = true
       when icon
         headers["Content-Type"] ||= "image/x-icon"
-        resp_body = Base64.urlsafe_encode64(icon)
+        resp_body = Base64.urlsafe_encode64(File.binread(icon), padding: false)
         bin = true
       end
       respond_with(resp_body, status: status, headers: headers, binary: bin)
