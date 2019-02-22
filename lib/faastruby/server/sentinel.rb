@@ -76,12 +76,12 @@ module FaaStRuby
             case file
             when 'handler.cr'
               puts "#{tag} New Crystal function detected at '#{function_name}'."
-              File.write(filename, "def handler(event : FaaStRuby::Event) : FaaStRuby::Response\n  # Write code here\n\nend")
+              File.write(filename, "def handler(event : FaaStRuby::Event) : FaaStRuby::Response\n  # Write code here\n  \nend")
               add_thread(function_folder, 'watcher', start_watcher_for(function_folder))
               trigger(filename) if trigger_compile
             when 'handler.rb'
               puts "#{tag} New Ruby function detected at '#{function_name}'."
-              File.write(filename, "def handler(event)\n  # Write code here\n\nend")
+              File.write(filename, "def handler(event)\n  # Write code here\n  \nend")
             end
             add_thread(function_folder, 'sync', start_sync_for(function_folder)) if ENV['SYNC']
           # end
