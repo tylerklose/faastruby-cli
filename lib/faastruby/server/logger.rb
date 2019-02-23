@@ -30,6 +30,13 @@ module FaaStRuby
         return "(#{self.class.name.split('::').last})"
       end
 
+      def self.puts(msg)
+        OUTPUT_MUTEX.synchronize do
+          STDOUT.puts "#{Time.now} #{msg}".yellow
+          STDOUT.puts "---".yellow
+        end
+      end
+
       def puts(msg)
         OUTPUT_MUTEX.synchronize do
           STDOUT.puts "#{Time.now} #{msg}".yellow
