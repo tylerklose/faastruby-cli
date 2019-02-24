@@ -14,7 +14,7 @@ module FaaStRuby
           @options['environment'] ||= 'stage'
           @project_yaml = YAML.load(File.read(PROJECT_YAML_FILE)) rescue FaaStRuby::CLI.error("Could not find file 'project.yml'. Are you running this command from the project's folder?")
           @options['root_to'] ||= @project_yaml['root_to']
-          @options['error_404_to'] ||= @project_yaml['error_404_to']
+          @options['catch_all'] ||= @project_yaml['catch_all']
         end
 
         def run
@@ -30,7 +30,7 @@ module FaaStRuby
               # Dir.chdir function_path
               cmd = "cd #{function_path} && faastruby deploy-to #{workspace}"
               cmd += " --set-root" if @options['root_to'] == function_path
-              cmd += " --set-404" if @options['error_404_to'] == function_path
+              cmd += " --set-catch-all" if @options['catch_all'] == function_path
               Open3.popen2(cmd) do |stdin, stdout, status_thread|
                 stdout.each_line do |line|
                   puts line
@@ -75,8 +75,8 @@ module FaaStRuby
             case option
             when '--root-to'
               @options['root_to'] = @args.shift
-            when '--error-404-to'
-              @options['error_404_to'] = @args.shift
+            when '--catch-all'
+              @options['catch_all'] = @args.shift
             when '--function', '-f'
               @options['functions'] << @args.shift
             when '--deploy-env', '-e'

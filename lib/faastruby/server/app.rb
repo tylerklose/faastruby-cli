@@ -1,4 +1,3 @@
-require 'yaml'
 require 'oj'
 require 'faastruby-rpc'
 require 'base64'
@@ -10,27 +9,22 @@ require 'securerandom'
 require 'rouge'
 require 'colorize'
 module FaaStRuby
-  SERVER_ROOT = Dir.pwd
-  PROJECT_YAML_FILE = 'project.yml'
-  OUTPUT_MUTEX = Mutex.new
+
   FaaStRuby::EventHub.listen_for_events!
   FaaStRuby::Sentinel.start!
+
   class Server < Sinatra::Base
     include FaaStRuby::Logger::Requests
     set :show_exceptions, true
+    set :root, SERVER_ROOT
+    puts "Using public folder: #{FaaStRuby::ProjectConfig.public_dir}"
+    set :public_folder, FaaStRuby::ProjectConfig.public_dir
+    set :static, true
     register Sinatra::MultiRoute
-
     route :head, :get, :post, :put, :patch, :delete, '/*' do
       request_uuid = SecureRandom.uuid
       splat = params['splat'][0]
-      case
-      when splat == ''
-        path = YAML.load(File.read("#{PROJECT_ROOT}/#{PROJECT_YAML_FILE}"))['root_to']
-      when !File.file?("#{PROJECT_ROOT}/#{splat}/faastruby.yml")
-        path = YAML.load(File.read("#{PROJECT_ROOT}/#{PROJECT_YAML_FILE}"))['error_404_to']
-      else
-        path = splat
-      end
+      function_name = resolve_function_name(splat)
       # headers = env.select {|key, value| key.include?('HTTP_') || ['CONTENT_TYPE', 'CONTENT_LENGTH', 'REMOTE_ADDR', 'REQUEST_METHOD', 'QUERY_STRING'].include?(key) }
       headers = parse_headers(env)
       if headers.has_key?("Faastruby-Rpc")
@@ -44,24 +38,51 @@ module FaaStRuby
       headers['Request-Method'] = request.request_method
       original_request_id = headers['X-Original-Request-Id']
       query_params = parse_query(request.query_string)
-      context = set_context(path)
+      context = Oj.dump(FaaStRuby::ProjectConfig.secrets_for_function(function_name))
       event = FaaStRuby::Event.new(body: body, query_params: query_params, headers: headers, context: context)
-      puts "[#{path}] <- [REQUEST: #{request.request_method} \"#{request.fullpath}\"] request_id=\"#{request_uuid}\" body=\"#{body}\" query_params=#{query_params} headers=#{headers}"
-      time, response = FaaStRuby::Runner.new.call(path, event, rpc_args)
+      log_request_message(function_name, request, request_uuid, query_params, body, context)
+      time, response = FaaStRuby::Runner.new(function_name).call(event, rpc_args)
       status response.status
+      headers set_response_headers(response, request_uuid, original_request_id, time)
+      response_body, print_body = parse_response(response)
+      log_response_message(function_name, time, request_uuid, response, print_body)
+      body response_body
+    end
+
+    def log_request_message(function_name, request, request_uuid, query_params, body, context)
+      puts "[#{function_name}] <- [REQUEST: #{request.request_method} \"#{request.fullpath}\"] request_id=\"#{request_uuid}\" body=\"#{body}\" query_params=#{query_params} headers=#{headers}"
+    end
+
+    def log_response_message(function_name, time, request_uuid, response, print_body)
+      puts "[#{function_name}] -> [RESPONSE: #{time}ms] request_id=\"#{request_uuid}\" status=#{response.status} body=#{print_body.inspect} headers=#{response.headers}"
+    end
+
+    def set_response_headers(response, request_uuid, original_request_id = nil, time)
       response.headers['X-Request-Id'] = request_uuid
       response.headers['X-Original-Request-Id'] = original_request_id if original_request_id
       response.headers['X-Execution-time'] = "#{time}ms"
-      headers response.headers
-      if response.binary?
-        response_body = Base64.urlsafe_decode64(response.body)
-        print_body = "Base64(#{response.body[0..70]}...)"
-      else
-        response_body = response.body
-        print_body = "#{response_body[0..70]}..."
+      response.headers
+    end
+
+    def parse_response(response)
+      return [Base64.urlsafe_decode64(response.body), "Base64(#{response.body[0..70]}...)"] if response.binary?
+      return [response.body, "#{response.body[0..70]}..."]
+    end
+
+    def resolve_function_name(splat)
+      if splat == ''
+        puts "Loading root function #{FaaStRuby::ProjectConfig.root_to}"
+        return FaaStRuby::ProjectConfig.root_to
       end
-      puts "[#{path}] -> [RESPONSE: #{time}ms] request_id=\"#{request_uuid}\" status=#{response.status} body=#{print_body.inspect} headers=#{response.headers}"
-      body response_body
+      if !is_a_function?(splat)
+        puts "#{splat} is not a function. Returning #{FaaStRuby::ProjectConfig.catch_all}"
+        return FaaStRuby::ProjectConfig.catch_all
+      end
+      return splat
+    end
+
+    def is_a_function?(name)
+      File.file?("#{FaaStRuby::ProjectConfig.functions_dir}/#{name}/faastruby.yml")
     end
 
     def parse_body(body, content_type, method)
@@ -69,15 +90,6 @@ module FaaStRuby
       return {} if body.nil? && method != 'GET'
       return Oj.load(body) if content_type == 'application/json'
       return body
-    end
-
-    def set_context(path)
-      return nil
-      # this should read from secrets.yml
-      # return nil unless File.file?('context.yml')
-      # yaml = YAML.load(File.read('context.yml'))
-      # return nil unless yaml.has_key?(workspace_name)
-      # yaml[workspace_name][function_name]
     end
 
     def parse_query(query_string)

@@ -16,7 +16,7 @@ module FaaStRuby
           @yaml_config['before_build'] ||= []
           @function_name = @yaml_config['name']
           @options['root_to'] = @function_name if @options['is_root']
-          @options['error_404_to'] = @function_name if @options['is_404']
+          @options['catch_all'] = @function_name if @options['is_catch_all']
           @abort_when_tests_fail = true #@yaml_config['abort_deploy_when_tests_fail']
           load_credentials(exit_on_error: false)
         end
@@ -45,7 +45,7 @@ module FaaStRuby
           FaaStRuby::CLI.error("Deploy aborted because 'test_command' exited non-zero.") unless run_tests
           package_file_name = build_package
           spinner = say("[#{@function_name}] Deploying #{runtime_name} function '#{@function_name}' to workspace '#{@workspace_name}'...", quiet: @options['quiet'])
-          workspace = FaaStRuby::Workspace.new(name: @workspace_name).deploy(package_file_name, root_to: @options['root_to'], error_404_to: @options['error_404_to'], context: @options['context'])
+          workspace = FaaStRuby::Workspace.new(name: @workspace_name).deploy(package_file_name, root_to: @options['root_to'], catch_all: @options['catch_all'], context: @options['context'])
           if workspace.errors.any?
             puts ' Failed :(' unless spinner&.stop(' Failed :(')
             FileUtils.rm('.package.zip')
@@ -141,8 +141,8 @@ module FaaStRuby
               @options['quiet'] = true
             when '--set-root'
               @options['is_root'] = true
-            when '--set-404'
-              @options['is_404'] = true
+            when '--set-catch-all'
+              @options['is_catch_all'] = true
             else
               FaaStRuby::CLI.error("Unknown argument: #{option}")
             end

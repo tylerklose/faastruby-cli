@@ -56,11 +56,11 @@ module FaaStRuby
 
     def self.start_server(args)
       parsed = []
-      parsed << 'SYNC=true' if args.delete('--sync')
+      parsed << 'FAASTRUBY_PROJECT_SYNC_ENABLED=true' if args.delete('--sync')
       args.each_with_index do |arg, i|
         if arg == '--deploy-env'
           args.delete_at(i)
-          parsed << "DEPLOY_ENVIRONMENT=#{args.delete_at(i)}"
+          parsed << "FAASTRUBY_PROJECT_DEPLOY_ENVIRONMENT=#{args.delete_at(i)}"
         end
       end
       server_dir = "#{Gem::Specification.find_by_name("faastruby").gem_dir}/lib/faastruby/server"

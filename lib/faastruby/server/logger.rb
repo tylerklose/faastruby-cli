@@ -1,9 +1,11 @@
 module FaaStRuby
+  STDOUT_MUTEX = Mutex.new
   module Logger
     module Requests
+
       def puts(msg)
         msg = Rouge.highlight(msg, 'ruby', Rouge::Formatters::Terminal256.new(Rouge::Themes::Monokai.new))
-        OUTPUT_MUTEX.synchronize do
+        STDOUT_MUTEX.synchronize do
           STDOUT.puts "#{Time.now} #{msg}"
           STDOUT.puts "---"
         end
@@ -31,14 +33,14 @@ module FaaStRuby
       end
 
       def self.puts(msg)
-        OUTPUT_MUTEX.synchronize do
+        STDOUT_MUTEX.synchronize do
           STDOUT.puts "#{Time.now} #{msg}".yellow
           STDOUT.puts "---".yellow
         end
       end
 
       def puts(msg)
-        OUTPUT_MUTEX.synchronize do
+        STDOUT_MUTEX.synchronize do
           STDOUT.puts "#{Time.now} #{msg}".yellow
           STDOUT.puts "---".yellow
         end

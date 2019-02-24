@@ -5,9 +5,6 @@ require 'pathname'
 require 'yaml'
 module FaaStRuby
   module Sentinel
-    DEPLOY_ENVIRONMENT = ENV['DEPLOY_ENVIRONMENT'] || 'stage'
-    PROJECT_NAME = YAML.load(File.read("project.yml"))['name']
-    WORKSPACE = "#{PROJECT_NAME}-#{DEPLOY_ENVIRONMENT}"
     extend FaaStRuby::Logger::System
     @@threads = {}
     MUTEX = Mutex.new
@@ -33,6 +30,10 @@ module FaaStRuby
     def self.tag
       '(WatchDog)'
     end
+
+    # def self.functions_dir
+    #   File.expand_path FaaStRuby::ProjectConfig.project_config['functions_dir']
+    # end
 
     def self.watch_for_live_compile(functions)
       functions.each do |path|
@@ -74,29 +75,28 @@ module FaaStRuby
     end
 
     def self.detect_new_functions(target, language)
+      puts "#{tag} Watching for new #{language} functions..."
       Thread.new do
-        puts "#{tag} Watching for new #{language} functions..."
         Filewatcher.new(target).watch do |full_path, event|
           next unless event == :created
           file = File.basename(full_path)
           function_folder = File.dirname(full_path)
           function_name = get_function_name(function_folder)
           yield(function_folder, file, full_path, function_name)
-          enable_sync_for(function_folder, delay: 1) if ENV['SYNC']
+          enable_sync_for(function_folder, delay: 1) if SYNC_ENABLED
         end
       end
-
     end
 
     def self.start_crystal(functions)
       puts "#{tag} Crystal functions: #{functions}"
-      enable_sync(functions, delay: 1) if ENV['SYNC']
-      watch_for_live_compile(functions)
-      detect_new_functions("#{PROJECT_ROOT}/**/handler.cr", 'Crystal') do |function_folder, file, full_path, function_name|
+      enable_sync(functions, delay: 1) if SYNC_ENABLED
+      watch_for_live_compile(functions) unless SYNC_ENABLED
+      detect_new_functions("**/handler.cr", 'Crystal') do |function_folder, file, full_path, function_name|
         function_folder = normalize_crystal_folder(function_folder)
         add_configuration(function_folder, file, full_path)
         puts "#{tag} New Crystal function detected at '#{function_name}'."
-        write_handler(full_path, 'crystal')
+        write_handler(full_path, 'crystal') unless File.size(full_path) > 0
         add_thread(function_folder, 'watcher', start_watcher_for(function_folder))
         # trigger(full_path)
       end
@@ -104,11 +104,11 @@ module FaaStRuby
 
     def self.start_ruby(functions)
       puts "#{tag} Ruby functions: #{functions}"
-      enable_sync(functions) if ENV['SYNC']
-      detect_new_functions("#{PROJECT_ROOT}/**/handler.rb", 'Ruby') do |function_folder, file, full_path, function_name|
+      enable_sync(functions) if SYNC_ENABLED
+      detect_new_functions("**/handler.rb", 'Ruby') do |function_folder, file, full_path, function_name|
         add_configuration(function_folder, file, full_path)
         puts "#{tag} New Ruby function detected at '#{function_name}'."
-        write_handler(full_path, 'ruby')
+        write_handler(full_path, 'ruby') unless File.size(full_path) > 0
       end
     end
 
@@ -124,10 +124,15 @@ module FaaStRuby
     end
 
     def self.start!
-      functions = find_functions
-      puts "#{tag} Sync mode enabled. Your functions will be auto-deployed to the workspace '#{WORKSPACE}'." if ENV['SYNC']
-      start_ruby(functions['ruby']) if RUBY_ENABLED
-      start_crystal(functions['crystal']) if CRYSTAL_ENABLED
+      fork do
+        Dir.chdir FaaStRuby::ProjectConfig.functions_dir
+        functions = find_functions
+        threads = []
+        puts "#{tag} Sync mode enabled. Your functions will be auto-deployed to the workspace '#{WORKSPACE_NAME}'." if SYNC_ENABLED
+        threads << start_ruby(functions['ruby']) if RUBY_ENABLED
+        threads << start_crystal(functions['crystal']) if CRYSTAL_ENABLED
+        threads.each {|t| t.join}
+      end
     end
 
     def self.normalize_crystal_folder(function_folder)
@@ -144,7 +149,7 @@ module FaaStRuby
     end
 
     def self.get_function_name(function_folder)
-      (function_folder.split('/') - PROJECT_ROOT.split('/')).join('/')
+      (function_folder.split('/') - FaaStRuby::ProjectConfig.functions_dir.split('/')).join('/')
     end
 
     def self.add_configuration(function_folder, file, filename)
@@ -225,13 +230,13 @@ module FaaStRuby
     end
 
     def self.remove_from_cloud(function_name, function_folder)
-      remove_cmd = ["faastruby", "remove-from", WORKSPACE, "-y", "-f", function_name]
+      remove_cmd = ["faastruby", "remove-from", WORKSPACE_NAME, "-y", "-f", function_name]
       removed = system(*remove_cmd)
       add_thread(function_folder, 'deployed', nil)
       if removed
         puts "#{tag} Function '#{function_name}' was removed from the cloud."
       else
-        puts "#{tag} The workspace '#{WORKSPACE}' had no function named '#{function_name}', please ignore the message in red."
+        puts "#{tag} The workspace '#{WORKSPACE_NAME}' had no function named '#{function_name}', please ignore the message in red."
       end
     end
 
@@ -247,7 +252,7 @@ module FaaStRuby
     def self.start_sync(function_folder, delay: nil)
       sleep delay if delay
       function_name = get_function_name(function_folder)
-      Filewatcher.new("#{function_folder}/", exclude: ["#{function_folder}/handler", "#{function_folder}/handler.dwarf", "#{function_folder}/.package.zip"]).watch do |filename, event|
+      Filewatcher.new(function_folder, exclude: ["#{function_folder}/handler", "#{function_folder}/handler.dwarf", "#{function_folder}/.package.zip"]).watch do |filename, event|
         puts "#{tag} Previous Deploy for '#{function_name}' aborted" if kill_thread_if_alive(function_folder, 'deploying', function_name)
         if event == :deleted && is_a_function?(filename, function_folder)
           remove_from_project(function_folder, function_name)
@@ -276,15 +281,11 @@ module FaaStRuby
     end
 
     def self.generate_deploy_command(function_name, function_folder)
-      project_config = YAML.load(File.read("project.yml"))
-      deploy_cmd = ['faastruby', 'deploy-to', WORKSPACE, '-f', function_name]
-      deploy_cmd << '--set-root' if project_config['root_to'] == function_name
-      deploy_cmd << '--set-404' if project_config['error_404_to'] == function_name
-      secrets_json = Oj.dump(
-        YAML.load(
-          File.read("secrets.yml")
-        )['secrets'][function_name]
-      ) rescue nil
+      project_config = FaaStRuby::ProjectConfig.project_config
+      deploy_cmd = ['faastruby', 'deploy-to', WORKSPACE_NAME, '-f', function_name]
+      deploy_cmd << '--set-root' if FaaStRuby::ProjectConfig.root_to == function_name
+      deploy_cmd << '--set-catch-all' if FaaStRuby::ProjectConfig.catch_all == function_name
+      secrets_json = Oj.dump(FaaStRuby::ProjectConfig.secrets_for_function(function_name)) rescue nil
       deploy_cmd_print = deploy_cmd
       if secrets_json
         deploy_cmd += ["--context", secrets_json]

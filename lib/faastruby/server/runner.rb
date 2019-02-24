@@ -2,31 +2,31 @@ require 'base64'
 require 'open3'
 module FaaStRuby
   class Runner
-    include RunnerMethods
-    def initialize
+    def initialize(function_name)
+      puts "initializing runner for function name #{function_name}"
       @rendered = false
-    end
-
-    def path
-      @path
+      @function_name = function_name
+      @function_folder = "#{FaaStRuby::ProjectConfig.functions_dir}/#{function_name}"
+      puts "function_folder: #{@function_folder}"
+      @config_file = "#{@function_folder}/faastruby.yml"
+      puts "reading config file #{@config_file}"
+      @config = YAML.load(File.read(@config_file))
+      @language, @version = (@config['runtime'] || DEFAULT_RUBY_RUNTIME).split(':')
     end
 
     def load_function(path)
       eval "Module.new do; #{File.read(path)};end"
     end
 
-    def call(short_path, event, args)
-      @short_path = short_path
-      @path = "#{FaaStRuby::PROJECT_ROOT}/#{short_path}"
+    def call(event, args)
       begin
-        runtime, version = (YAML.load(File.read("#{@path}/faastruby.yml"))['runtime'] || 'ruby:2.5.3').split(':')
-        case runtime
+        case @language
         when 'ruby'
           time, response = call_ruby(event, args)
         when 'crystal'
           time, response = call_crystal(event, args)
         else
-          puts "[Runner] ERROR: could not determine runtime for function #{@short_path}.".red
+          puts "[Runner] ERROR: could not determine the language for function #{@function_name}.".red
         end
         return [time, response] if response.is_a?(FaaStRuby::Response)
         body = {
@@ -43,17 +43,25 @@ module FaaStRuby
       end
     end
     def call_ruby(event, args)
-      runner = FunctionObject.new(@short_path)
+      function_object = FunctionObject.new(@function_name)
       time_start = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond)
-      response = CHDIR_MUTEX.synchronize do
-        Dir.chdir(@path)
-        function = load_function("#{@path}/handler.rb")
-        runner.extend(function)
-        runner.handler(event, *args)
+      response = chdir do
+        puts "loading #{@function_folder}/handler.rb"
+        function = load_function("#{@function_folder}/handler.rb")
+        function_object.extend(function)
+        function_object.handler(event, *args)
       end
       time_finish = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond)
       time = (time_finish - time_start).round(2)
       [time, response]
+    end
+
+    def chdir
+      CHDIR_MUTEX.synchronize do
+        puts "Switching to directory #{@function_folder}"
+        Dir.chdir(@function_folder)
+        yield
+      end
     end
 
     def call_crystal(event, args)
@@ -68,11 +76,12 @@ module FaaStRuby
       ####
       payload_json = Oj.dump({'event' => event.to_h, 'args' => []})
       payload = Base64.urlsafe_encode64(payload_json, padding: false)
-      cmd = "#{@path}/handler"
+      cmd = "./handler"
       # STDOUT.puts "Running #{cmd}"
+      # STDOUT.puts "From #{@function_folder}"
       output = nil
       time_start = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond)
-      Open3.popen2(cmd, chdir: @path) do |stdin, stdout, status|
+      Open3.popen2(cmd, chdir: @function_folder) do |stdin, stdout, status|
         stdin.puts payload
         stdout.each_line do |line|
           if line[0..1] == 'R,'
