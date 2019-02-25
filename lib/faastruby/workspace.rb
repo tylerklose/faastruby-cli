@@ -27,7 +27,7 @@ module FaaStRuby
     ###################
 
     ##### Instance methods
-    attr_accessor :name, :errors, :functions, :email, :object, :credentials, :updated_at, :created_at, :status_code, :provider, :runners_max, :runners_current
+    attr_accessor :name, :errors, :functions, :email, :object, :credentials, :updated_at, :created_at, :status_code, :provider, :runners_max, :runners_current, :static_metadata
 
     def destroy
       response = @api.destroy_workspace(@name)
@@ -66,6 +66,14 @@ module FaaStRuby
       else
         parse_attributes(response.body)
       end
+      self
+    end
+
+    def static_metadata
+      response = @api.get_static_metadata(@name)
+      @status_code = response.code
+      @errors += response.errors if response.errors.any?
+      @static_metadata = response.body['metadata']
       self
     end
 

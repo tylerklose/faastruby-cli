@@ -52,6 +52,50 @@ module FaaStRuby
       end
     end
 
+    def get_static_metadata(workspace_name)
+      url = "#{@api_url}/workspaces/#{workspace_name}/static/metadata"
+      parse RestClient::Request.execute(method: :get, timeout: @timeout, url: url, headers: @headers)
+    rescue RestClient::ExceptionWithResponse => err
+      case err.http_code
+      when 301, 302, 307
+        err.response.follow_redirection
+      else
+        parse err.response
+      end
+    end
+
+    def static_sync_add(workspace_name:, relative_path:, package:)
+      url = "#{@api_url}/workspaces/#{workspace_name}/static/sync"
+      payload = {
+        'package' => File.new(package, 'rb'),
+        'relative_path' => relative_path
+      }
+      parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, payload: Oj.dump(payload), headers: @headers)
+    rescue RestClient::ExceptionWithResponse => err
+      case err.http_code
+      when 301, 302, 307
+        err.response.follow_redirection
+      else
+        parse err.response
+      end
+    end
+
+    def static_sync_delete(workspace_name:, relative_path:)
+      url = "#{@api_url}/workspaces/#{workspace_name}/static/sync"
+      payload = {
+        'path' => relative_path
+      }
+      parse RestClient::Request.execute(method: :delete, timeout: @timeout, url: url, headers: @headers, payload: Oj.dump(payload))
+    rescue RestClient::ExceptionWithResponse => err
+      case err.http_code
+      when 301, 302, 307
+        err.response.follow_redirection
+      else
+        parse err.response
+      end
+    end
+
+
     def get_workspace_info(workspace_name)
       url = "#{@api_url}/workspaces/#{workspace_name}"
       parse RestClient::Request.execute(method: :get, timeout: @timeout, url: url, headers: @headers)

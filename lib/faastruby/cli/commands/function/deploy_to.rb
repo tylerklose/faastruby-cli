@@ -15,9 +15,11 @@ module FaaStRuby
           load_yaml
           @yaml_config['before_build'] ||= []
           @function_name = @yaml_config['name']
-          @options['root_to'] = @function_name if @options['is_root']
-          @options['catch_all'] = @function_name if @options['is_catch_all']
-          @abort_when_tests_fail = true #@yaml_config['abort_deploy_when_tests_fail']
+          unless @yaml_config['serve_static']
+            @options['root_to'] = @function_name if @options['is_root']
+            @options['catch_all'] = @function_name if @options['is_catch_all']
+            # @abort_when_tests_fail = true #@yaml_config['abort_deploy_when_tests_fail']
+          end
           load_credentials(exit_on_error: false)
         end
 
@@ -36,16 +38,22 @@ module FaaStRuby
 
         def run
           create_or_use_workspace
-          if ruby_runtime?
-            FaaStRuby::CLI.error('Please fix the problems above and try again') unless bundle_install
+          if @yaml_config['serve_static']
+            package_file_name = build_package
+            spinner = say("[#{@function_name}] Deploying static files '#{@function_name}' to workspace '#{@workspace_name}'...", quiet: @options['quiet'])
+            workspace = FaaStRuby::Workspace.new(name: @workspace_name).deploy(package_file_name)
+          else
+            if ruby_runtime?
+              FaaStRuby::CLI.error('Please fix the problems above and try again') unless bundle_install
+            end
+            if crystal_runtime?
+              FaaStRuby::CLI.error('Please fix the problems above and try again') unless shards_install
+            end
+            FaaStRuby::CLI.error("Deploy aborted because 'test_command' exited non-zero.") unless run_tests
+            package_file_name = build_package
+            spinner = say("[#{@function_name}] Deploying #{runtime_name} function '#{@function_name}' to workspace '#{@workspace_name}'...", quiet: @options['quiet'])
+            workspace = FaaStRuby::Workspace.new(name: @workspace_name).deploy(package_file_name, root_to: @options['root_to'], catch_all: @options['catch_all'], context: @options['context'])
           end
-          if crystal_runtime?
-            FaaStRuby::CLI.error('Please fix the problems above and try again') unless shards_install
-          end
-          FaaStRuby::CLI.error("Deploy aborted because 'test_command' exited non-zero.") unless run_tests
-          package_file_name = build_package
-          spinner = say("[#{@function_name}] Deploying #{runtime_name} function '#{@function_name}' to workspace '#{@workspace_name}'...", quiet: @options['quiet'])
-          workspace = FaaStRuby::Workspace.new(name: @workspace_name).deploy(package_file_name, root_to: @options['root_to'], catch_all: @options['catch_all'], context: @options['context'])
           if workspace.errors.any?
             puts ' Failed :(' unless spinner&.stop(' Failed :(')
             FileUtils.rm('.package.zip')
@@ -54,8 +62,10 @@ module FaaStRuby
           puts ' Done!' unless spinner&.stop(' Done!')
           FileUtils.rm('.package.zip')
           puts "* [#{@function_name}] Deploy OK".green
-          puts "* [#{@function_name}] Workspace: #{@workspace_name}".green
-          puts "* [#{@function_name}] Endpoint: #{FaaStRuby.workspace_host_for(@workspace_name)}/#{@function_name unless @options['root_to']}".green
+          unless @yaml_config['serve_static']
+            puts "* [#{@function_name}] Workspace: #{@workspace_name}".green
+            puts "* [#{@function_name}] Endpoint: #{FaaStRuby.workspace_host_for(@workspace_name)}/#{@function_name unless @options['root_to']}".green
+          end
           puts '---'
           exit 0
         end
