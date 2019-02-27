@@ -1,12 +1,20 @@
 module FaaStRuby
   class ProjectConfig
 
-    def self.public_dir
-      "#{SERVER_ROOT}/#{project_config['public_dir'] || 'public'}"
+    def self.public_dir(absolute: true)
+      path = "#{SERVER_ROOT}/#{project_config['public_dir'] || 'public'}" if absolute
+      path ||= project_config['public_dir'] || 'public'
+      path.gsub(/\/$/, '')
     end
 
-    def self.functions_dir
-      "#{SERVER_ROOT}/#{project_config['functions_dir'] || 'functions'}"
+    def self.public_dir?
+      File.directory? "#{SERVER_ROOT}/#{project_config['public_dir'] || 'public'}"
+    end
+
+    def self.functions_dir(absolute: true)
+      path = "#{SERVER_ROOT}/#{project_config['functions_dir'] || 'functions'}" if absolute
+      path ||= project_config['functions_dir'] || 'functions'
+      path.gsub(/\/$/, '')
     end
 
     def self.project_config

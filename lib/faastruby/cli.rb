@@ -20,7 +20,7 @@ module FaaStRuby
         return
       end
       check_ruby_version
-      start_server(args) if command == 'server'
+      start_server(args) if command == 'local'
       start_tmuxinator if command == 'mux'
       # check_version
       check_region

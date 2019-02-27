@@ -9,18 +9,26 @@ require 'securerandom'
 require 'rouge'
 require 'colorize'
 module FaaStRuby
-
+  def self.sentinel_pid
+    @@sentinel_pid
+  end
   FaaStRuby::EventHub.listen_for_events!
-  FaaStRuby::Sentinel.start!
+  FaaStRuby::Sentinel.try_workspace if SYNC_ENABLED
+  @@sentinel_pid = fork do
+    FaaStRuby::Sentinel.start!
+  end
 
   class Server < Sinatra::Base
     include FaaStRuby::Logger::Requests
     set :show_exceptions, true
     set :root, SERVER_ROOT
-    puts "Using public folder: #{FaaStRuby::ProjectConfig.public_dir}"
+    # puts "Using public folder: #{FaaStRuby::ProjectConfig.public_dir}"
     set :public_folder, FaaStRuby::ProjectConfig.public_dir
     set :static, true
     register Sinatra::MultiRoute
+    before do
+      cache_control :public, :must_revalidate, :max_age => 60
+    end
     route :head, :get, :post, :put, :patch, :delete, '/*' do
       request_uuid = SecureRandom.uuid
       splat = params['splat'][0]
@@ -71,11 +79,11 @@ module FaaStRuby
 
     def resolve_function_name(splat)
       if splat == ''
-        puts "Loading root function #{FaaStRuby::ProjectConfig.root_to}"
+        # puts "Loading root function #{FaaStRuby::ProjectConfig.root_to}"
         return FaaStRuby::ProjectConfig.root_to
       end
       if !is_a_function?(splat)
-        puts "#{splat} is not a function. Returning #{FaaStRuby::ProjectConfig.catch_all}"
+        # puts "#{splat} is not a function. Returning #{FaaStRuby::ProjectConfig.catch_all}"
         return FaaStRuby::ProjectConfig.catch_all
       end
       return splat

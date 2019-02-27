@@ -1,3 +1,10 @@
+require './template'
+
 def handler event
-  render html: File.read('index.html')
+  greeting = "Welcome to FaaStRuby Local!"
+  render html: template('index.html.erb', variables: {greeting: greeting})
+end
+
+def template(file, variables: {})
+  Template.new(variables: variables).render(file)
 end

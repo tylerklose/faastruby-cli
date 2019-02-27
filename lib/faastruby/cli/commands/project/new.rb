@@ -7,20 +7,13 @@ module FaaStRuby
 
       DEFAULT_FUNCTIONS = {
         'root' => "local:#{FaaStRuby::Template.gem_template_path_for('web-root', runtime: 'ruby')}",
-        'error_pages/404' => "local:#{FaaStRuby::Template.gem_template_path_for('web-404', runtime: 'ruby')}",
-        'assets/styles' => "local:#{FaaStRuby::Template.gem_template_path_for('web-css', runtime: 'ruby')}",
-        'assets/js' => "local:#{FaaStRuby::Template.gem_template_path_for('web-js', runtime: 'ruby')}"
+        'catch-all' => "local:#{FaaStRuby::Template.gem_template_path_for('web-404', runtime: 'ruby')}",
       }
       def self.templates_for(kind)
         t = {
           'root' => "local:#{FaaStRuby::Template.gem_template_path_for("#{kind}-root", runtime: 'ruby')}",
-          'error_pages/404' => "local:#{FaaStRuby::Template.gem_template_path_for("#{kind}-404", runtime: 'ruby')}"
+          'catch-all' => "local:#{FaaStRuby::Template.gem_template_path_for("#{kind}-404", runtime: 'ruby')}"
         }
-        case kind
-        when 'web'
-          t['assets/styles'] = "local:#{FaaStRuby::Template.gem_template_path_for("#{kind}-css", runtime: 'ruby')}"
-          t['assets/js'] = "local:#{FaaStRuby::Template.gem_template_path_for("#{kind}-js", runtime: 'ruby')}"
-        end
         return t
       end
       class New < ProjectBaseCommand
@@ -45,7 +38,7 @@ module FaaStRuby
           puts "Project '#{@project_name}' initialized."
           puts "Now run:"
           puts "$ cd #{@project_name}"
-          puts "$ faastruby server\n\n"
+          puts "$ faastruby local\n\n"
           puts "Then visit http://localhost:3000"
         end
 
@@ -72,12 +65,36 @@ module FaaStRuby
 
         def install_functions
           current_dir = Dir.pwd
-          Dir.chdir(@base_dir)
+          FileUtils.mkdir_p("#{@base_dir}/functions")
+          Dir.chdir("#{@base_dir}/functions")
           Project.templates_for(@options['project_type']).each do |name, template|
             args = [name, '--template', template]
-            FaaStRuby::Command::Function::New.new(args).run(print_base_dir: @base_dir, blank_template: true)
+            FaaStRuby::Command::Function::New.new(args).run(print_base_dir: "#{@base_dir}/functions", blank_template: true)
+          end
+          Dir.chdir("..")
+          if @options['project_type'] == 'web'
+            copy_public_template
+          else
+            create_public_folder
           end
           Dir.chdir(current_dir)
+        end
+
+        def create_public_folder
+          Dir.mkdir 'public'
+          puts "+ d #{@base_dir}/public".green
+          write_public_config
+        end
+
+        def copy_public_template
+          template_dir = "#{Gem::Specification.find_by_name("faastruby").gem_dir}/templates/public-#{@options['project_type']}"
+          FileUtils.cp_r(template_dir, "./public")
+          write_public_config
+        end
+
+        def write_public_config
+          File.write("public/faastruby.yml", default_public_config)
+          puts "+ f #{@base_dir}/public/faastruby.yml".green
         end
 
         def create_config
@@ -87,29 +104,61 @@ module FaaStRuby
             File.write("#{@base_dir}/tmuxinator.yml", tmuxinator_config)
             puts "+ f #{@base_dir}/tmuxinator.yml".green
           end
-          File.write("#{@base_dir}/secrets.yml", default_secrets_file)
-          puts "+ f #{@base_dir}/#{PROJECT_YAML_FILE}".green
+          File.write("#{@base_dir}/#{PROJECT_SECRETS_FILE}", default_secrets_file)
+          puts "+ f #{@base_dir}/#{PROJECT_SECRETS_FILE}".green
+        end
+
+        def default_public_config
+          [
+            "cli_version: #{FaaStRuby::VERSION}",
+            'name: public',
+            'serve_static: true',
+          ].join("\n")
         end
 
         def default_secrets_file
           [
             'secrets:',
-            '  # Add secrets here and they will be available inside the function as "event.context"',
-            '  # Example:',
-            '  # pages/root:',
-            '  #  a_secret: bfe76f4557ffc2de901cb24e0f87436f',
-            '  #  another_secret: 4d1c281e.619a2489c.8b5d.dd945616d324'
+            "  # Add secrets here and they will be available inside the function as \"event.context\"",
+            "  # Example:",
+            "  # prod:",
+            "  #   pages/root:",
+            "  #     a_secret: bfe76f4557ffc2de901cb24e0f87436f",
+            "  #   another/function:",
+            "  #     another_secret: 4d1c281e.619a2489c.8b5d.dd945616d324",
+            "  # stage:",
+            "  #   pages/root:",
+            "  #     a_secret: bfe76f4557ffc2de901cb24e0f87436f",
+            "  #   another/function:",
+            "  #     another_secret: 4d1c281e.619a2489c.8b5d.dd945616d324"
           ].join("\n")
         end
 
         def default_project_file
           [
-            '# The project name',
-            "name: #{@project_name}",
-            '# Set the root route to the function with name "root"',
-            'root_to: root',
-            '# Invoke the function with name "error_pages/404" as 404 response',
-            'error_404_to: error_pages/404'
+            "project:",
+            "  # The project name",
+            "  name: myproject",
+            "",
+            "  ## The 'public' directory, where you put static files.",
+            "  ## Files will be served from here first, meaning that if",
+            "  ## you have a function at '/product' and a folder '/product'",
+            "  ## inside the public folder, the public one will take precedence.",
+            "  ## Defaults to 'public'.",
+            "  # public_dir: public",
+            "",
+            "  ## The name of the folder containing your functions. Defaults to 'functions'",
+            "  # functions_dir: functions",
+            "",
+            "  ## The name of the function that will respond to requests made",
+            "  ## to '/'. Defaults to 'root'",
+            "  # root_to: root",
+            "",
+            "  ## The setting 'catch_all' allows you to capture requests to",
+            "  ## non-existing functions and send them to another function.",
+            "  ## This is useful for setting custom 404 pages, for example.",
+            "  ## Defaults to 'catch-all'.",
+            "  # catch_all: catch-all"
           ].join("\n")
         end
 

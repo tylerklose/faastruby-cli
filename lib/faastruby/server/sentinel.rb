@@ -3,11 +3,17 @@ require 'open3'
 require 'tempfile'
 require 'pathname'
 require 'yaml'
+require 'listen'
 module FaaStRuby
   module Sentinel
     extend FaaStRuby::Logger::System
+    STATIC_FILES_SYNC_ENABLED = SYNC_ENABLED && FaaStRuby::ProjectConfig.public_dir?
     @@threads = {}
     MUTEX = Mutex.new
+    def self.pid
+      @@pid
+    end
+
     def self.add_thread(function_folder, key, value)
       MUTEX.synchronize do
         @@threads[function_folder] ||= {}
@@ -28,7 +34,20 @@ module FaaStRuby
     end
 
     def self.tag
-      '(WatchDog)'
+      '(Sentinel)'
+    end
+
+    def self.try_workspace
+      puts "#{tag} Connecting to workspace '#{WORKSPACE_NAME}'..."
+      try_to_create = Proc.new {system("faastruby create-workspace #{WORKSPACE_NAME}")}
+      has_credentials = system("faastruby list-workspace #{WORKSPACE_NAME} > /dev/null 2>&1")
+      continue = has_credentials || try_to_create.call
+      unless continue
+        puts "[FATAL] Unable to setup project workspace '#{WORKSPACE_NAME}'. Make sure you have the credentials, or try a different environment name.\nExample: faastruby local --sync --deploy-env #{DEPLOY_ENVIRONMENT}-#{(rand * 100).to_i}".red
+        puts "Press CTRL+C to stop the server."
+        exit 1
+      end
+      true
     end
 
     # def self.functions_dir
@@ -37,6 +56,7 @@ module FaaStRuby
 
     def self.watch_for_live_compile(functions)
       functions.each do |path|
+        # puts "Starting live compile for #{path}"
         watch_function_for_live_compile(path)
       end
     end
@@ -50,7 +70,7 @@ module FaaStRuby
 
     def self.start_watcher_for(function_folder)
       function_name = get_function_name(function_folder)
-      puts "#{tag} Watching function '#{function_name}' for changes."
+      puts "#{tag} Live compiling enabled for '#{function_name}'."
       exclude_from_watcher = [
         "#{function_folder}/handler",
         "#{function_folder}/handler.dwarf",
@@ -63,6 +83,7 @@ module FaaStRuby
       Thread.new do
         handler_path = get_handler_path_in(function_folder)
         Filewatcher.new(function_folder, exclude: exclude_from_watcher).watch do |filename, event|
+          next if File.directory?(filename)
           puts "#{tag} Previous Job for '#{function_name}' aborted" if kill_thread_if_alive(function_folder, 'running', function_name)
           if event == :deleted && is_a_function?(filename, function_folder)
             puts "#{tag} Disabling watcher for function '#{function_name}'."
@@ -78,6 +99,7 @@ module FaaStRuby
       puts "#{tag} Watching for new #{language} functions..."
       Thread.new do
         Filewatcher.new(target).watch do |full_path, event|
+          next if File.directory?(full_path)
           next unless event == :created
           file = File.basename(full_path)
           function_folder = File.dirname(full_path)
@@ -112,6 +134,62 @@ module FaaStRuby
       end
     end
 
+    def self.start_public
+      puts "#{tag} Watching public folder '#{File.basename(FaaStRuby::ProjectConfig.public_dir)}'..."
+      add_thread(FaaStRuby::ProjectConfig.public_dir, 'sync', start_public_sync)
+    end
+
+    ########################
+
+    def self.start_public_sync(delay: nil)
+      sleep delay if delay
+      public_dir = FaaStRuby::ProjectConfig.public_dir
+      listener = Listen.to(public_dir) do |modified, added, removed|
+        full_path, relative_path, event = translate(modified, added, removed)
+        # puts "FULL_PATH: #{full_path}"
+        # puts "RELATIVE_PATH: #{relative_path}"
+        # puts "EVENT: #{event}"
+        # next if File.directory?(full_path)
+        file_name = File.basename(full_path)
+        puts "#{tag} Previous upload of '#{FaaStRuby::ProjectConfig.public_dir(absolute: false)}/#{relative_path}' aborted" if kill_thread_if_alive(full_path, 'deploying', full_path)
+
+        if event == :removed
+          cmd = "faastruby rm #{WORKSPACE_NAME}:/#{relative_path}"
+          puts "#{tag} Running: #{cmd}"
+          system(cmd)
+          add_thread(full_path, 'deployed', nil)
+          next
+        end
+        # deploy_cmd, deploy_cmd_print = faastruby_cp(filename)
+        cmd = "faastruby cp #{full_path} #{WORKSPACE_NAME}:/#{relative_path}"
+        puts "#{tag} Running: #{cmd}"
+        add_thread(full_path, 'deploying', Thread.new {system("cd #{SERVER_ROOT} && #{cmd}")})
+        add_thread(full_path, 'deployed', true)
+      end
+      listener.start
+    end
+
+    def self.translate(modified, added, removed)
+      return [modified[0], relative_path_for(modified[0].dup), :modified] if modified.any?
+      return [added[0], relative_path_for(added[0].dup), :added] if added.any?
+      return [removed[0], relative_path_for(removed[0].dup), :removed] if removed.any?
+    end
+
+    # def self.final_path_and_subject(full_path)
+    #   relative_path = relative_path_for(full_path)
+    #   prefix = relative_path.slice!(/^(public|functions)\//)
+    #   subject = :static if File.expand_path(prefix) == "#{FaaStRuby::ProjectConfig.public_dir}"
+    #   subject = :function if File.expand_path(prefix) == "#{FaaStRuby::ProjectConfig.functions_dir}"
+    #   [relative_path_for(full_path), subject]
+    # end
+
+    def self.relative_path_for(full_path)
+      full_path.slice!("#{SERVER_ROOT}/#{FaaStRuby::ProjectConfig.public_dir(absolute: false)}/")
+      full_path
+    end
+
+    ####################
+
     def self.enable_sync(functions, delay: nil)
       functions.each do |path|
         function_folder = File.expand_path path
@@ -124,15 +202,15 @@ module FaaStRuby
     end
 
     def self.start!
-      fork do
-        Dir.chdir FaaStRuby::ProjectConfig.functions_dir
-        functions = find_functions
-        threads = []
-        puts "#{tag} Sync mode enabled. Your functions will be auto-deployed to the workspace '#{WORKSPACE_NAME}'." if SYNC_ENABLED
-        threads << start_ruby(functions['ruby']) if RUBY_ENABLED
-        threads << start_crystal(functions['crystal']) if CRYSTAL_ENABLED
-        threads.each {|t| t.join}
-      end
+      Dir.chdir FaaStRuby::ProjectConfig.functions_dir
+      functions = find_functions
+      threads = []
+      puts "#{tag} Sync mode enabled. Your functions will be auto-deployed to the workspace '#{WORKSPACE_NAME}'." if SYNC_ENABLED
+      threads << start_ruby(functions['ruby']) if RUBY_ENABLED
+      threads << start_crystal(functions['crystal']) if CRYSTAL_ENABLED
+      # aaa # gotta finish configure public sync
+      threads << start_public if STATIC_FILES_SYNC_ENABLED
+      threads.each {|t| t.join}
     end
 
     def self.normalize_crystal_folder(function_folder)
@@ -149,6 +227,9 @@ module FaaStRuby
     end
 
     def self.get_function_name(function_folder)
+      # f_dir = FaaStRuby::ProjectConfig.functions_dir.dup
+      # f_dir.slice!(function_folder)
+      # f_dir
       (function_folder.split('/') - FaaStRuby::ProjectConfig.functions_dir.split('/')).join('/')
     end
 
@@ -252,7 +333,13 @@ module FaaStRuby
     def self.start_sync(function_folder, delay: nil)
       sleep delay if delay
       function_name = get_function_name(function_folder)
-      Filewatcher.new(function_folder, exclude: ["#{function_folder}/handler", "#{function_folder}/handler.dwarf", "#{function_folder}/.package.zip"]).watch do |filename, event|
+      exclude_from_watcher = [
+        "#{function_folder}/handler",
+        "#{function_folder}/handler.dwarf",
+        "#{function_folder}/.package.zip"
+      ]
+      Filewatcher.new(function_folder, exclude: exclude_from_watcher).watch do |filename, event|
+        next if File.directory?(filename)
         puts "#{tag} Previous Deploy for '#{function_name}' aborted" if kill_thread_if_alive(function_folder, 'deploying', function_name)
         if event == :deleted && is_a_function?(filename, function_folder)
           remove_from_project(function_folder, function_name)
@@ -365,7 +452,7 @@ module FaaStRuby
     def start
       Thread.report_on_exception = false
       job_id = SecureRandom.uuid
-      puts "#{tag} Job ID=\"#{job_id}\" started: " + "Compiling function '#{@function_name}'"
+      puts "#{tag} Job ID=\"#{job_id}\" started: Compiling function '#{@function_name}'"
       return false unless precompile
       output, status = Open3.capture2e(@env, @crystal_build)
       success = status.exitstatus == 0

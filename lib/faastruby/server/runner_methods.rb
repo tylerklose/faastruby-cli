@@ -1,5 +1,6 @@
 module FaaStRuby
   module RunnerMethods
+    require 'yaml'
     def rendered!
       @rendered = true
     end

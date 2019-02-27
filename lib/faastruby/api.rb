@@ -64,13 +64,11 @@ module FaaStRuby
       end
     end
 
-    def static_sync_add(workspace_name:, relative_path:, package:)
+    def upload_file(workspace_name:, relative_path:, package:)
       url = "#{@api_url}/workspaces/#{workspace_name}/static/sync"
-      payload = {
-        'package' => File.new(package, 'rb'),
-        'relative_path' => relative_path
-      }
-      parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, payload: Oj.dump(payload), headers: @headers)
+      payload = {package: File.new(package, 'rb')}
+      payload[:relative_path] = relative_path
+      parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, payload: payload, headers: @credentials)
     rescue RestClient::ExceptionWithResponse => err
       case err.http_code
       when 301, 302, 307
@@ -80,12 +78,12 @@ module FaaStRuby
       end
     end
 
-    def static_sync_delete(workspace_name:, relative_path:)
+    def delele_file(workspace_name:, relative_path:)
       url = "#{@api_url}/workspaces/#{workspace_name}/static/sync"
       payload = {
-        'path' => relative_path
+         relative_path: relative_path
       }
-      parse RestClient::Request.execute(method: :delete, timeout: @timeout, url: url, headers: @headers, payload: Oj.dump(payload))
+      parse RestClient::Request.execute(method: :delete, timeout: @timeout, url: url, headers: @credentials, payload: payload)
     rescue RestClient::ExceptionWithResponse => err
       case err.http_code
       when 301, 302, 307

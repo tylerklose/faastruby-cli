@@ -69,6 +69,20 @@ module FaaStRuby
       self
     end
 
+    def upload_file(package_file_name, relative_path:)
+      response = @api.upload_file(workspace_name: @name, package: package_file_name, relative_path: relative_path)
+      @status_code = response.code
+      @errors += response.errors if response.errors.any?
+      self
+    end
+
+    def delete_file(relative_path:)
+      response = @api.delele_file(workspace_name: @name, relative_path: relative_path)
+      @status_code = response.code
+      @errors += response.errors if response.errors.any?
+      self
+    end
+
     def static_metadata
       response = @api.get_static_metadata(@name)
       @status_code = response.code

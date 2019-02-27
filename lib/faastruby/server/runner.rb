@@ -3,19 +3,27 @@ require 'open3'
 module FaaStRuby
   class Runner
     def initialize(function_name)
-      puts "initializing runner for function name #{function_name}"
+      # puts "initializing runner for function name #{function_name}"
       @rendered = false
       @function_name = function_name
       @function_folder = "#{FaaStRuby::ProjectConfig.functions_dir}/#{function_name}"
-      puts "function_folder: #{@function_folder}"
+      # puts "function_folder: #{@function_folder}"
       @config_file = "#{@function_folder}/faastruby.yml"
-      puts "reading config file #{@config_file}"
+      # puts "reading config file #{@config_file}"
       @config = YAML.load(File.read(@config_file))
       @language, @version = (@config['runtime'] || DEFAULT_RUBY_RUNTIME).split(':')
     end
 
     def load_function(path)
-      eval "Module.new do; #{File.read(path)};end"
+      eval %(
+        Module.new do
+          def self.require(path)
+            return load("\#{path}.rb") if File.file?("\#{path}.rb")
+            Kernel.require path
+          end
+          #{File.read(path)}
+        end
+      )
     end
 
     def call(event, args)
@@ -46,11 +54,12 @@ module FaaStRuby
       function_object = FunctionObject.new(@function_name)
       time_start = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond)
       response = chdir do
-        puts "loading #{@function_folder}/handler.rb"
+        # puts "loading #{@function_folder}/handler.rb"
         function = load_function("#{@function_folder}/handler.rb")
         function_object.extend(function)
         function_object.handler(event, *args)
       end
+      raise FaaStRuby::Response::InvalidResponseError unless response.is_a?(FaaStRuby::Response)
       time_finish = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond)
       time = (time_finish - time_start).round(2)
       [time, response]
@@ -58,7 +67,7 @@ module FaaStRuby
 
     def chdir
       CHDIR_MUTEX.synchronize do
-        puts "Switching to directory #{@function_folder}"
+        # puts "Switching to directory #{@function_folder}"
         Dir.chdir(@function_folder)
         yield
       end

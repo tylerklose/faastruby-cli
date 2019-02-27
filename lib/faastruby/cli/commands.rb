@@ -31,6 +31,14 @@ module FaaStRuby
         require 'faastruby/cli/commands/workspace/create'
         FaaStRuby::Command::Workspace::Create
       end,
+      'cp' => Proc.new do
+        require 'faastruby/cli/commands/workspace/cp'
+        FaaStRuby::Command::Workspace::CP
+      end,
+      'rm' => Proc.new do
+        require 'faastruby/cli/commands/workspace/rm'
+        FaaStRuby::Command::Workspace::RM
+      end,
       'update-workspace' => Proc.new do
         require 'faastruby/cli/commands/workspace/update'
         FaaStRuby::Command::Workspace::Update
