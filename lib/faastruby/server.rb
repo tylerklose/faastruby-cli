@@ -4,7 +4,7 @@ module FaaStRuby
   require 'faastruby/supported_runtimes'
 
   def self.get_crystal_version
-    ver = `crystal -v|head -n1|cut -f2 -d' '`&.chomp
+    ver = `crystal -v|head -n1|cut -f2 -d' ' 2>/dev/null`&.chomp
     ver == '' ? CRYSTAL_LATEST : ver
   end
 

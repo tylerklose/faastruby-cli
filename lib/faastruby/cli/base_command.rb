@@ -21,7 +21,7 @@ module FaaStRuby
       end
 
       def say(message, quiet: false)
-        return puts message if quiet
+        return puts "\n#{message}" if quiet
         spin(message)
       end
 

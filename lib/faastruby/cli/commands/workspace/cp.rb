@@ -29,6 +29,7 @@ module FaaStRuby
           puts "* [#{@source_file}] URL: #{destination_url}".green
         ensure
           FileUtils.remove_entry @tmpdir
+          @package_file.unlink
         end
 
 
@@ -37,6 +38,7 @@ module FaaStRuby
           output_file = @package_file.path
           FaaStRuby::Package.new(@tmpdir, output_file).build
           # FaaStRuby::Command::Function::Build.build(@source_file, output_file, @function_name, true)
+          @package_file.close
           output_file
         end
 

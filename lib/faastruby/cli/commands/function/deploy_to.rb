@@ -21,6 +21,7 @@ module FaaStRuby
             # @abort_when_tests_fail = true #@yaml_config['abort_deploy_when_tests_fail']
           end
           load_credentials(exit_on_error: false)
+          @package_file = Tempfile.new('package')
         end
 
         def ruby_runtime?
@@ -59,8 +60,8 @@ module FaaStRuby
             FileUtils.rm('.package.zip')
             FaaStRuby::CLI.error(workspace.errors)
           end
-          puts ' Done!' unless spinner&.stop(' Done!')
-          FileUtils.rm('.package.zip')
+          spinner.stop(' Done!') unless @options['quiet']
+          @package_file.unlink
           puts "* [#{@function_name}] Deploy OK".green
           unless @yaml_config['serve_static']
             puts "* [#{@function_name}] Workspace: #{@workspace_name}".green
@@ -126,7 +127,7 @@ module FaaStRuby
 
         def build_package
           source = '.'
-          output_file = ".package.zip"
+          output_file = @package_file.path
           if @yaml_config['before_build'].any?
             spinner = say("[#{@function_name}] Running 'before_build' tasks...", quiet: @options['quiet'])
             @yaml_config['before_build']&.each do |command|
@@ -135,6 +136,7 @@ module FaaStRuby
             puts ' Done!' unless spinner&.stop(' Done!')
           end
           FaaStRuby::Command::Function::Build.build(source, output_file, @function_name, true)
+          @package_file.close
           output_file
         end
 

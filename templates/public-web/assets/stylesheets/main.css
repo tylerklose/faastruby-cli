@@ -15,15 +15,17 @@ body {
   padding-right: 30px;
   font-family: 'Open Sans';
   color: #ffffff;
-  /* background-image: linear-gradient(to left top, #448aec, #3694f2, #279df6, #15a6fa, #00affd); */
-  /* background-size: cover;
-  background-repeat: no-repeat; */
   height: 100%;
 }
 
 h1,h2,h3,h4,h5,h6 {
   font-family: 'Source Code Pro';
   letter-spacing: -1px;
+}
+
+.paragraph {
+  font-family: 'Open Sans';
+  letter-spacing: 0px;
 }
 
 .text-center {
@@ -70,14 +72,14 @@ h1,h2,h3,h4,h5,h6 {
 .content-left {
   padding: 30px;
   width: 50%;
-  vertical-align:top; /*middle centred*/
-  display:table-cell; /*acts like a table cell*/
+  vertical-align:top;
+  display:table-cell;
 }
 
 .content-right {
   padding: 15px;
   width: 50%;
-  vertical-align:middle; /*middle centred*/
+  vertical-align:middle;
   align-content: center;
-  display:table-cell; /*acts like a table cell*/
+  display:table-cell;
 }

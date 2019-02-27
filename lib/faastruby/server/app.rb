@@ -21,13 +21,14 @@ module FaaStRuby
   class Server < Sinatra::Base
     include FaaStRuby::Logger::Requests
     set :show_exceptions, true
+    set :logging, true
     set :root, SERVER_ROOT
     # puts "Using public folder: #{FaaStRuby::ProjectConfig.public_dir}"
     set :public_folder, FaaStRuby::ProjectConfig.public_dir
     set :static, true
     register Sinatra::MultiRoute
     before do
-      cache_control :public, :must_revalidate, :max_age => 60
+      cache_control :public, :must_revalidate, :max_age => 1
     end
     route :head, :get, :post, :put, :patch, :delete, '/*' do
       request_uuid = SecureRandom.uuid
@@ -73,8 +74,8 @@ module FaaStRuby
     end
 
     def parse_response(response)
-      return [Base64.urlsafe_decode64(response.body), "Base64(#{response.body[0..70]}...)"] if response.binary?
-      return [response.body, "#{response.body[0..70]}..."]
+      return [Base64.urlsafe_decode64(response.body), "Base64(#{response.body})"] if response.binary?
+      return [response.body, "#{response.body}"]
     end
 
     def resolve_function_name(splat)

@@ -50,10 +50,6 @@ module FaaStRuby
       true
     end
 
-    # def self.functions_dir
-    #   File.expand_path FaaStRuby::ProjectConfig.project_config['functions_dir']
-    # end
-
     def self.watch_for_live_compile(functions)
       functions.each do |path|
         # puts "Starting live compile for #{path}"
@@ -80,41 +76,46 @@ module FaaStRuby
     end
 
     def self.new_watcher_thread(function_folder, exclude_from_watcher, function_name)
-      Thread.new do
-        handler_path = get_handler_path_in(function_folder)
-        Filewatcher.new(function_folder, exclude: exclude_from_watcher).watch do |filename, event|
-          next if File.directory?(filename)
-          puts "#{tag} Previous Job for '#{function_name}' aborted" if kill_thread_if_alive(function_folder, 'running', function_name)
-          if event == :deleted && is_a_function?(filename, function_folder)
-            puts "#{tag} Disabling watcher for function '#{function_name}'."
-            Thread.kill(get_thread(function_folder, 'watcher'))
-            next
-          end
-          add_thread(function_folder, 'running', Thread.new {CrystalBuild.new(function_folder, handler_path, run_before_build: true).start})
+      handler_path = get_handler_path_in(function_folder)
+      listener = Listen.to(function_folder) do |modified, added, removed|
+        full_path, relative_path, event = translate(modified, added, removed)
+        next if exclude_from_watcher.include?(full_path)
+        file_name = File.basename(full_path)
+        puts "#{tag} Previous Job for '#{function_name}' aborted" if kill_thread_if_alive(function_folder, 'running', function_name)
+        if event == :removed && is_a_function?(full_path, function_folder)
+          puts "#{tag} Disabling watcher for function '#{function_name}'."
+          Thread.kill(get_thread(function_folder, 'watcher'))
+          next
         end
+        add_thread(function_folder, 'running', Thread.new {CrystalBuild.new(function_folder, handler_path, run_before_build: true).start})
       end
+      listener.start
+      listener
     end
 
     def self.detect_new_functions(target, language)
       puts "#{tag} Watching for new #{language} functions..."
-      Thread.new do
-        Filewatcher.new(target).watch do |full_path, event|
-          next if File.directory?(full_path)
-          next unless event == :created
-          file = File.basename(full_path)
-          function_folder = File.dirname(full_path)
-          function_name = get_function_name(function_folder)
-          yield(function_folder, file, full_path, function_name)
-          enable_sync_for(function_folder, delay: 1) if SYNC_ENABLED
-        end
+      only = /\/handler.rb$/ if language == 'Ruby'
+      only = /\/handler.cr$/ if language == 'Crystal'
+      listener = Listen.to(target, only: only) do |modified, added, removed|
+        full_path, relative_path, event = translate(modified, added, removed)
+        # Filewatcher.new(target).watch do |full_path, event|
+        next unless event == :added
+        file_name = File.basename(full_path)
+        function_folder = File.dirname(full_path)
+        function_name = get_function_name(function_folder)
+        yield(function_folder, file_name, full_path, function_name)
+        enable_sync_for(function_folder, delay: 1) if SYNC_ENABLED
       end
+      listener.start
+      listener
     end
 
     def self.start_crystal(functions)
       puts "#{tag} Crystal functions: #{functions}"
       enable_sync(functions, delay: 1) if SYNC_ENABLED
       watch_for_live_compile(functions) unless SYNC_ENABLED
-      detect_new_functions("**/handler.cr", 'Crystal') do |function_folder, file, full_path, function_name|
+      detect_new_functions(Dir.pwd, 'Crystal') do |function_folder, file, full_path, function_name|
         function_folder = normalize_crystal_folder(function_folder)
         add_configuration(function_folder, file, full_path)
         puts "#{tag} New Crystal function detected at '#{function_name}'."
@@ -127,7 +128,7 @@ module FaaStRuby
     def self.start_ruby(functions)
       puts "#{tag} Ruby functions: #{functions}"
       enable_sync(functions) if SYNC_ENABLED
-      detect_new_functions("**/handler.rb", 'Ruby') do |function_folder, file, full_path, function_name|
+      detect_new_functions(Dir.pwd, 'Ruby') do |function_folder, file, full_path, function_name|
         add_configuration(function_folder, file, full_path)
         puts "#{tag} New Ruby function detected at '#{function_name}'."
         write_handler(full_path, 'ruby') unless File.size(full_path) > 0
@@ -167,6 +168,7 @@ module FaaStRuby
         add_thread(full_path, 'deployed', true)
       end
       listener.start
+      listener
     end
 
     def self.translate(modified, added, removed)
@@ -204,13 +206,15 @@ module FaaStRuby
     def self.start!
       Dir.chdir FaaStRuby::ProjectConfig.functions_dir
       functions = find_functions
-      threads = []
+      listeners = {}
       puts "#{tag} Sync mode enabled. Your functions will be auto-deployed to the workspace '#{WORKSPACE_NAME}'." if SYNC_ENABLED
-      threads << start_ruby(functions['ruby']) if RUBY_ENABLED
-      threads << start_crystal(functions['crystal']) if CRYSTAL_ENABLED
+      listeners['ruby'] = start_ruby(functions['ruby']) if RUBY_ENABLED
+      listeners['crystal'] =  start_crystal(functions['crystal']) if CRYSTAL_ENABLED
       # aaa # gotta finish configure public sync
-      threads << start_public if STATIC_FILES_SYNC_ENABLED
-      threads.each {|t| t.join}
+      listeners['public'] = start_public if STATIC_FILES_SYNC_ENABLED
+      sleep
+    ensure
+      listeners.each {|language, listener| listener.stop}
     end
 
     def self.normalize_crystal_folder(function_folder)
@@ -324,6 +328,7 @@ module FaaStRuby
     def self.kill_thread_if_alive(function_folder, kind, function_name)
       thr = get_thread(function_folder, kind)
       if thr&.alive?
+        puts "Killing thread #{thr}"
         Thread.kill(thr)
         return true
       end
@@ -338,10 +343,12 @@ module FaaStRuby
         "#{function_folder}/handler.dwarf",
         "#{function_folder}/.package.zip"
       ]
-      Filewatcher.new(function_folder, exclude: exclude_from_watcher).watch do |filename, event|
-        next if File.directory?(filename)
+      # Filewatcher.new(function_folder, exclude: exclude_from_watcher).watch do |filename, event|
+      listener = Listen.to(function_folder) do |modified, added, removed|
+        full_path, relative_path, event = translate(modified, added, removed)
+        next if exclude_from_watcher.include?(full_path)
         puts "#{tag} Previous Deploy for '#{function_name}' aborted" if kill_thread_if_alive(function_folder, 'deploying', function_name)
-        if event == :deleted && is_a_function?(filename, function_folder)
+        if event == :removed && is_a_function?(full_path, function_folder)
           remove_from_project(function_folder, function_name)
           next
         end
@@ -349,6 +356,8 @@ module FaaStRuby
         puts "#{tag} Running: #{deploy_cmd_print.join(' ')}"
         deploy(function_folder, deploy_cmd)
       end
+      listener.start
+      listener
     end
 
     def self.is_a_function?(filename, function_folder)

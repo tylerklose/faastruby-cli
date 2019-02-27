@@ -21,7 +21,8 @@ module FaaStRuby
           @abort_when_tests_fail = @yaml_config['abort_build_when_tests_fail']
           parse_options
           @options['source'] ||= '.'
-          @options['output_file'] ||= "#{@function_name}.zip"
+          @package_file = Tempfile.new('package')
+          @options['output_file'] ||= @package_file.path
         end
 
         def ruby_runtime?
@@ -43,6 +44,8 @@ module FaaStRuby
           FaaStRuby::CLI.error("Build aborted because tests failed and you have 'abort_build_when_tests_fail: true' in 'faastruby.yml'") unless tests_passed || !@abort_when_tests_fail
           puts "[#{@function_name}] Warning: Ignoring failed tests because you have 'abort_build_when_tests_fail: false' in 'faastruby.yml'".yellow if !tests_passed && !@abort_when_tests_fail
           build(@options['source'], @options['output_file'])
+          @package_file.close
+          @package_file.unlink
         end
 
         def self.help

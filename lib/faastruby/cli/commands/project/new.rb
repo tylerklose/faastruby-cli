@@ -138,7 +138,7 @@ module FaaStRuby
           [
             "project:",
             "  # The project name",
-            "  name: myproject",
+            "  name: #{@project_name}",
             "",
             "  ## The 'public' directory, where you put static files.",
             "  ## Files will be served from here first, meaning that if",
