@@ -7,7 +7,7 @@ module FaaStRuby
     def initialize
       @api_url = "#{FaaStRuby.api_host}/#{@@api_version}"
       @credentials = {'API-KEY' => FaaStRuby.api_key, 'API-SECRET' => FaaStRuby.api_secret}
-      @headers = {content_type: 'application/json', accept: 'application/json'}.merge(@credentials)
+      @headers = {client_version: FaaStRuby::VERSION, content_type: 'application/json', accept: 'application/json'}.merge(@credentials)
       @struct = Struct.new(:response, :body, :errors, :code)
       @timeout = nil # disable request timeouts
     end
