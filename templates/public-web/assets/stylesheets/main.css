@@ -40,8 +40,8 @@ h1,h2,h3,h4,h5,h6 {
 }
 
 .logo-image-div {
-  vertical-align:middle; /*middle centred*/
-  display:table-cell; /*acts like a table cell*/
+  vertical-align:middle;
+  display:table-cell;
   width: 60px;
   padding: 0px;
 }
@@ -52,8 +52,8 @@ h1,h2,h3,h4,h5,h6 {
 }
 
 .logo-name-div {
-  vertical-align:middle; /*middle centred*/
-  display:table-cell; /*acts like a table cell*/
+  vertical-align:middle;
+  display:table-cell;
   padding-left: 5px;
   padding-bottom: 6px;
 }
@@ -64,22 +64,5 @@ h1,h2,h3,h4,h5,h6 {
 
 .content {
   width: 100%;
-  /* padding: 15px; */
   margin: 0px;
-  display:table;
-}
-
-.content-left {
-  padding: 30px;
-  width: 50%;
-  vertical-align:top;
-  display:table-cell;
-}
-
-.content-right {
-  padding: 15px;
-  width: 50%;
-  vertical-align:middle;
-  align-content: center;
-  display:table-cell;
 }

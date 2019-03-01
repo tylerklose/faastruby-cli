@@ -1,1 +1,1 @@
-console.log('it works');
+console.log('Welcome to FaaStRuby Local!');
