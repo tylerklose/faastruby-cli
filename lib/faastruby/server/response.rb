@@ -6,6 +6,13 @@ module FaaStRuby
     end
   end
   class Response
+    def self.error(error)
+      new(
+        body: error,
+        status: 500,
+        headers: {'Content-Type' => 'application/json'}
+      )
+    end
     def self.request_limit_reached(workspace: nil, function: nil)
       body = {'error' => "Concurrent requests limit reached. Please add more runners to the workspace #{workspace}."} if workspace
       # body = {'error' => "Concurrent requests limit reached for function '#{workspace}/#{function}'. Please associate more runners."} if function
@@ -15,6 +22,10 @@ module FaaStRuby
         status: 422,
         headers: {'Content-Type' => 'application/json'}
       )
+    end
+
+    def self.from_payload(payload)
+      from_json Base64.urlsafe_decode64(payload)
     end
     def self.from_json(json)
       hash = Oj.load(json)

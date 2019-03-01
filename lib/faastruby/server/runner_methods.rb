@@ -15,12 +15,6 @@ module FaaStRuby
       response
     end
 
-    def require_function(function, as:, raise_errors: true)
-      self.class.send(:remove_const, as.capitalize) if self.class.const_defined?(as.capitalize)
-      self.class.const_set as.capitalize, FaaStRuby::RPC::Function.new(function, raise_errors: raise_errors)
-      return false
-    end
-
     def render(
         js: nil,
         css: nil,
@@ -96,7 +90,7 @@ module FaaStRuby
     end
 
     def puts(msg)
-      super "[#{@short_path}] #{msg}".green
+      super "[#{@path}] #{msg}".green
     end
 
     def publish(channel, data: nil)

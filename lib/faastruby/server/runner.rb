@@ -1,6 +1,9 @@
 require 'base64'
 require 'open3'
 module FaaStRuby
+  # require 'faastruby/server/response'
+  # require 'faastruby/server/runner_methods'
+  # require 'faastruby/server/function_object'
   class Runner
     def initialize(function_name)
       # puts "initializing runner for function name #{function_name}"
@@ -52,14 +55,30 @@ module FaaStRuby
     end
     def call_ruby(event, args)
       function_object = FunctionObject.new(@function_name)
+      reader, writer = IO.pipe
       time_start = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond)
-      response = chdir do
+      pid = fork do
         # puts "loading #{@function_folder}/handler.rb"
-        function = load_function("#{@function_folder}/handler.rb")
-        function_object.extend(function)
-        function_object.handler(event, *args)
+        Dir.chdir(@function_folder)
+        begin
+          function = load_function("#{@function_folder}/handler.rb")
+          function_object.extend(function)
+          response = function_object.handler(event, *args)
+          raise FaaStRuby::Response::InvalidResponseError unless response.is_a?(FaaStRuby::Response)
+        rescue Exception => e
+          error = Oj.dump({
+            'error' => e.message,
+            'location' => e.backtrace&.first
+          })
+          response = FaaStRuby::Response.error(error)
+        end
+        writer.puts response.payload
+        writer.close
+        exit 0
       end
-      raise FaaStRuby::Response::InvalidResponseError unless response.is_a?(FaaStRuby::Response)
+      response = FaaStRuby::Response.from_payload reader.gets.chomp
+      reader.close
+      Process.wait(pid)
       time_finish = Process.clock_gettime(Process::CLOCK_MONOTONIC, :float_millisecond)
       time = (time_finish - time_start).round(2)
       [time, response]
