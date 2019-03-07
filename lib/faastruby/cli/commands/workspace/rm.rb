@@ -13,12 +13,12 @@ module FaaStRuby
 
         def run
           # destination_url = "#{FaaStRuby.workspace_host_for(@workspace_name)}/#{@relative_path}"
-          spinner = say("[#{@relative_path}] Removing file from workspace '#{@workspace_name}'...")
+          spinner = say("[#{@relative_path}] Removing file from cloud workspace '#{@workspace_name}'...")
           workspace = FaaStRuby::Workspace.new(name: @workspace_name)
           workspace.delete_file(relative_path: @relative_path)
           FaaStRuby::CLI.error(workspace.errors) if workspace.errors.any?
           spinner.stop("Done!")
-          puts "* [#{@relative_path}] File removed.".green
+          puts "* [#{@relative_path}] File removed from cloud workspace '#{@workspace_name}'.".green
         end
 
 

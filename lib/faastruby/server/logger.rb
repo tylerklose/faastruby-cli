@@ -6,7 +6,7 @@ module FaaStRuby
       def puts(msg)
         msg = Rouge.highlight(msg, 'ruby', Rouge::Formatters::Terminal256.new(Rouge::Themes::Monokai.new))
         STDOUT_MUTEX.synchronize do
-          STDOUT.puts "#{Time.now} #{msg}"
+          STDOUT.puts "#{Time.now} | #{msg}"
           STDOUT.puts "---"
         end
       end
@@ -34,14 +34,14 @@ module FaaStRuby
 
       def self.puts(msg)
         STDOUT_MUTEX.synchronize do
-          STDOUT.puts "#{Time.now} #{msg}".yellow
+          STDOUT.puts "#{Time.now} | #{msg}".yellow
           STDOUT.puts "---".yellow
         end
       end
 
       def puts(msg)
         STDOUT_MUTEX.synchronize do
-          STDOUT.puts "#{Time.now} #{msg}".yellow
+          STDOUT.puts "#{Time.now} | #{msg}".yellow
           STDOUT.puts "---".yellow
         end
       end

@@ -19,7 +19,7 @@ module FaaStRuby
   CRYSTAL_ENABLED = crystal_present_and_supported?
   RUBY_ENABLED = ruby_present_and_supported?
   unless RUBY_ENABLED || CRYSTAL_ENABLED
-    puts "\n[ERROR] You need to have one of the following language:version pairs in order to use FaaStRuby LocalKit."
+    puts "\n[ERROR] You need to have one of the following language:version pairs in order to use FaaStRuby Local."
     puts SUPPORTED_RUNTIMES.join(', ') + "\n"*2
     exit 1
   end
@@ -36,16 +36,19 @@ module FaaStRuby
   DEFAULT_RUBY_RUNTIME = "ruby:#{RUBY_VERSION}".freeze
   require 'faastruby/server/logger'
   require 'faastruby/server/project_config'
+  require 'faastruby/server/local'
+  FaaStRuby::Local.start!(deploy_env: DEPLOY_ENVIRONMENT, sync: SYNC_ENABLED, debug: ENV['DEBUG'])
+
   # require 'faastruby/server/concurrency_controller'
   require 'faastruby/server/errors'
   require 'faastruby/server/event_channel'
   require 'faastruby/server/subscriber'
-  require 'faastruby/server/event_hub'
+  # require 'faastruby/server/event_hub'
   require 'faastruby/server/runner_methods'
   require 'faastruby/server/function_object'
   require 'faastruby/server/runner'
   require 'faastruby/server/event'
   require 'faastruby/server/response'
-  require 'faastruby/server/sentinel'
+  # FaaStRuby::EventHub.listen_for_events!
   require 'faastruby/server/app'
 end

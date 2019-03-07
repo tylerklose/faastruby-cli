@@ -57,6 +57,7 @@ module FaaStRuby
     def self.start_server(args)
       parsed = []
       parsed << 'FAASTRUBY_PROJECT_SYNC_ENABLED=true' if args.delete('--sync')
+      parsed << 'DEBUG=true' if args.delete('--debug')
       args.each_with_index do |arg, i|
         if arg == '--deploy-env'
           args.delete_at(i)

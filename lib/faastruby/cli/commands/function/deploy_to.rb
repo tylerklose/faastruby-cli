@@ -57,7 +57,7 @@ module FaaStRuby
           end
           if workspace.errors.any?
             puts ' Failed :(' unless spinner&.stop(' Failed :(')
-            FileUtils.rm('.package.zip')
+            @package_file.unlink
             FaaStRuby::CLI.error(workspace.errors)
           end
           spinner.stop(' Done!') unless @options['quiet']
@@ -86,6 +86,7 @@ module FaaStRuby
         end
 
         def create_or_use_workspace
+          return true if @options['dont_create_workspace']
           unless @has_credentials
             puts "[#{@function_name}] Attemping to create workspace '#{@workspace_name}'"
             cmd = FaaStRuby::Command::Workspace::Create.new([@workspace_name])
@@ -155,6 +156,8 @@ module FaaStRuby
               @options['is_root'] = true
             when '--set-catch-all'
               @options['is_catch_all'] = true
+            when '--dont-create-workspace'
+              @options['dont_create_workspace'] = true
             else
               FaaStRuby::CLI.error("Unknown argument: #{option}")
             end

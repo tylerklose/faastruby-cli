@@ -1,29 +1,18 @@
 require 'oj'
 require 'faastruby-rpc'
 require 'base64'
-require 'faastruby/server'
 require 'sinatra'
 require 'sinatra/multi_route'
-require 'filewatcher'
 require 'securerandom'
 require 'rouge'
 require 'colorize'
 module FaaStRuby
-  def self.sentinel_pid
-    @@sentinel_pid
-  end
-  FaaStRuby::EventHub.listen_for_events!
-  FaaStRuby::Sentinel.try_workspace if SYNC_ENABLED
-  @@sentinel_pid = fork do
-    FaaStRuby::Sentinel.start!
-  end
 
   class Server < Sinatra::Base
     include FaaStRuby::Logger::Requests
     set :show_exceptions, true
     set :logging, true
     set :root, SERVER_ROOT
-    # puts "Using public folder: #{FaaStRuby::ProjectConfig.public_dir}"
     set :public_folder, FaaStRuby::ProjectConfig.public_dir
     set :static, true
     register Sinatra::MultiRoute
@@ -34,7 +23,6 @@ module FaaStRuby
       request_uuid = SecureRandom.uuid
       splat = params['splat'][0]
       function_name = resolve_function_name(splat)
-      # headers = env.select {|key, value| key.include?('HTTP_') || ['CONTENT_TYPE', 'CONTENT_LENGTH', 'REMOTE_ADDR', 'REQUEST_METHOD', 'QUERY_STRING'].include?(key) }
       headers = parse_headers(env)
       if headers.has_key?("Faastruby-Rpc")
         body = nil
@@ -80,11 +68,9 @@ module FaaStRuby
 
     def resolve_function_name(splat)
       if splat == ''
-        # puts "Loading root function #{FaaStRuby::ProjectConfig.root_to}"
         return FaaStRuby::ProjectConfig.root_to
       end
       if !is_a_function?(splat)
-        # puts "#{splat} is not a function. Returning #{FaaStRuby::ProjectConfig.catch_all}"
         return FaaStRuby::ProjectConfig.catch_all
       end
       return splat

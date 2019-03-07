@@ -93,15 +93,15 @@ module FaaStRuby
       super "[#{@path}] #{msg}".green
     end
 
-    def publish(channel, data: nil)
-      begin
-        encoded_data = data ? Base64.urlsafe_encode64(data, padding: false) : ""
-        payload = %(#{Base64.urlsafe_encode64(channel, padding: false)},#{encoded_data})
-        EventHub.queue.push payload
-        true
-      rescue
-        false
-      end
-    end
+    # def publish(channel, data: nil)
+    #   begin
+    #     encoded_data = data ? Base64.urlsafe_encode64(data, padding: false) : ""
+    #     payload = %(#{Base64.urlsafe_encode64(channel, padding: false)},#{encoded_data})
+    #     EventHub.queue.push payload
+    #     true
+    #   rescue
+    #     false
+    #   end
+    # end
   end
 end

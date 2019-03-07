@@ -89,6 +89,10 @@ module FaaStRuby
       '-v' => Proc.new do
         require 'faastruby/cli/commands/version'
         FaaStRuby::Command::Version
+      end,
+      'watch' => Proc.new do
+        require 'faastruby/local'
+        FaaStRuby::Local.start!
       end
     }
   end
