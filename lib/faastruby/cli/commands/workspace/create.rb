@@ -1,9 +1,9 @@
 module FaaStRuby
   module Command
     module Workspace
-      require 'faastruby/cli/commands/workspace/base_command'
+      # require 'faastruby/cli/commands/workspace/base_command'
       require 'faastruby/cli/new_credentials'
-      class Create < WorkspaceBaseCommand
+      class Create < BaseCommand
         def initialize(args)
           @args = args
           help
@@ -18,15 +18,18 @@ module FaaStRuby
 
         def run(create_directory: true, exit_on_error: true)
           unless @options['skip_creation']
-            spinner = spin("Initializing workspace '#{@workspace_name}'...")
+            spinner = spin("Setting up workspace '#{@workspace_name}'...")
             workspace = FaaStRuby::Workspace.create(name: @workspace_name, email: @options['email'])
-            if workspace.errors.any? && exit_on_error
-              spinner.stop(" Failed :(")
-              FaaStRuby::CLI.error(workspace.errors)
+            if workspace.errors.any?
+              spinner.stop(" Failed :(") if exit_on_error
+              FaaStRuby::CLI.error(workspace.errors) if exit_on_error
+              spinner.stop
+              return false
             end
             spinner.stop(" Done!")
           end
           create_dir if @options['create_local_dir'] && create_directory && !dir_exists?
+          true
         end
 
         def self.help
@@ -34,7 +37,7 @@ module FaaStRuby
         end
 
         def usage
-          puts "Usage: faastruby #{self.class.help}"
+          puts "\nUsage: faastruby #{self.class.help}"
           puts %(
 --create-local-dir    # Create a local folder in addition to the cloud
 --local-only          # Only create a local folder. Skip creating workspace on the cloud

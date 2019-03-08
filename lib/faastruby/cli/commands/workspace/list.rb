@@ -2,9 +2,9 @@ require 'tty-table'
 module FaaStRuby
   module Command
     module Workspace
-      require 'faastruby/cli/commands/workspace/base_command'
+      # require 'faastruby/cli/commands/workspace/base_command'
       require 'faastruby/cli/new_credentials'
-      class List < WorkspaceBaseCommand
+      class List < BaseCommand
         def initialize(args)
           @args = args
           help
@@ -38,8 +38,8 @@ module FaaStRuby
         end
 
         def usage
-          puts "# List the contents of a cloud workspace."
-          puts "Usage: faastruby #{self.class.help}"
+          puts "\n# List the contents of a cloud workspace."
+          puts "\nUsage: faastruby #{self.class.help}\n\n"
         end
 
         private

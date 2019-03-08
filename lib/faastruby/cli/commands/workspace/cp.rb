@@ -3,10 +3,10 @@ module FaaStRuby
     module Workspace
       require 'tmpdir'
       require 'tempfile'
-      require 'faastruby/cli/commands/workspace/base_command'
+      # require 'faastruby/cli/commands/workspace/base_command'
       require 'faastruby/cli/package'
       require 'faastruby/cli/new_credentials'
-      class CP < WorkspaceBaseCommand
+      class CP < BaseCommand
         def initialize(args)
           @args = args
           help
@@ -49,8 +49,8 @@ module FaaStRuby
         end
 
         def usage
-          puts "# Deploy static file SOURCE_FILE to workspace path /DESTINATION/PATH."
-          puts "Usage: faastruby #{self.class.help}"
+          puts "\n# Deploy static file SOURCE_FILE to workspace path /DESTINATION/PATH.\n"
+          puts "\nUsage: faastruby #{self.class.help}\n\n"
         end
 
         private

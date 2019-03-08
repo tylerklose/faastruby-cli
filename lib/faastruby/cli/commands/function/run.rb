@@ -37,7 +37,7 @@ module FaaStRuby
         end
 
         def usage
-          puts "Usage: faastruby #{self.class.help}"
+          puts "\nUsage: faastruby #{self.class.help}"
           puts %(
 -b,--body 'DATA'               # The request body
 --stdin                        # Read the request body from STDIN

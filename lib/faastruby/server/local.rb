@@ -11,10 +11,11 @@ module FaaStRuby
         cmd << "DEBUG=true" if debug
         cmd << "DEPLOY_ENVIRONMENT=#{deploy_env}"
         cmd << "faastruby watch"
-        loop do
+        5.times do
           system(cmd.join(" "))
           sleep 1
         end
+        puts "FaaStRuby Local exited. Please press CTRL+C."
       end
     end
   end

@@ -33,7 +33,7 @@ module FaaStRuby
         end
 
         def usage
-          puts "Usage: faastruby #{self.class.help}"
+          puts "\nUsage: faastruby #{self.class.help}"
           puts %(
 -d, --data 'STRING'    # The context data. Must be quoted.
 --stdin                # Read context data from STDIN

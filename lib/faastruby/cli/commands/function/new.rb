@@ -47,7 +47,7 @@ module FaaStRuby
         end
 
         def usage
-          puts "Usage: faastruby #{self.class.help}"
+          puts "\nUsage: faastruby #{self.class.help}"
           puts %(
 --blank          # Create a blank function
 --force          # Continue if directory already exists and overwrite files

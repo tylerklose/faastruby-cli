@@ -2,7 +2,6 @@ module FaaStRuby
   module Command
     module Function
       require 'faastruby/cli/commands/function/base_command'
-      require 'faastruby/cli/commands/function/test'
       require 'faastruby/cli/package'
       class Build < FunctionBaseCommand
         def self.build(source, output_file, function_name, quiet = false)
@@ -80,6 +79,7 @@ module FaaStRuby
         end
 
         def run_tests
+          require 'faastruby/cli/commands/function/test'
           FaaStRuby::Command::Function::Test.new(true).run(do_not_exit: true)
         end
 

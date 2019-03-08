@@ -23,16 +23,33 @@ module FaaStRuby
           spinner.stop(" Done!")
           user.save_credentials
           puts "Login successful!"
+          migrate
+        end
+
+        def migrate
+          old_credentials = File.expand_path("~/.faastruby.tor1")
+          return unless File.file?(old_credentials)
+          puts "ATTENTION: I've detected you have workspace credentials saved in '#{old_credentials}'.".red
+          puts "You need to migrate these credentials into your account."
+          print "Do you want to do it right now? [Y/n] "
+          answer = STDIN.gets.chomp
+          if answer == 'n'
+            puts "You won't be able to manage these workspaces until you perform this migration."
+            puts "When you are ready to perform this migration, run 'faastruby migrate-workspaces'."
+            exit 0
+          else
+            exec("faastruby migrate-workspaces")
+          end
         end
 
         def self.help
-          "confirm-account".light_cyan + " -e,--email EMAIL"
+          "confirm-account [ARGS]"
         end
 
         def usage
           puts "Usage: faastruby #{self.class.help}"
           puts %(
--e,--email EMAIL     # Your email
+-e,--email EMAIL      # Your email
           )
         end
 

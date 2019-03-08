@@ -49,7 +49,7 @@ module FaaStRuby
         end
 
         def self.help
-          "signup".light_cyan
+          "signup"
         end
 
         def usage

@@ -1,7 +1,7 @@
 module FaaStRuby
   module Command
     require 'faastruby/cli/base_command'
-    require 'faastruby/cli/credentials'
+    # require 'faastruby/cli/credentials'
     COMMANDS = {
       'new' => Proc.new do
         require 'faastruby/cli/commands/function/new'
@@ -19,10 +19,10 @@ module FaaStRuby
         require 'faastruby/cli/commands/function/update_context'
         FaaStRuby::Command::Function::UpdateContext
       end,
-      'upgrade' => Proc.new do
-        require 'faastruby/cli/commands/function/upgrade'
-        FaaStRuby::Command::Function::Upgrade
-      end,
+      # 'upgrade' => Proc.new do
+      #   require 'faastruby/cli/commands/function/upgrade'
+      #   FaaStRuby::Command::Function::Upgrade
+      # end,
       'build' => Proc.new do
         require 'faastruby/cli/commands/function/build'
         FaaStRuby::Command::Function::Build
@@ -59,6 +59,14 @@ module FaaStRuby
         require 'faastruby/cli/commands/project/deploy'
         FaaStRuby::Command::Project::Deploy
       end,
+      'up' => Proc.new do
+        require 'faastruby/cli/commands/project/deploy'
+        FaaStRuby::Command::Project::Deploy
+      end,
+      'down' => Proc.new do
+        require 'faastruby/cli/commands/project/down'
+        FaaStRuby::Command::Project::Down
+      end,
       'test' => Proc.new do
         require 'faastruby/cli/commands/function/test'
         FaaStRuby::Command::Function::Test
@@ -76,6 +84,7 @@ module FaaStRuby
       #   FaaStRuby::Command::Credentials::List
       # end,
       'help' => Proc.new do
+        require 'faastruby/cli/commands/help'
         FaaStRuby::Command::Help
       end,
       '-h' => Proc.new do
@@ -109,6 +118,10 @@ module FaaStRuby
       'logout' => Proc.new do
         require 'faastruby/cli/commands/account/logout'
         FaaStRuby::Command::Account::Logout
+      end,
+      'migrate-workspaces' => Proc.new do
+        require 'faastruby/cli/commands/workspace/migrate'
+        FaaStRuby::Command::Workspace::Migrate
       end
     }
   end

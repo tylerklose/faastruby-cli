@@ -1,6 +1,6 @@
 module FaaStRuby
   module Command
-    require 'faastruby/cli/commands'
+    require 'faastruby/cli/base_command'
     class Help < BaseCommand
       def initialize(args)
         @args = args
@@ -20,7 +20,7 @@ module FaaStRuby
         puts %(
 Accounts:
   signup
-  confirm-account      # Send a code over email for account confirmation
+  confirm-account      # Send a token over email for account confirmation
   login
   logout
 
@@ -44,25 +44,7 @@ Workspaces:
   update-workspace     # Update workspace settings
 
 )
-        # workspaces = ["Workspaces:"]
-        # functions = ["Functions:"]
-        # account = ["Account:"]
-        # FaaStRuby::Command::COMMANDS.each do |command, klass|
-        #   next if command == 'upgrade'
-        #   next if klass.call.to_s.match(/.+Command::Help$/)
-        #   next if klass.call.to_s.match(/.+Command::Version$/)
-        #   section = functions if klass.call.to_s.match(/.+::Function::.+/)
-        #   section = workspaces if klass.call.to_s.match(/.+::Workspace::.+/)
-        #   section = credentials if klass.call.to_s.match(/.+::Credentials::.+/)
-        #   section ||= []
-        #   section << "  #{klass.call.help}"
-        # end
-        # puts workspaces
-        # puts
-        # puts functions
-        # puts
-        # puts credentials
-        # puts
+        puts "Run faastruby COMMAND --help for more details."
       end
     end
   end

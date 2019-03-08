@@ -131,6 +131,22 @@ module FaaStRuby
       end
     end
 
+    def migrate_to_account(workspace_name:, api_key:, api_secret:)
+      url = "#{@api_url}/workspaces/#{workspace_name}/migrate"
+      payload = {
+        'api_key' => api_key,
+        'api_secret' => api_secret
+      }
+      parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, headers: @headers, payload: Oj.dump(payload))
+    rescue RestClient::ExceptionWithResponse => err
+      case err.http_code
+      when 301, 302, 307
+        err.response.follow_redirection
+      else
+        parse err.response
+      end
+    end
+
     def get_static_metadata(workspace_name)
       url = "#{@api_url}/workspaces/#{workspace_name}/static/metadata"
       parse RestClient::Request.execute(method: :get, timeout: @timeout, url: url, headers: @headers)

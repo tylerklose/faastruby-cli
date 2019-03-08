@@ -40,9 +40,9 @@ module FaaStRuby
         end
 
         def usage
-          puts "Usage: faastruby #{self.class.help}"
+          puts "\nUsage: faastruby #{self.class.help}"
           puts %(
--y,--yes                       # Don't prompt
+-y,--yes                       # Don't prompt for confirmation
 -f,--function FUNCTION_NAME    # Pass the function name instead of attempting
                                # to read from the function's config file.
           )

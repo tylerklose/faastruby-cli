@@ -56,8 +56,10 @@ module FaaStRuby
       end
 
       def remove_ignore(entry)
+        debug "remove_ignore(#{entry})"
         @mutex.synchronize do
           @ignore.delete(entry)
+          debug "Removed: is nil? #{@ignore[entry].nil?}"
         end
       end
 

@@ -1,9 +1,9 @@
 module FaaStRuby
   module Command
     module Workspace
-      require 'faastruby/cli/commands/workspace/base_command'
+      # require 'faastruby/cli/commands/workspace/base_command'
       require 'faastruby/cli/new_credentials'
-      class RM < WorkspaceBaseCommand
+      class RM < BaseCommand
         def initialize(args)
           @args = args
           help
@@ -29,8 +29,8 @@ module FaaStRuby
         end
 
         def usage
-          puts "# Remove static file from cloud workspace path /DESTINATION/PATH."
-          puts "Usage: faastruby #{self.class.help}"
+          puts "\n# Remove static file from cloud workspace path '/DESTINATION/PATH'."
+          puts "\nUsage: faastruby #{self.class.help}\n\n"
         end
 
         private

@@ -21,6 +21,7 @@ module FaaStRuby
       def create_credentials_folder
         return true if File.file?(@file)
         FileUtils.mkdir_p(@folder)
+        clear
       end
 
       def read
@@ -30,7 +31,7 @@ module FaaStRuby
       def get
         creds = read['credentials'] || {}
         unless creds['email'] && creds['api_key'] && creds['api_secret']
-          FaaStRuby::CLI.error("Please login and try again.\nTo login, run 'faastruby login'.")
+          FaaStRuby::CLI.error("\nYou are not logged in. To login, run: faastruby login\n\nIf you don't have an account, run 'faastruby signup' to create one.\n", color: nil)
         end
         creds
       end

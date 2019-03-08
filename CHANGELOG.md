@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.4.19 - Unreleased
+## 0.5.0 - Mar 8 2019
+- Introduces FaaStRuby Local
+- Introduce user accounts and a migration tool to move the legacy workspace credentials into your account.
 - New key on faastruby.yml - `before_build` allows you to specify commands to run locally before building and uploading the function package.
 - New command: `update-workspace WORKSPACE_NAME --runners INT` - set the number of runners for a workspace.
 
@@ -27,7 +29,7 @@
 - Better message when updating the function context
 - Fixed output when creating a function with `faastruby new`
 
-A new version of the platform API was released in tandem to address the issue that would erase contexts when a function is redeployed. Thanks [Justin](https://github.com/presidentbeef) again for pointing that out. 
+A new version of the platform API was released in tandem to address the issue that would erase contexts when a function is redeployed. Thanks [Justin](https://github.com/presidentbeef) again for pointing that out.
 
 ## 0.4.12 - Jan 26 2019
 Special thanks to [Sean Earle](https://github.com/HellRok) for fixing those bugs!
@@ -41,7 +43,7 @@ Special thanks to [Sean Earle](https://github.com/HellRok) for fixing those bugs
 - Fix command `faastruby server`
 
 ## 0.4.9 - Jan 13 2019
-- Changes in `faastruby server` 
+- Changes in `faastruby server`
   - Cleaned up code
   - Logs are easier to read
   - Function responses show up in the log

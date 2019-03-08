@@ -1,9 +1,9 @@
 module FaaStRuby
   module Command
     module Workspace
-      require 'faastruby/cli/commands/workspace/base_command'
+      # require 'faastruby/cli/commands/workspace/base_command'
       require 'faastruby/cli/new_credentials'
-      class Update < WorkspaceBaseCommand
+      class Update < BaseCommand
         def initialize(args)
           @args = args
           help
@@ -27,7 +27,7 @@ module FaaStRuby
         end
 
         def usage
-          puts "Usage: faastruby #{self.class.help}"
+          puts "\nUsage: faastruby #{self.class.help}"
           puts %(
 --runners N   # Assign N runners to the workspace.
           )

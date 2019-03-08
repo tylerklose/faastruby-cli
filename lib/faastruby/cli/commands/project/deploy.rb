@@ -16,6 +16,7 @@ module FaaStRuby
           @options['environment'] ||= 'stage'
           @project_yaml = YAML.load(File.read(PROJECT_YAML_FILE))['project'] rescue FaaStRuby::CLI.error("Could not find file 'project.yml'. Are you running this command from the project's folder?")
           @project_name = @project_yaml['name']
+          @project_identifier = "-#{@project_yaml['identifier']}" if @project_yaml['identifier']
           @options['root_to'] ||= @project_yaml['root_to']
           @options['catch_all'] ||= @project_yaml['catch_all']
         end
@@ -31,7 +32,7 @@ module FaaStRuby
           errors = false
           root_folder = Dir.pwd
           jobs = []
-          workspace = "#{@project_name}-#{@options['environment']}"
+          workspace = "#{@project_name}-#{@options['environment']}#{@project_identifier}"
           try_workspace(workspace)
           spinner = spin("Deploying project '#{@project_name}'...")
           @options['functions'].each do |function_path|
@@ -84,7 +85,7 @@ module FaaStRuby
 -f,--function FUNCTION_PATH    # Specify the path to the function directory in your local machine.
                                # This argument can be repeated many times for multiple functions. Example:
                                # -f path/to/function1 -f path/to/function2
--e,--deploy-env ENVIRONMENT    # ENVIRONMENT is added to the project name to compose the workspace name.
+-e,--env ENVIRONMENT           # ENVIRONMENT is added to the project name to compose the workspace name.
           )
         end
 
@@ -99,7 +100,7 @@ module FaaStRuby
               @options['catch_all'] = @args.shift
             when '--function', '-f'
               @options['functions'] << @args.shift
-            when '--deploy-env', '-e'
+            when '--env', '-e'
               @options['environment'] = @args.shift
             else
               FaaStRuby::CLI.error("Unknown argument: #{option}")

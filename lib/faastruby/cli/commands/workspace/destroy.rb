@@ -1,9 +1,9 @@
 module FaaStRuby
   module Command
     module Workspace
-      require 'faastruby/cli/commands/workspace/base_command'
+      # require 'faastruby/cli/commands/workspace/base_command'
       require 'faastruby/cli/new_credentials'
-      class Destroy < WorkspaceBaseCommand
+      class Destroy < BaseCommand
         def initialize(args)
           @args = args
           help
@@ -51,7 +51,7 @@ module FaaStRuby
         end
 
         def usage
-          puts "Usage: faastruby #{self.class.help}"
+          puts "\nUsage: faastruby #{self.class.help}"
           puts %(
 -y,--yes    # Don't prompt for confirmation
           )

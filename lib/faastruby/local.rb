@@ -14,6 +14,7 @@ module FaaStRuby
     require 'faastruby/local/static_files'
     require 'faastruby/local/listeners'
     require 'faastruby/local/processors'
+    require 'faastruby/local/monkey_patch'
     extend Local::Logger
 
     def self.get_crystal_version
@@ -31,6 +32,20 @@ module FaaStRuby
       debug "self.ruby_present_and_supported?"
       system("which ruby >/dev/null") && SUPPORTED_RUBY.include?(RUBY_VERSION)
     end
+
+    def self.check_if_logged_in
+      creds_file = File.expand_path("~/.faastruby/credentials.yml")
+      yaml = YAML.load(File.read(creds_file)) rescue {}
+      unless yaml['credentials'] && yaml['credentials']['email']
+        STDOUT.puts "@@@ WARNING @@@ | You need to be logged in to use FaaStRuby Local with sync mode.".red
+        STDOUT.puts "@@@ WARNING @@@ | To login, run: faastruby login".red
+        STDOUT.puts "@@@ WARNING @@@ | Sync mode is *NOT* enabled!".red
+        STDOUT.puts "---".red
+        return false
+      end
+      return true
+    end
+
     DEBUG = ENV['DEBUG']
     CRYSTAL_ENABLED = crystal_present_and_supported?
     RUBY_ENABLED = ruby_present_and_supported?
@@ -43,7 +58,7 @@ module FaaStRuby
     PROJECT_YAML_FILE = "#{SERVER_ROOT}/project.yml"
     SECRETS_YAML_FILE = "#{SERVER_ROOT}/secrets.yml"
     DEPLOY_ENVIRONMENT = ENV['DEPLOY_ENVIRONMENT'] || 'stage'
-    SYNC_ENABLED = ENV['SYNC']
+    SYNC_ENABLED = ENV['SYNC'] && check_if_logged_in
     CRYSTAL_VERSION = get_crystal_version.freeze
     DEFAULT_CRYSTAL_RUNTIME = "crystal:#{CRYSTAL_VERSION}".freeze
     DEFAULT_RUBY_RUNTIME = "ruby:#{RUBY_VERSION}".freeze
@@ -52,6 +67,7 @@ module FaaStRuby
 
     def self.workspace
       debug "self.workspace"
+      return "#{project_config['name']}-#{DEPLOY_ENVIRONMENT}-#{project_config['identifier']}" if project_config['identifier']
       "#{project_config['name']}-#{DEPLOY_ENVIRONMENT}"
     end
 
@@ -110,6 +126,7 @@ module FaaStRuby
     end
 
     def self.start!
+      Listen::Adapter::Linux::DEFAULTS[:events] << :modify
       debug "self.start!"
       sync_mode_enabled if SYNC_ENABLED
       @@functions = Function.find_all_in(functions_dir)

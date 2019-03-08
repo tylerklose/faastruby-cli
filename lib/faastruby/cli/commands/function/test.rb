@@ -21,11 +21,11 @@ module FaaStRuby
         end
 
         def self.help
-          'test'.light_cyan
+          'test'
         end
 
         def usage
-          "Usage: faastruby #{self.class.help}"
+          "\nUsage: faastruby #{self.class.help}"
         end
       end
     end

@@ -65,6 +65,8 @@ module FaaStRuby
         deploy_cmd, deploy_cmd_print = generate_deploy_command
         puts "Running: #{deploy_cmd_print.join(' ')}"
         output, status = Open3.capture2e(deploy_cmd.join(' '))
+        STDOUT.puts "#{Time.now} | " + "* [#{name}] Deploying...".green
+        STDOUT.puts "---"
         String.disable_colorization = true
         if status.exitstatus == 0
           output.split("\n").each {|o| puts o unless o == '---'}
