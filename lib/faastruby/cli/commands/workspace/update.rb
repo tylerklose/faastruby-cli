@@ -2,14 +2,16 @@ module FaaStRuby
   module Command
     module Workspace
       require 'faastruby/cli/commands/workspace/base_command'
+      require 'faastruby/cli/new_credentials'
       class Update < WorkspaceBaseCommand
         def initialize(args)
           @args = args
+          help
           @missing_args = []
           FaaStRuby::CLI.error(@missing_args, color: nil) if missing_args.any?
           @workspace_name = @args.shift
-          FaaStRuby::Credentials.load_for(@workspace_name)
           parse_options
+          load_credentials
         end
 
         def run(create_directory: true, exit_on_error: true)
@@ -21,11 +23,14 @@ module FaaStRuby
         end
 
         def self.help
-          "update-workspace".light_cyan + " WORKSPACE_NAME --runners N   # Assign N runners to the workspace."
+          "update-workspace WORKSPACE_NAME ARGS"
         end
 
         def usage
-          "Usage: faastruby #{self.class.help}"
+          puts "Usage: faastruby #{self.class.help}"
+          puts %(
+--runners N   # Assign N runners to the workspace.
+          )
         end
 
         private

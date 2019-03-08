@@ -10,6 +10,7 @@ module FaaStRuby
         def initialize(args)
           @errors = []
           @args = args
+          help
           parse_options
           @options['functions'] += find_functions unless @options['functions'].any?
           @options['environment'] ||= 'stage'
@@ -74,11 +75,17 @@ module FaaStRuby
         end
 
         def self.help
-          "deploy".light_cyan + " [-f FUNCTION1] [-f FUNCTION2] [-e ENVIRONMENT]   # Deploy all or some functions in the project. ENVIRONMENT defaults to 'stage'."
+          "deploy [ARGS]"
         end
 
         def usage
-          "Usage: faastruby #{self.class.help}"
+          puts "Usage: faastruby #{self.class.help}"
+          puts %(
+-f,--function FUNCTION_PATH    # Specify the path to the function directory in your local machine.
+                               # This argument can be repeated many times for multiple functions. Example:
+                               # -f path/to/function1 -f path/to/function2
+-e,--deploy-env ENVIRONMENT    # ENVIRONMENT is added to the project name to compose the workspace name.
+          )
         end
 
         def parse_options

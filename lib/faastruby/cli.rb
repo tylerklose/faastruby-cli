@@ -6,6 +6,18 @@ module FaaStRuby
   FAASTRUBY_YAML = 'faastruby.yml'
   SPINNER_FORMAT = :spin_2
 
+  def self.credentials_file
+    return File.expand_path(ENV['FAASTRUBY_CREDENTIALS']) if ENV['FAASTRUBY_CREDENTIALS']
+    if region == DEFAULT_REGION && File.file?(File.expand_path('~/.faastruby'))
+      return File.expand_path('~/.faastruby')
+    elsif region == DEFAULT_REGION
+      return File.expand_path("~/.faastruby.#{region}")
+    else
+      return File.expand_path("~/.faastruby.#{region}")
+    end
+  end
+
+
   class CLI
     def self.error(message, color: :red)
       message.each {|m| STDERR.puts m.colorize(color)} if message.is_a?(Array)

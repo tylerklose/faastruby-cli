@@ -2,15 +2,16 @@ module FaaStRuby
   module Command
     module Workspace
       require 'faastruby/cli/commands/workspace/base_command'
+      require 'faastruby/cli/new_credentials'
       class Destroy < WorkspaceBaseCommand
         def initialize(args)
           @args = args
+          help
           @missing_args = []
           FaaStRuby::CLI.error(@missing_args, color: nil) if missing_args.any?
           @workspace_name = @args.shift
           parse_options
-          FaaStRuby::Credentials.load_for(@workspace_name)
-          @options['credentials_file'] ||= FaaStRuby.credentials_file
+          load_credentials
         end
 
         def run
@@ -19,9 +20,11 @@ module FaaStRuby
           workspace = FaaStRuby::Workspace.new(name: @workspace_name)
           spinner = spin("Destroying...")
           workspace.destroy
-          FaaStRuby::CLI.error(workspace.errors) if workspace.errors.any?
+          if workspace.errors.any?
+            spinner.stop(" Failed :(")
+            FaaStRuby::CLI.error(workspace.errors)
+          end
           spinner.stop("Done!")
-          FaaStRuby::Credentials.remove(@workspace_name, @options['credentials_file'])
           puts "Workspace '#{@workspace_name}' was deleted from the server"
         end
 
@@ -44,11 +47,14 @@ module FaaStRuby
         end
 
         def self.help
-          "destroy-workspace".light_cyan + " WORKSPACE_NAME [-y, --yes]"
+          "destroy-workspace WORKSPACE_NAME [ARGS]"
         end
 
         def usage
-          "Usage: faastruby #{self.class.help}"
+          puts "Usage: faastruby #{self.class.help}"
+          puts %(
+-y,--yes    # Don't prompt for confirmation
+          )
         end
 
         def parse_options

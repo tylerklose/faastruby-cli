@@ -3,13 +3,15 @@ module FaaStRuby
   module Command
     module Workspace
       require 'faastruby/cli/commands/workspace/base_command'
+      require 'faastruby/cli/new_credentials'
       class List < WorkspaceBaseCommand
         def initialize(args)
           @args = args
+          help
           @missing_args = []
           FaaStRuby::CLI.error(@missing_args, color: nil) if missing_args.any?
           @workspace_name = @args.shift
-          FaaStRuby::Credentials.load_for(@workspace_name)
+          load_credentials
         end
 
         def run
@@ -32,11 +34,12 @@ module FaaStRuby
         end
 
         def self.help
-          "list-workspace".light_cyan + " WORKSPACE_NAME"
+          "list-workspace WORKSPACE_NAME"
         end
 
         def usage
-          "Usage: faastruby #{self.class.help}"
+          puts "# List the contents of a cloud workspace."
+          puts "Usage: faastruby #{self.class.help}"
         end
 
         private

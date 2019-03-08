@@ -19,6 +19,7 @@ module FaaStRuby
       class New < ProjectBaseCommand
         def initialize(args)
           @args = args
+          help
           @missing_args = []
           FaaStRuby::CLI.error(@missing_args, color: nil) if missing_args.any?
           @project_name = @args.shift
@@ -43,11 +44,15 @@ module FaaStRuby
         end
 
         def self.help
-          "new-project".light_cyan + " PROJECT_NAME"
+          "new-project PROJECT_NAME [ARGS]"
         end
 
         def usage
-          "Usage: faastruby #{self.class.help}"
+          puts "Usage: faastruby #{self.class.help}"
+          puts %(
+--api     # Initialize a project folder using an API template
+--web     # (Default) Initialize a project folder using a WEB template
+          )
         end
 
         private

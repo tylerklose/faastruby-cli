@@ -5,16 +5,18 @@ module FaaStRuby
       require 'tempfile'
       require 'faastruby/cli/commands/workspace/base_command'
       require 'faastruby/cli/package'
+      require 'faastruby/cli/new_credentials'
       class CP < WorkspaceBaseCommand
         def initialize(args)
           @args = args
+          help
           @source_file = @args.shift
           @workspace_name, @relative_path = @args.shift.split(':')
           validate_command
           @package_file = Tempfile.new('package')
           @tmpdir = Dir.mktmpdir("package")
           # FaaStRuby::CLI.error(@missing_args, color: nil) if missing_args.any?
-          FaaStRuby::Credentials.load_for(@workspace_name)
+          load_credentials
         end
 
         def run
@@ -43,12 +45,12 @@ module FaaStRuby
         end
 
         def self.help
-          "cp".light_cyan + " SOURCE_FILE WORKSPACE_NAME:/path/to/file  # Deploy static file SOURCE_FILE to workspace path DESTINATION_PA
-          TH."
+          "cp SOURCE_FILE WORKSPACE_NAME:/DESTINATION/PATH"
         end
 
         def usage
-          "Usage: faastruby #{self.class.help}"
+          puts "# Deploy static file SOURCE_FILE to workspace path /DESTINATION/PATH."
+          puts "Usage: faastruby #{self.class.help}"
         end
 
         private

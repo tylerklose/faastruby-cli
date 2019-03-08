@@ -9,6 +9,7 @@ module FaaStRuby
       class New < FunctionBaseCommand
         def initialize(args)
           @args = args
+          help
           @missing_args = []
           FaaStRuby::CLI.error(@missing_args, color: nil) if missing_args.any?
           @function_name = @args.shift
@@ -42,27 +43,23 @@ module FaaStRuby
         end
 
         def self.help
-          "new".light_cyan + " FUNCTION_NAME [--blank] [--force] [--runtime]" +
-          <<-EOS
-
-    --blank
-        Create a blank function
-    --force
-        Continue if directory already exists and overwrite files
-    -g
-        Initialize a Git repository.
-    --runtime
-        Choose the runtime. Options are: #{SUPPORTED_RUNTIMES.join(', ')}
-    --template TYPE(local|git|github):SOURCE
-        Use another function as template. Examples:
-          --template local:/path/to/folder
-          --template git:git@github.com:user/repo.git
-          --template github:user/repo
-EOS
+          "new FUNCTION_NAME [ARGS]"
         end
 
         def usage
-          "Usage: faastruby #{self.class.help}"
+          puts "Usage: faastruby #{self.class.help}"
+          puts %(
+--blank          # Create a blank function
+--force          # Continue if directory already exists and overwrite files
+-g, --git        # Initialize a Git repository.
+--runtime        # Set the language runtime.
+                 # Options are: #{SUPPORTED_RUNTIMES.join(', ')}
+--template TYPE(local|git|github):SOURCE   # Initialize the function using a template
+                                           # Examples:
+                                           # --template local:/path/to/folder
+                                           # --template git:git@github.com:user/repo.git
+                                           # --template github:user/repo
+)
         end
 
         private
@@ -72,7 +69,7 @@ EOS
           while @args.any?
             option = @args.shift
             case option
-            when '-g'
+            when '-g', '--git'
               @options['git_init'] = true
             when '--template'
               FaaStRuby::CLI.error("Option '--template' can't be used with '--blank' or '--runtime'.".red) if @options['runtime'] || @options['blank_template']

@@ -2,16 +2,18 @@ module FaaStRuby
   module Command
     module Function
       require 'faastruby/cli/commands/function/base_command'
+      require 'faastruby/cli/new_credentials'
       class RemoveFrom < FunctionBaseCommand
         def initialize(args)
           @args = args
+          help
           @missing_args = []
           FaaStRuby::CLI.error(@missing_args, color: nil) if missing_args.any?
           @workspace_name = @args.shift
           parse_options
           load_yaml
           @function_name = @options['function_name'] || @yaml_config['name']
-          FaaStRuby::Credentials.load_for(@workspace_name)
+          load_credentials
         end
 
         def load_yaml
@@ -34,11 +36,16 @@ module FaaStRuby
         end
 
         def self.help
-          "remove-from".light_cyan + " WORKSPACE_NAME [-y, --yes]"
+          "remove-from WORKSPACE_NAME [ARGS]"
         end
 
         def usage
-          "Usage: faastruby #{self.class.help}"
+          puts "Usage: faastruby #{self.class.help}"
+          puts %(
+-y,--yes                       # Don't prompt
+-f,--function FUNCTION_NAME    # Pass the function name instead of attempting
+                               # to read from the function's config file.
+          )
         end
 
         private

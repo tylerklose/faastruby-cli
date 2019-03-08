@@ -2,13 +2,15 @@ module FaaStRuby
   module Command
     module Workspace
       require 'faastruby/cli/commands/workspace/base_command'
+      require 'faastruby/cli/new_credentials'
       class RM < WorkspaceBaseCommand
         def initialize(args)
           @args = args
+          help
           @workspace_name, @relative_path = @args.shift.split(':')
           validate_command
           # FaaStRuby::CLI.error(@missing_args, color: nil) if missing_args.any?
-          FaaStRuby::Credentials.load_for(@workspace_name)
+          load_credentials
         end
 
         def run
@@ -23,12 +25,12 @@ module FaaStRuby
 
 
         def self.help
-          "rm".light_cyan + " WORKSPACE_NAME:/path/to/file  # Remove static file from workspace path DESTINATION_PATH
-          TH."
+          "rm WORKSPACE_NAME:/DESTINATION/PATH"
         end
 
         def usage
-          "Usage: faastruby #{self.class.help}"
+          puts "# Remove static file from cloud workspace path /DESTINATION/PATH."
+          puts "Usage: faastruby #{self.class.help}"
         end
 
         private

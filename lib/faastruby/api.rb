@@ -7,7 +7,8 @@ module FaaStRuby
     def initialize
       @api_url = "#{FaaStRuby.api_host}/#{@@api_version}"
       @credentials = {'API-KEY' => FaaStRuby.api_key, 'API-SECRET' => FaaStRuby.api_secret}
-      @headers = {client_version: FaaStRuby::VERSION, content_type: 'application/json', accept: 'application/json'}.merge(@credentials)
+      @base_headers = {client_version: FaaStRuby::VERSION, content_type: 'application/json', accept: 'application/json'}
+      @headers = @base_headers.merge(@credentials)
       @struct = Struct.new(:response, :body, :errors, :code)
       @timeout = nil # disable request timeouts
     end
@@ -43,6 +44,84 @@ module FaaStRuby
       url = "#{@api_url}/workspaces/#{workspace_name}/runners"
       payload = {'runners_max' => runners_max}
       parse RestClient::Request.execute(method: :patch, timeout: @timeout, url: url, headers: @headers, payload: Oj.dump(payload))
+    rescue RestClient::ExceptionWithResponse => err
+      case err.http_code
+      when 301, 302, 307
+        err.response.follow_redirection
+      else
+        parse err.response
+      end
+    end
+
+    def signup(email:, password:)
+      url = "#{@api_url}/users/signup"
+      payload = {
+        'email' => email,
+        'password' => password
+      }
+      parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, headers: @base_headers, payload: Oj.dump(payload))
+    rescue RestClient::ExceptionWithResponse => err
+      case err.http_code
+      when 301, 302, 307
+        err.response.follow_redirection
+      else
+        parse err.response
+      end
+    end
+
+    def send_confirmation_code(email)
+      url = "#{@api_url}/users/confirm"
+      payload = {
+        'email' => email
+      }
+      parse RestClient::Request.execute(method: :patch, timeout: @timeout, url: url, headers: @base_headers, payload: Oj.dump(payload))
+    rescue RestClient::ExceptionWithResponse => err
+      case err.http_code
+      when 301, 302, 307
+        err.response.follow_redirection
+      else
+        parse err.response
+      end
+    end
+
+    def confirm_account(confirmation_token)
+      url = "#{@api_url}/users/confirm"
+      payload = {
+        'code' => confirmation_token
+      }
+      parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, headers: @base_headers, payload: Oj.dump(payload))
+    rescue RestClient::ExceptionWithResponse => err
+      case err.http_code
+      when 301, 302, 307
+        err.response.follow_redirection
+      else
+        parse err.response
+      end
+    end
+
+    def logout(api_key:, api_secret:, all: false)
+      url = "#{@api_url}/users/logout"
+      headers = @base_headers.merge({'API-KEY' => api_key, 'API-SECRET' => api_secret})
+      payload = {
+        'all' => all
+      }
+      parse RestClient::Request.execute(method: :delete, timeout: @timeout, url: url, headers: headers, payload: Oj.dump(payload))
+    rescue RestClient::ExceptionWithResponse => err
+      case err.http_code
+      when 301, 302, 307
+        err.response.follow_redirection
+      else
+        parse err.response
+      end
+    end
+
+    def login(email:, password:)
+      url = "#{@api_url}/users/login"
+      payload = {
+        'email' => email,
+        'password' => password
+      }
+      parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, headers: @base_headers, payload: Oj.dump(payload))
     rescue RestClient::ExceptionWithResponse => err
       case err.http_code
       when 301, 302, 307

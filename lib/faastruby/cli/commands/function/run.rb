@@ -5,6 +5,7 @@ module FaaStRuby
       class Run < FunctionBaseCommand
         def initialize(args)
           @args = args
+          help
           @missing_args = []
           FaaStRuby::CLI.error(@missing_args, color: nil) if missing_args.any?
           @options = {}
@@ -32,24 +33,22 @@ module FaaStRuby
         end
 
         def self.help
-          'run'.light_cyan + ' WORKSPACE_NAME [OPTIONS]' +
-          <<-EOS
-
-    Options:
-    -b, --body 'DATA'              # The request body
-    --stdin                        # Read the request body from STDIN
-    -m, --method METHOD            # The request method
-    -h, --header 'Header: Value'   # Set a header. Can be used multiple times.
-    -f, --form 'a=1&b=2'           # Send form data and set header 'Content-Type: application/x-www-form-urlencoded'
-    -j, --json '{"a":"1"}'         # Send JSON data and set header 'Content-Type: application/json'
-    -t, --time                     # Return function run time in the response
-    -q, --query 'foo=bar'          # Set a query parameter for the request. Can be used multiple times.
-    --curl                         # Return the CURL command equivalent for the request
-EOS
+          'run WORKSPACE_NAME [ARGS]'
         end
 
         def usage
-          "Usage: faastruby #{self.class.help}"
+          puts "Usage: faastruby #{self.class.help}"
+          puts %(
+-b,--body 'DATA'               # The request body
+--stdin                        # Read the request body from STDIN
+-m,--method METHOD             # The request method
+-h,--header 'Header: Value'    # Set a header. Can be used multiple times.
+-f,--form 'a=1&b=2'            # Send form data and set header 'Content-Type: application/x-www-form-urlencoded'
+-j,--json '{"a":"1"}'          # Send JSON data and set header 'Content-Type: application/json'
+-t,--time                      # Return function run time in the response
+-q,--query 'foo=bar'           # Set a query parameter for the request. Can be used multiple times.
+--curl                         # Return the CURL command equivalent for the request
+          )
         end
 
         private

@@ -1,8 +1,8 @@
-module FaaStRuby
-  module Command
-    module Credentials
-      class CredentialsBaseCommand < BaseCommand
-      end
-    end
-  end
-end
+# module FaaStRuby
+#   module Command
+#     module Credentials
+#       class CredentialsBaseCommand < BaseCommand
+#       end
+#     end
+#   end
+# end

@@ -67,14 +67,14 @@ module FaaStRuby
         require 'faastruby/cli/commands/function/run'
         FaaStRuby::Command::Function::Run
       end,
-      'add-credentials' => Proc.new do
-        require 'faastruby/cli/commands/credentials/add'
-        FaaStRuby::Command::Credentials::Add
-      end,
-      'list-credentials' => Proc.new do
-        require 'faastruby/cli/commands/credentials/list'
-        FaaStRuby::Command::Credentials::List
-      end,
+      # 'add-credentials' => Proc.new do
+      #   require 'faastruby/cli/commands/credentials/add'
+      #   FaaStRuby::Command::Credentials::Add
+      # end,
+      # 'list-credentials' => Proc.new do
+      #   require 'faastruby/cli/commands/credentials/list'
+      #   FaaStRuby::Command::Credentials::List
+      # end,
       'help' => Proc.new do
         FaaStRuby::Command::Help
       end,
@@ -93,6 +93,22 @@ module FaaStRuby
       'watch' => Proc.new do
         require 'faastruby/local'
         FaaStRuby::Local.start!
+      end,
+      'signup' => Proc.new do
+        require 'faastruby/cli/commands/account/signup'
+        FaaStRuby::Command::Account::Signup
+      end,
+      'confirm-account' => Proc.new do
+        require 'faastruby/cli/commands/account/confirm'
+        FaaStRuby::Command::Account::Confirm
+      end,
+      'login' => Proc.new do
+        require 'faastruby/cli/commands/account/login'
+        FaaStRuby::Command::Account::Login
+      end,
+      'logout' => Proc.new do
+        require 'faastruby/cli/commands/account/logout'
+        FaaStRuby::Command::Account::Logout
       end
     }
   end

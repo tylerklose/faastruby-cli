@@ -5,9 +5,11 @@ module FaaStRuby
       require 'faastruby/cli/commands/function/test'
       require 'faastruby/cli/commands/function/build'
       require 'faastruby/cli/commands/workspace/create'
+      require 'faastruby/cli/new_credentials'
       class DeployTo < FunctionBaseCommand
         def initialize(args)
           @args = args
+          help
           @missing_args = []
           FaaStRuby::CLI.error(@missing_args, color: nil) if missing_args.any?
           @workspace_name = @args.shift
@@ -20,7 +22,7 @@ module FaaStRuby
             @options['catch_all'] = @function_name if @options['is_catch_all']
             # @abort_when_tests_fail = true #@yaml_config['abort_deploy_when_tests_fail']
           end
-          load_credentials(exit_on_error: false)
+          load_credentials
           @package_file = Tempfile.new('package')
         end
 
@@ -72,32 +74,33 @@ module FaaStRuby
         end
 
         def self.help
-          "deploy-to".light_cyan + " WORKSPACE_NAME"
+          "deploy-to WORKSPACE_NAME [ARGS]"
         end
 
         def usage
-          "Usage: faastruby #{self.class.help}"
+          puts "Usage: faastruby #{self.class.help}"
+          puts %(
+-f,--function PATH/TO/FUNCTION     # Specify the directory where the function is.
+--context DATA                     # The data to be stored as context in the cloud,
+                                   # accessible via 'event.context' from within your function.
+--set-root                         # Set the function as the root route of the workspace/
+--set-catch-all                    # Set the function as the catch-all route of the workspace.
+--dont-create-workspace            # Don't try to create the workspace if it doesn't exist.
+          )
         end
 
         private
 
-        def load_credentials(exit_on_error:)
-          @has_credentials = FaaStRuby::Credentials.load_for(@workspace_name, exit_on_error: exit_on_error)
-        end
-
         def create_or_use_workspace
           return true if @options['dont_create_workspace']
-          unless @has_credentials
-            puts "[#{@function_name}] Attemping to create workspace '#{@workspace_name}'"
-            cmd = FaaStRuby::Command::Workspace::Create.new([@workspace_name])
-            cmd.run(create_directory: false, exit_on_error: true)
-            load_credentials(exit_on_error: true)
-            # Give a little bit of time after creating the workspace
-            # for consistency. This is temporary until the API gets patched.
-            spinner = say("Waiting for the workspace '#{@workspace_name}' to be ready...", quiet: @options['quiet'])
-            sleep 2
-            puts ' Done!' unless spinner&.stop(' Done!')
-          end
+          puts "[#{@function_name}] Attemping to create workspace '#{@workspace_name}'"
+          cmd = FaaStRuby::Command::Workspace::Create.new([@workspace_name])
+          cmd.run(create_directory: false, exit_on_error: true)
+          # Give a little bit of time after creating the workspace
+          # for consistency. This is temporary until the API gets patched.
+          spinner = say("Waiting for the workspace '#{@workspace_name}' to be ready...", quiet: @options['quiet'])
+          sleep 2
+          puts ' Done!' unless spinner&.stop(' Done!')
         end
 
         def shards_install

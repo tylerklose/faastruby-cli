@@ -25,6 +25,26 @@ module FaaStRuby
         spin(message)
       end
 
+      def load_credentials
+        @credentials_file = NewCredentials::CredentialsFile.new
+        @credentials = @credentials_file.get
+        FaaStRuby.configure do |config|
+          config.api_key = @credentials['api_key']
+          config.api_secret = @credentials['api_secret']
+        end
+      end
+
+      def help
+        if ['-h', '--help'].include?(@args.first)
+          usage
+          exit 0
+        end
+      end
+
+      def has_user_logged_in?
+        NewCredentials::CredentialsFile.new.has_user_logged_in?
+      end
+
       def spin(message)
         spinner = TTY::Spinner.new(":spinner #{message}", format: SPINNER_FORMAT)
         spinner.auto_spin

@@ -2,16 +2,18 @@ module FaaStRuby
   module Command
     module Function
       require 'faastruby/cli/commands/function/base_command'
+      require 'faastruby/cli/new_credentials'
       class UpdateContext < FunctionBaseCommand
         def initialize(args)
           @args = args
+          help
           @missing_args = []
           FaaStRuby::CLI.error(@missing_args, color: nil) if missing_args.any?
           @workspace_name = @args.shift
           load_yaml
           @function_name = @yaml_config['name']
-          FaaStRuby::Credentials.load_for(@workspace_name)
           parse_options(require_options: {'data' => 'context data'} )
+          load_credentials
         end
 
         def run
@@ -27,11 +29,15 @@ module FaaStRuby
         end
 
         def self.help
-          "update-context".light_cyan + " WORKSPACE_NAME [-d, --data 'STRING'] [--stdin]"
+          "update-context WORKSPACE_NAME [ARGS]"
         end
 
         def usage
-          "Usage: faastruby #{self.class.help}"
+          puts "Usage: faastruby #{self.class.help}"
+          puts %(
+-d, --data 'STRING'    # The context data. Must be quoted.
+--stdin                # Read context data from STDIN
+          )
         end
 
         private
