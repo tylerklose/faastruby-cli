@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    faastruby (0.5.0)
+    faastruby (0.5.1)
       colorize (~> 0.8)
       faastruby-rpc (~> 0.2)
       listen (~> 3.1)

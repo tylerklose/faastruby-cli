@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.1 - Mar 8 2019
+- Enforce one special character on account passwords.
+
 ## 0.5.0 - Mar 8 2019
 - Introduces FaaStRuby Local
 - Introduce user accounts and a migration tool to move the legacy workspace credentials into your account.

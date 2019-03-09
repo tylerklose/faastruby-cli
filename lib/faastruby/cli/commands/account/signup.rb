@@ -1,7 +1,7 @@
 module FaaStRuby
   module Command
     module Account
-      PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,20}$/
+      PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/
       EMAIL_REGEX = /\A([\w+\-].?)+@[a-z\d\-]+(\.[a-z]+)*\.[a-z]+\z/i
       require 'faastruby/cli/commands/account/base_command'
       require 'io/console'
@@ -21,11 +21,11 @@ module FaaStRuby
             print "Email: "
             email = STDIN.gets.chomp
           end
-          puts "\nNow type in a password. It must contain 8 to 20 characters and have at least one uppercase letter, one lowercase letter, one number."
+          puts "\nNow type in a password. It must contain 8 to 20 characters and have at least one uppercase letter, one lowercase letter, one number and one special character @ $ ! % * ? &"
           print "Password: "
           password = STDIN.noecho(&:gets).chomp
           until password_is_valid?(password) do
-            puts "\nYour password must contain 8 to 20 characters and have at least one uppercase letter, one lowercase letter, one number. Please try again:".red
+            puts "\nYour password must contain 8 to 20 characters and have at least one uppercase letter, one lowercase letter, one number and one special character @ $ ! % * ? &\nPlease try again:".red
             print "Password: "
             password = STDIN.noecho(&:gets).chomp
           end
