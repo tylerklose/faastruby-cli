@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.2 - Mar 8 2019
+- Fix bug with migrating accounts
+
 ## 0.5.1 - Mar 8 2019
 - Enforce one special character on account passwords.
 

@@ -6,6 +6,7 @@ module FaaStRuby
       require 'faastruby/cli/new_credentials'
       require 'oj'
       require 'fileutils'
+      require 'json'
       class Migrate < BaseCommand
         def initialize(args)
           @args = args
