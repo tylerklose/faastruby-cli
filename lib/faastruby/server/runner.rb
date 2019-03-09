@@ -64,7 +64,7 @@ module FaaStRuby
           function = load_function("#{@function_folder}/handler.rb")
           function_object.extend(function)
           response = function_object.handler(event, *args)
-          raise FaaStRuby::InvalidResponseError unless response.is_a?(FaaStRuby::Response)
+          response = FaaStRuby::Response.invalid_response unless response.is_a?(FaaStRuby::Response)
         rescue Exception => e
           error = Oj.dump({
             'error' => e.message,

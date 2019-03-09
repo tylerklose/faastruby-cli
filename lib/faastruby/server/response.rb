@@ -24,6 +24,16 @@ module FaaStRuby
       )
     end
 
+    def self.invalid_response
+      body = {'error' => "Your function must render a response. For example, render text: \"Hello World!\""}
+      body = Oj.dump(body)
+      new(
+        body: body,
+        status: 500,
+        headers: {'Content-Type' => 'application/json'}
+      )
+    end
+
     def self.from_payload(payload)
       from_json Base64.urlsafe_decode64(payload)
     end

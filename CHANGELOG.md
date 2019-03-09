@@ -1,4 +1,8 @@
 # Changelog
+
+## 0.5.5 - Mar 9 2019
+- Use a class method inside FaaStRuby::Response to handle invalid response messages.
+
 ## 0.5.4 - Mar 8 2019
 - Fix invalid response error when functions return invalid responses
 
