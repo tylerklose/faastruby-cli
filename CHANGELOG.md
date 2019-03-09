@@ -1,4 +1,6 @@
 # Changelog
+## 0.5.4 - Mar 8 2019
+- Fix invalid response error when functions return invalid responses
 
 ## 0.5.3 - Mar 8 2019
 - Fix logout problem
