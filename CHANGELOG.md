@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.3 - Mar 8 2019
+- Fix logout problem
+- Fix help to display the correct `new-project` command
+
 ## 0.5.2 - Mar 8 2019
 - Fix bug with migrating accounts
 

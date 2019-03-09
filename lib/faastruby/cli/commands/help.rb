@@ -32,7 +32,7 @@ Functions:
   update-context       # Update the context data for a function
 
 Projects:
-  new                  # Initialize a project in your local machine
+  new-project          # Initialize a project in your local machine
   deploy               # Deploy all functions and static files of a project
 
 Workspaces:

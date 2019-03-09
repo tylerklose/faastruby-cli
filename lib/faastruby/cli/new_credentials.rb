@@ -54,7 +54,7 @@ module FaaStRuby
 
       def clear
         yaml = {
-          'credentials' => {}
+          'credentials' => nil
         }.to_yaml
         File.write(@file, yaml)
       end
