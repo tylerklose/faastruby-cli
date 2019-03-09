@@ -13,7 +13,7 @@ RSpec.describe FaaStRuby::API do
     it 'sets @api_url, @credentials and @headers' do
       expect(@api.api_url).to eq("#{FAASTRUBY_HOST}/v2")
       expect(@api.credentials).to eq({'API-KEY' => 'API_KEY', 'API-SECRET' => 'API_SECRET'})
-      expect(@api.headers).to eq({content_type: 'application/json', accept: 'application/json', 'API-KEY' => 'API_KEY', 'API-SECRET' => 'API_SECRET'})
+      expect(@api.headers).to eq({content_type: 'application/json', accept: 'application/json', 'API-KEY' => 'API_KEY', 'API-SECRET' => 'API_SECRET', client_version: FaaStRuby::VERSION})
     end
   end
 
