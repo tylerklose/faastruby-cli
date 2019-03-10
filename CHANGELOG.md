@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.6 - Mar 10 2019
+- Fix bug preventing require libraries. Thanks to
+- Support for static files with space in their names
+- Cleanup comments code
+- Limit the size of static files to 5MB
+- Check if the number of runners is an integer
+
 ## 0.5.5 - Mar 9 2019
 - Use a class method inside FaaStRuby::Response to handle invalid response messages.
 
