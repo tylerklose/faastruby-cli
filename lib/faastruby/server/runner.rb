@@ -19,11 +19,18 @@ module FaaStRuby
 
     def load_function(path)
       eval %(
-        Module.new do
-          def self.require(path)
-            return load("\#{path}.rb") if File.file?("\#{path}.rb")
-            Kernel.require path
+        module Kernel
+          # make an alias of the original require
+          alias_method :original_require, :require
+
+          # rewrite require
+          def require name
+            return load("\#{name}.rb") if File.file?("\#{name}.rb")
+            original_require name
           end
+        end
+
+        Module.new do
           #{File.read(path)}
         end
       )
