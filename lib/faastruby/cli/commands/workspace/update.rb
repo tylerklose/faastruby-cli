@@ -51,6 +51,7 @@ module FaaStRuby
             case option
             when '--runners'
               @options['runners_max'] = @args.shift
+              FaaStRuby::CLI.error("The argument '--runners' takes an integer") if @options['runners_max'].nil? || !@options['runners_max'].to_i.is_a?(Integer)
             else
               FaaStRuby::CLI.error("Unknown argument: #{option}")
             end
