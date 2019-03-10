@@ -20,6 +20,7 @@ module FaaStRuby
         end
 
         def run
+          FaaStRuby::CLI.error("You can't upload static files larger than 5MB. Please use an external storage service to host that file.") if source_file_too_big?
           destination_url = "#{FaaStRuby.workspace_host_for(@workspace_name)}/#{@relative_path}"
           spinner = say("[#{@source_file}] Copying file to '#{destination_url}'...", quiet: true)
           workspace = FaaStRuby::Workspace.new(name: @workspace_name)
@@ -34,6 +35,9 @@ module FaaStRuby
           @package_file.unlink
         end
 
+        def source_file_too_big?
+          File.size(@source_file) > 5242880 # That's 5MB
+        end
 
         def build_package
           FileUtils.cp @source_file, @tmpdir
