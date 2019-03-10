@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.5.6 - Mar 10 2019
-- Fix bug preventing require libraries. Thanks to
+- Fix bug preventing require libraries. Thanks to @jbonney for spotting that one!
 - Support for static files with space in their names
 - Cleanup comments code
 - Limit the size of static files to 5MB
