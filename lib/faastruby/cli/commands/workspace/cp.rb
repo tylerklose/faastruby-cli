@@ -3,6 +3,7 @@ module FaaStRuby
     module Workspace
       require 'tmpdir'
       require 'tempfile'
+      require 'uri'
       # require 'faastruby/cli/commands/workspace/base_command'
       require 'faastruby/cli/package'
       require 'faastruby/cli/new_credentials'
@@ -20,9 +21,9 @@ module FaaStRuby
         end
 
         def run
-          FaaStRuby::CLI.error("You can't upload static files larger than 5MB. Please use an external storage service to host that file.") if source_file_too_big?
-          destination_url = "#{FaaStRuby.workspace_host_for(@workspace_name)}/#{@relative_path}"
-          spinner = say("[#{@source_file}] Copying file to '#{destination_url}'...", quiet: true)
+          FaaStRuby::CLI.error("You can't upload static files larger than 5MB. If you need to upload large files, please reach out to us on Slack at https://faastruby.io/slack") if source_file_too_big?
+          destination_url = URI.escape("#{FaaStRuby.workspace_host_for(@workspace_name)}/#{@relative_path}")
+          # spinner = say("[#{@source_file}] Copying file to '#{destination_url}'...", quiet: true)
           workspace = FaaStRuby::Workspace.new(name: @workspace_name)
           package = build_package
           workspace.upload_file(package, relative_path: @relative_path)
@@ -43,7 +44,6 @@ module FaaStRuby
           FileUtils.cp @source_file, @tmpdir
           output_file = @package_file.path
           FaaStRuby::Package.new(@tmpdir, output_file).build
-          # FaaStRuby::Command::Function::Build.build(@source_file, output_file, @function_name, true)
           @package_file.close
           output_file
         end
@@ -81,30 +81,6 @@ module FaaStRuby
           FaaStRuby::CLI.error("You can only 'cp' files, not directories.") unless File.file?(@source_file)
           true
         end
-
-        # def missing_args
-        #   FaaStRuby::CLI.error(["'#{@workspace_name}' is not a valid workspace name.".red, usage], color: nil) if @workspace_name =~ /^-.*/
-        #   @missing_args << "Missing argument: WORKSPACE_NAME".red unless @workspace_name
-        #   @missing_args << "Missing argument: -s SOURCE_FILE" unless @options['source']
-        #   @missing_args << "Missing argument: -d DESTINATION_PATH" unless @options['destination']
-        #   @missing_args << usage if @missing_args.any?
-        #   @missing_args
-        # end
-
-        # def parse_options(require_options: {})
-        #   @options = {}
-        #   while @args.any?
-        #     option = @args.shift
-        #     case option
-        #     when '-s', '--source'
-        #       @options['source'] = @args.shift
-        #     when '-d', '--destination'
-        #       @options['destination'] = @args.shift.gsub(/(^\/|\/$|\.\.|;|'|"|&|\\)/, '')
-        #     else
-        #       FaaStRuby::CLI.error("Unknown argument: #{option}")
-        #     end
-        #   end
-        # end
       end
     end
   end

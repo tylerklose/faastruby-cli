@@ -4,7 +4,7 @@ module FaaStRuby
       include Local::Logger
 
       def self.full_sync
-        cmd = "faastruby deploy-to #{Local.workspace} -f #{Local.public_dir}"
+        cmd = "faastruby deploy-to '#{Local.workspace}' -f '#{Local.public_dir}'"
         output, status = Open3.capture2e(cmd)
         String.disable_colorization = true
         if status.exitstatus == 0
@@ -27,7 +27,7 @@ module FaaStRuby
 
       def deploy
         path = "public/#{@relative_path}"
-        cmd = "faastruby cp #{path} #{Local.workspace}:/#{@relative_path}"
+        cmd = "faastruby cp '#{path}' '#{Local.workspace}:/#{@relative_path}'"
         puts "Running: #{cmd}"
         output, status = Open3.capture2e(cmd)
         String.disable_colorization = true
@@ -42,7 +42,7 @@ module FaaStRuby
 
       def remove_from_workspace
         path = "public/#{@relative_path}"
-        cmd = "faastruby rm #{Local.workspace}:/#{@relative_path}"
+        cmd = "faastruby rm '#{Local.workspace}:/#{@relative_path}'"
         puts "Running: #{cmd}"
         output, status = Open3.capture2e(cmd)
         String.disable_colorization = true
