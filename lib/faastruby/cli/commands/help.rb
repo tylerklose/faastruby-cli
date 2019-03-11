@@ -10,7 +10,9 @@ module FaaStRuby
         puts "FaaStRuby CLI - Manage workspaces and functions hosted at faastruby.io"
         puts "Version: #{FaaStRuby::VERSION}"
         puts
-        puts "Usage: faastruby [OPTIONS] COMMAND [--help | -h] [ARGS]"
+        puts "Usage: faastruby [update] [OPTIONS] COMMAND [--help | -h] [ARGS]"
+        puts
+        puts "To update to the latest version, run: faastruby update"
         puts
         puts "OPTIONS:"
         puts 'help, -h, --help     # Displays this help'

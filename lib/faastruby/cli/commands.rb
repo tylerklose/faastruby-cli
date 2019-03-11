@@ -1,7 +1,7 @@
 module FaaStRuby
   module Command
     require 'faastruby/cli/base_command'
-    # require 'faastruby/cli/credentials'
+
     COMMANDS = {
       'new' => Proc.new do
         require 'faastruby/cli/commands/function/new'
@@ -122,7 +122,30 @@ module FaaStRuby
       'migrate-workspaces' => Proc.new do
         require 'faastruby/cli/commands/workspace/migrate'
         FaaStRuby::Command::Workspace::Migrate
+      end,
+      'update' => Proc.new do
+        FaaStRuby::Command::Update
       end
     }
+
+    class Update < BaseCommand
+      def initialize(args)
+        @args = args
+        help
+      end
+
+      def run
+        exec "gem update faastruby"
+      end
+
+      def self.help
+        "update"
+      end
+
+      def usage
+        puts "\n# Update FaaStRuby CLI to the latest version."
+        puts "\nUsage: faastruby #{self.class.help}\n\n"
+      end
+    end
   end
 end
