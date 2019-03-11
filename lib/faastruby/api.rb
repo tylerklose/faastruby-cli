@@ -204,6 +204,13 @@ module FaaStRuby
     end
 
     def parse(response)
+      if latest_version = response.headers[:x_update_available]
+        puts "########### FaaStRuby Update Available ###########"
+        puts "# Latest version: #{latest_version}                          #"
+        puts "# Please run 'faastruby update'                  #"
+        puts "##################################################"
+      end
+
       begin
         body = Oj.load(response.body) unless [500, 408].include?(response.code)
       rescue Oj::ParseError => e
