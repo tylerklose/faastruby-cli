@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.8 - Mar 11 2019
+- Bump dependency faastruby-rpc to v0.2.3
+
 ## 0.5.7 - Mar 11 2019
 - Refactor API class
 - Bump faastruby-rpc dependency to 0.2.2
