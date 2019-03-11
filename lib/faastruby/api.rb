@@ -13,43 +13,44 @@ module FaaStRuby
       @timeout = nil # disable request timeouts
     end
 
+    def execute_request
+      begin
+        yield
+      rescue SocketError, Errno::ENETUNREACH => e
+        FaaStRuby::CLI.error("\nCould not contact the server.\n#{e.message}") if defined?(FaaStRuby::CLI)
+        raise e
+      rescue RestClient::ExceptionWithResponse => err
+        case err.http_code
+        when 301, 302, 307
+          err.response.follow_redirection
+        else
+          parse err.response
+        end
+      end
+    end
+
     def create_workspace(workspace_name:, email: nil, provider: nil)
       url = "#{@api_url}/workspaces"
       payload = {'name' => workspace_name}
       payload['email'] = email if email
       payload['provider'] = provider if provider
-      parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, payload: Oj.dump(payload), headers: @headers)
-    rescue RestClient::ExceptionWithResponse => err
-      case err.http_code
-      when 301, 302, 307
-        err.response.follow_redirection
-      else
-        parse err.response
+      execute_request do
+        parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, payload: Oj.dump(payload), headers: @headers)
       end
     end
 
     def destroy_workspace(workspace_name)
       url = "#{@api_url}/workspaces/#{workspace_name}"
-      parse RestClient::Request.execute(method: :delete, timeout: @timeout, url: url, headers: @headers)
-    rescue RestClient::ExceptionWithResponse => err
-      case err.http_code
-      when 301, 302, 307
-        err.response.follow_redirection
-      else
-        parse err.response
+      execute_request do
+        parse RestClient::Request.execute(method: :delete, timeout: @timeout, url: url, headers: @headers)
       end
     end
 
     def update_runners(workspace_name:, runners_max:)
       url = "#{@api_url}/workspaces/#{workspace_name}/runners"
       payload = {'runners_max' => runners_max}
-      parse RestClient::Request.execute(method: :patch, timeout: @timeout, url: url, headers: @headers, payload: Oj.dump(payload))
-    rescue RestClient::ExceptionWithResponse => err
-      case err.http_code
-      when 301, 302, 307
-        err.response.follow_redirection
-      else
-        parse err.response
+      execute_request do
+        parse RestClient::Request.execute(method: :patch, timeout: @timeout, url: url, headers: @headers, payload: Oj.dump(payload))
       end
     end
 
@@ -59,13 +60,8 @@ module FaaStRuby
         'email' => email,
         'password' => password
       }
-      parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, headers: @base_headers, payload: Oj.dump(payload))
-    rescue RestClient::ExceptionWithResponse => err
-      case err.http_code
-      when 301, 302, 307
-        err.response.follow_redirection
-      else
-        parse err.response
+      execute_request do
+        parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, headers: @base_headers, payload: Oj.dump(payload))
       end
     end
 
@@ -74,13 +70,8 @@ module FaaStRuby
       payload = {
         'email' => email
       }
-      parse RestClient::Request.execute(method: :patch, timeout: @timeout, url: url, headers: @base_headers, payload: Oj.dump(payload))
-    rescue RestClient::ExceptionWithResponse => err
-      case err.http_code
-      when 301, 302, 307
-        err.response.follow_redirection
-      else
-        parse err.response
+      execute_request do
+        parse RestClient::Request.execute(method: :patch, timeout: @timeout, url: url, headers: @base_headers, payload: Oj.dump(payload))
       end
     end
 
@@ -89,13 +80,8 @@ module FaaStRuby
       payload = {
         'code' => confirmation_token
       }
-      parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, headers: @base_headers, payload: Oj.dump(payload))
-    rescue RestClient::ExceptionWithResponse => err
-      case err.http_code
-      when 301, 302, 307
-        err.response.follow_redirection
-      else
-        parse err.response
+      execute_request do
+        parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, headers: @base_headers, payload: Oj.dump(payload))
       end
     end
 
@@ -105,13 +91,8 @@ module FaaStRuby
       payload = {
         'all' => all
       }
-      parse RestClient::Request.execute(method: :delete, timeout: @timeout, url: url, headers: headers, payload: Oj.dump(payload))
-    rescue RestClient::ExceptionWithResponse => err
-      case err.http_code
-      when 301, 302, 307
-        err.response.follow_redirection
-      else
-        parse err.response
+      execute_request do
+        parse RestClient::Request.execute(method: :delete, timeout: @timeout, url: url, headers: headers, payload: Oj.dump(payload))
       end
     end
 
@@ -121,13 +102,8 @@ module FaaStRuby
         'email' => email,
         'password' => password
       }
-      parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, headers: @base_headers, payload: Oj.dump(payload))
-    rescue RestClient::ExceptionWithResponse => err
-      case err.http_code
-      when 301, 302, 307
-        err.response.follow_redirection
-      else
-        parse err.response
+      execute_request do
+        parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, headers: @base_headers, payload: Oj.dump(payload))
       end
     end
 
@@ -137,25 +113,15 @@ module FaaStRuby
         'api_key' => api_key,
         'api_secret' => api_secret
       }
-      parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, headers: @headers, payload: Oj.dump(payload))
-    rescue RestClient::ExceptionWithResponse => err
-      case err.http_code
-      when 301, 302, 307
-        err.response.follow_redirection
-      else
-        parse err.response
+      execute_request do
+        parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, headers: @headers, payload: Oj.dump(payload))
       end
     end
 
     def get_static_metadata(workspace_name)
       url = "#{@api_url}/workspaces/#{workspace_name}/static/metadata"
-      parse RestClient::Request.execute(method: :get, timeout: @timeout, url: url, headers: @headers)
-    rescue RestClient::ExceptionWithResponse => err
-      case err.http_code
-      when 301, 302, 307
-        err.response.follow_redirection
-      else
-        parse err.response
+      execute_request do
+        parse RestClient::Request.execute(method: :get, timeout: @timeout, url: url, headers: @headers)
       end
     end
 
@@ -163,13 +129,8 @@ module FaaStRuby
       url = "#{@api_url}/workspaces/#{workspace_name}/static/sync"
       payload = {package: File.new(package, 'rb')}
       payload[:relative_path] = relative_path
-      parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, payload: payload, headers: @credentials)
-    rescue RestClient::ExceptionWithResponse => err
-      case err.http_code
-      when 301, 302, 307
-        err.response.follow_redirection
-      else
-        parse err.response
+      execute_request do
+        parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, payload: payload, headers: @credentials)
       end
     end
 
@@ -178,39 +139,24 @@ module FaaStRuby
       payload = {
          relative_path: relative_path
       }
-      parse RestClient::Request.execute(method: :delete, timeout: @timeout, url: url, headers: @credentials, payload: payload)
-    rescue RestClient::ExceptionWithResponse => err
-      case err.http_code
-      when 301, 302, 307
-        err.response.follow_redirection
-      else
-        parse err.response
+      execute_request do
+        parse RestClient::Request.execute(method: :delete, timeout: @timeout, url: url, headers: @credentials, payload: payload)
       end
     end
 
 
     def get_workspace_info(workspace_name)
       url = "#{@api_url}/workspaces/#{workspace_name}"
-      parse RestClient::Request.execute(method: :get, timeout: @timeout, url: url, headers: @headers)
-    rescue RestClient::ExceptionWithResponse => err
-      case err.http_code
-      when 301, 302, 307
-        err.response.follow_redirection
-      else
-        parse err.response
+      execute_request do
+        parse RestClient::Request.execute(method: :get, timeout: @timeout, url: url, headers: @headers)
       end
     end
 
     def refresh_credentials(workspace_name)
       url = "#{@api_url}/workspaces/#{workspace_name}/credentials"
       payload = {}
-      parse RestClient::Request.execute(method: :put, timeout: @timeout, url: url, payload: payload, headers: @credentials)
-    rescue RestClient::ExceptionWithResponse => err
-      case err.http_code
-      when 301, 302, 307
-        err.response.follow_redirection
-      else
-        parse err.response
+      execute_request do
+        parse RestClient::Request.execute(method: :put, timeout: @timeout, url: url, payload: payload, headers: @credentials)
       end
     end
 
@@ -220,13 +166,8 @@ module FaaStRuby
       payload[:root_to] = root_to if root_to
       payload[:catch_all] = catch_all if catch_all
       payload[:context] = context if context
-      parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, payload: payload, headers: @credentials)
-    rescue RestClient::ExceptionWithResponse => err
-      case err.http_code
-      when 301, 302, 307
-        err.response.follow_redirection
-      else
-        parse err.response
+      execute_request do
+        parse RestClient::Request.execute(method: :post, timeout: @timeout, url: url, payload: payload, headers: @credentials)
       end
     end
 
@@ -242,39 +183,23 @@ module FaaStRuby
       end
     end
 
-    # def list_workspace_functions(workspace_name)
-    #   url = "#{@api_url}/workspaces/#{workspace_name}/functions"
-    #   parse RestClient.get(url, @headers){|response, request, result| response }
-    # end
-
     def run(function_name:, workspace_name:, payload:, method:, headers: {}, time: false, query: nil)
       url = "#{FaaStRuby.api_host}/#{workspace_name}/#{function_name}#{query}"
       headers['Benchmark'] = true if time
-      if method == 'get'
-        RestClient::Request.execute(method: :get, timeout: @timeout, url: url, headers: headers)
-      else
-        RestClient::Request.execute(method: method.to_sym, timeout: @timeout, url: url, payload: payload, headers: headers)
-      end
-    rescue RestClient::ExceptionWithResponse => err
-      case err.http_code
-      when 301, 302, 307
-        err.response.follow_redirection
-      else
-        return err.response
+      execute_request do
+        if method == 'get'
+          RestClient::Request.execute(method: :get, timeout: @timeout, url: url, headers: headers)
+        else
+          RestClient::Request.execute(method: method.to_sym, timeout: @timeout, url: url, payload: payload, headers: headers)
+        end
       end
     end
 
     def update_function_context(function_name:, workspace_name:, payload:)
       # payload is a string
       url = "#{@api_url}/workspaces/#{workspace_name}/functions/#{function_name}"
-      parse RestClient::Request.execute(method: :patch, timeout: @timeout, url: url, payload: Oj.dump(payload), headers: @headers)
-      # parse RestClient.patch(url, Oj.dump(payload), @headers){|response, request, result| response }
-    rescue RestClient::ExceptionWithResponse => err
-      case err.http_code
-      when 301, 302, 307
-        err.response.follow_redirection
-      else
-        parse err.response
+      execute_request do
+        parse RestClient::Request.execute(method: :patch, timeout: @timeout, url: url, payload: Oj.dump(payload), headers: @headers)
       end
     end
 
