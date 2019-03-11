@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.7 - Mar 11 2019
+- Refactor API class
+- Bump faastruby-rpc dependency to 0.2.2
+- Better API error handling
+- Display alert when new gem version is available
+- Add command `faastruby update`
+- Quit server when FaaStRuby Local fails to start
+
 ## 0.5.6 - Mar 10 2019
 - Fix bug preventing require libraries. Thanks to @jbonney for spotting that one!
 - Support for static files with space in their names
