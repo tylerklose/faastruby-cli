@@ -6,9 +6,7 @@
 html {
   height: 100%;
   margin: 0px;
-  background-image: url('/assets/images/background.png');
-  background-repeat: no-repeat;
-  background-size: cover;
+  background-image: linear-gradient(to right bottom, #ba473d, #933933, #6e2d28, #4a201d, #291412);
 }
 
 body {

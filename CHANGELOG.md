@@ -2,6 +2,7 @@
 
 ## 0.5.8 - Mar 11 2019
 - Bump dependency faastruby-rpc to v0.2.3
+- Use CSS gradient instead of background picture on Local Web template
 
 ## 0.5.7 - Mar 11 2019
 - Refactor API class
