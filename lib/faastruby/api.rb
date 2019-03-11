@@ -207,6 +207,7 @@ module FaaStRuby
       begin
         body = Oj.load(response.body) unless [500, 408].include?(response.code)
       rescue Oj::ParseError => e
+        FaaStRuby::CLI.error("\nThe server has returned an invalid response. Status code: #{response.code}") if defined?(FaaStRuby::CLI)
         puts response.body
         raise e
       end
