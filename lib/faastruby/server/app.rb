@@ -7,7 +7,6 @@ require 'securerandom'
 require 'rouge'
 require 'colorize'
 module FaaStRuby
-
   class Server < Sinatra::Base
     include FaaStRuby::Logger::Requests
     set :show_exceptions, true
@@ -17,7 +16,7 @@ module FaaStRuby
     set :static, true
     register Sinatra::MultiRoute
     before do
-      cache_control :public, :must_revalidate, :max_age => 1
+      cache_control :must_revalidate, :proxy_revalidate, :max_age => 0
     end
     route :head, :get, :post, :put, :patch, :delete, '/*' do
       request_uuid = SecureRandom.uuid
