@@ -77,7 +77,7 @@ module FaaStRuby
           while @args.any?
             option = @args.shift
             case option
-            when '--create-local-dir',
+            when '--create-local-dir'
               @options['create_local_dir'] = true
             when '--local-only'
               @options['create_local_dir'] = true

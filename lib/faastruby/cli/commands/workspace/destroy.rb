@@ -25,14 +25,14 @@ module FaaStRuby
             FaaStRuby::CLI.error(workspace.errors)
           end
           spinner.stop("Done!")
-          puts "Workspace '#{@workspace_name}' was deleted from the server"
+          puts "Workspace '#{@workspace_name}' was deleted from the cloud platform."
         end
 
         private
 
         def warning
           print "WARNING: ".red
-          puts "This action will permanently remove the workspace '#{@workspace_name}' and all its functions from the server."
+          puts "This action will permanently remove the workspace '#{@workspace_name}' and all its functions from the cloud platform."
           print "Are you sure? [y/N] "
           @options['force'] = STDIN.gets.chomp
         end
