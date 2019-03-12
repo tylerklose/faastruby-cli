@@ -4,6 +4,7 @@
 - Fix Watchdog message when a function is removed from the project.
 - Add method render_nothing to ruby and crystal functions, to make it clear how to send an empty response body
 - Empty functions will render an empty body
+- Ensure Watchdog listeners stop when exiting
 
 ## 0.5.9 - Mar 11 2019
 - Add Gemfile support to Watchdog. When a `Gemfile` is added to a function, Watchdog will initialize it if the file is empty and run `bundle install` every time you modify it.

@@ -1,6 +1,12 @@
 module FaaStRuby
   module Local
     class Listener
+      def self.functions_listener
+        @@functions_listener ||= []
+      end
+      def self.public_listener
+        @@public_listener ||= []
+      end
       include Local::Logger
       attr_accessor :listener, :directory, :queue
       def initialize(directory:, queue:)

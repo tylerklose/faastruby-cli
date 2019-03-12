@@ -101,16 +101,6 @@ module FaaStRuby
       @@functions ||= []
     end
 
-    def self.functions_listener
-      debug "self.functions_listener"
-      @@functions_listener
-    end
-
-    def self.public_listener
-      debug "self.public_listener"
-      @@public_listener
-    end
-
     def self.secrets_for_function(function_name)
       debug "self.secrets_for_function(#{function_name.inspect})"
       deploy_environment_secrets[function_name] || {}
@@ -143,6 +133,10 @@ module FaaStRuby
       FunctionProcessor.new(FUNCTIONS_EVENT_QUEUE).start
       StaticFileProcessor.new(PUBLIC_EVENT_QUEUE).start if SYNC_ENABLED
       sleep
+    ensure
+      puts "Stopping Watchdog..."
+      Local::Listener.functions_listener.each(&:stop)
+      Local::Listener.public_listener.each(&:stop)
     end
 
     def self.initial_compile_and_deploy(crystal_functions)
@@ -175,15 +169,17 @@ module FaaStRuby
     def self.listen_on_functions_dir
       debug "self.listen_on_functions_dir"
       debug "Listening for changes in '#{functions_dir}'"
-      @@functions_listener = Listener.new(directory: functions_dir, queue: FUNCTIONS_EVENT_QUEUE)
-      @@functions_listener.start
+      listener = Listener.new(directory: functions_dir, queue: FUNCTIONS_EVENT_QUEUE)
+      listener.start
+      Local::Listener.functions_listener << listener
     end
 
     def self.listen_on_public_dir
       debug "self.listen_on_public_dir"
       debug "Listening for changes in '#{public_dir}'"
-      @@public_listener = Listener.new(directory: public_dir, queue: PUBLIC_EVENT_QUEUE)
-      @@public_listener.start
+      listener = Listener.new(directory: public_dir, queue: PUBLIC_EVENT_QUEUE)
+      listener.start
+      Local::Listener.public_listener << listener
     end
   end
 end
