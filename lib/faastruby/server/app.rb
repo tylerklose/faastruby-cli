@@ -14,6 +14,7 @@ module FaaStRuby
     set :root, SERVER_ROOT
     set :public_folder, FaaStRuby::ProjectConfig.public_dir
     set :static, true
+    set :static_cache_control, [:must_revalidate, :proxy_revalidate, :max_age => 0]
     register Sinatra::MultiRoute
     before do
       cache_control :must_revalidate, :proxy_revalidate, :max_age => 0
