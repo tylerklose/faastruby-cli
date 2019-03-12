@@ -26,7 +26,6 @@ module FaaStRuby
           FaaStRuby::CLI.error("The project name must have between 3 and 15 characters, and can only have letters, numbers and dashes.") unless name_valid?
           @base_dir = "./#{@project_name}"
           parse_options
-          @options['credentials_file'] ||= PROJECT_CREDENTIALS_FILE
           @options['project_type'] ||= 'web'
         end
 
