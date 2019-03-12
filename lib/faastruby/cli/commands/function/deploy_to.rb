@@ -42,7 +42,7 @@ module FaaStRuby
           create_or_use_workspace
           if @yaml_config['serve_static']
             package_file_name = build_package
-            spinner = say("[#{@function_name}] Deploying static files '#{@function_name}' to workspace '#{@workspace_name}'...", quiet: @options['quiet'])
+            spinner = say("* [#{@function_name}] Deploying static files '#{@function_name}' to workspace '#{@workspace_name}'...", quiet: @options['quiet'])
             workspace = FaaStRuby::Workspace.new(name: @workspace_name).deploy(package_file_name)
           else
             if ruby_runtime?
@@ -53,7 +53,7 @@ module FaaStRuby
             end
             FaaStRuby::CLI.error("[#{@function_name}] Deploy aborted because 'test_command' exited non-zero.") unless run_tests
             package_file_name = build_package
-            spinner = say("[#{@function_name}] Deploying #{runtime_name} function '#{@function_name}' to workspace '#{@workspace_name}'...", quiet: @options['quiet'])
+            spinner = say("* [#{@function_name}] Deploying #{runtime_name} function '#{@function_name}' to workspace '#{@workspace_name}'...", quiet: @options['quiet'])
             workspace = FaaStRuby::Workspace.new(name: @workspace_name).deploy(package_file_name, root_to: @options['root_to'], catch_all: @options['catch_all'], context: @options['context'])
           end
           if workspace.errors.any?
@@ -107,14 +107,14 @@ module FaaStRuby
 
         def shards_install
           return true unless File.file?('shard.yml')
-          puts "[#{@function_name}] [build] Verifying dependencies"
-          system('shards check') || system('shards install')
+          puts "[#{@function_name}] Verifying dependencies"
+          system('shards check > /dev/null') || system('shards install')
         end
 
         def bundle_install
           return true unless File.file?('Gemfile')
-          puts "[#{@function_name}] [build] Verifying dependencies"
-          system('bundle check') || system('bundle install')
+          puts "* [#{@function_name}] Verifying dependencies"
+          system('bundle check >/dev/null') || system('bundle install')
         end
 
         def missing_args

@@ -63,18 +63,17 @@ module FaaStRuby
       def deploy
         debug "deploy"
         deploy_cmd, deploy_cmd_print = generate_deploy_command
-        puts "Running: #{deploy_cmd_print.join(' ')}"
-        output, status = Open3.capture2e(deploy_cmd.join(' '))
-        STDOUT.puts "#{Time.now} | " + "* [#{name}] Deploying...".green
-        STDOUT.puts "---"
-        String.disable_colorization = true
-        if status.exitstatus == 0
-          output.split("\n").each {|o| puts o unless o == '---'}
-        else
-          puts "* [#{name}] Deploy Failed:"
-          STDERR.puts output
+        puts "Running: #{deploy_cmd_print.join(' ')}".yellow
+        i, oe, thr = Open3.popen2(deploy_cmd.join(' '))
+        i.close
+        oe.each_line do |line|
+          next if line.chomp == '' || line.chomp == '---'
+          STDOUT.puts "#{Time.now} | #{line}"
+          STDOUT.puts "---"
         end
-        String.disable_colorization = false
+        thr.join
+        oe.close
+        status = thr.value
       end
 
       def language
@@ -89,7 +88,7 @@ module FaaStRuby
       def generate_deploy_command
         debug "generate_deploy_command"
         project_config = Local.project_config
-        deploy_cmd = ['faastruby', 'deploy-to', Local.workspace, '-f', @absolute_folder, '--dont-create-workspace']
+        deploy_cmd = ['faastruby', 'deploy-to', Local.workspace, '-f', @absolute_folder, '--dont-create-workspace', '--quiet']
         deploy_cmd << '--set-root' if Local.root_to == @name
         deploy_cmd << '--set-catch-all' if Local.catch_all == @name
         secrets_json = Oj.dump(Local.secrets_for_function(@name)) rescue nil

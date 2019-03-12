@@ -1,3 +1,4 @@
+STDOUT.sync
 module FaaStRuby
   module Local
     require 'listen'

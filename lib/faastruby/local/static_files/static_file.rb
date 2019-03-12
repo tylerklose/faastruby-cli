@@ -29,15 +29,18 @@ module FaaStRuby
         path = "public/#{@relative_path}"
         cmd = "faastruby cp '#{path}' '#{Local.workspace}:/#{@relative_path}'"
         puts "Running: #{cmd}"
-        output, status = Open3.capture2e(cmd)
-        String.disable_colorization = true
-        if status.exitstatus == 0
-          output.split("\n").each {|o| puts o unless o == '---' || o == "" || o.match(/Copying file to/)}
-        else
-          puts "* [#{path}] Error uploading static file '#{path}' to cloud workspace '#{Local.workspace}':"
-          STDERR.puts output
+        i, oe, thr = Open3.popen2(cmd)
+        i.close
+        STDOUT.puts "#{Time.now} | * [#{path}] Uploading file to workspace '#{Local.workspace}'"
+        oe.each_line do |line|
+          next if line.chomp == '' || line.chomp == '---'
+          STDOUT.puts "#{Time.now} | #{line}"
+          STDOUT.puts "---"
         end
-        String.disable_colorization = false
+        thr.join
+        oe.close
+        status = thr.value
+        puts "* [#{path}] Error uploading static file '#{path}' to cloud workspace '#{Local.workspace}':" if status.exitstatus != 0
       end
 
       def remove_from_workspace
