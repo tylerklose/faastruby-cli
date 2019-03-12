@@ -106,6 +106,10 @@ module FaaStRuby
 
         def yaml_comments
           [
+            '## To run tests before each deploy, uncomment the line below',
+            '## and change the command if you are not using Rspec.',
+            '# test_command: rspec',
+            '',
             '## You can add commands to run locally before building the deployment package.',
             "## Some use cases are:",
             "## * minifying Javascript/CSS",

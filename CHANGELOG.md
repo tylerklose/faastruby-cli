@@ -7,6 +7,7 @@
 - Ensure Watchdog listeners stop when exiting
 - Fix bug preventing create-local-dir from creating a folder when `create-workspace` is used
 - Change message confirmation when destroying a workspace
+- Update YAML template comments with mention to `test_command`
 
 ## 0.5.9 - Mar 11 2019
 - Add Gemfile support to Watchdog. When a `Gemfile` is added to a function, Watchdog will initialize it if the file is empty and run `bundle install` every time you modify it.
