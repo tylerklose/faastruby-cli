@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.9 - Mar 11 2019
+- Add Gemfile support to Watchdog. When a `Gemfile` is added to a function, Watchdog will initialize it if the file is empty and run `bundle install` every time you modify it.
+
+
 ## 0.5.8 - Mar 11 2019
 - Bump dependency faastruby-rpc to v0.2.3
 - Use CSS gradient instead of background picture on Local Web template

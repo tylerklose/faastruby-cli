@@ -45,12 +45,13 @@ module FaaStRuby
 
     class ListenerEvent
       include Local::Logger
-      attr_accessor :type, :filename, :full_path, :relative_path, :listened_directory, :dirname
+      attr_accessor :type, :filename, :full_path, :relative_path, :relative_path_dirname, :listened_directory, :dirname
       def initialize(type:, full_path:, listened_directory:)
         debug "initialize(type: #{type.inspect}, full_path: #{full_path.inspect}, listened_directory: #{listened_directory.inspect})"
         @listened_directory = listened_directory
         @full_path = full_path
         @relative_path = relative_path_for(@full_path.dup)
+        @relative_path_dirname = File.dirname(@relative_path)
         @filename = File.basename(@full_path)
         @dirname = File.dirname(@full_path)
         @type = type
@@ -62,6 +63,11 @@ module FaaStRuby
       def function_created?
         debug __method__
         added? && filename.match(/^handler\.(rb|cr)$/)
+      end
+
+      def file_is_a_gemfile?
+        debug __method__
+        filename == 'Gemfile'
       end
 
       def file_is_a_handler?

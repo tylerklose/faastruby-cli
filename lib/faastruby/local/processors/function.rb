@@ -12,6 +12,7 @@ module FaaStRuby
           debug "ignoring #{event.filename}"
           return true
         end
+        return true if event.filename == 'Gemfile.lock'
         return false
       end
 
@@ -34,7 +35,8 @@ module FaaStRuby
           debug "added: a handler file was added"
           return new_function(event)
         end
-        unless event.file_is_a_function_config?
+        init_gemfile(event) if event.file_is_a_gemfile?
+        unless event.file_is_a_function_config? && event.file_is_a_gemfile?
           debug "added: a file was added"
           deploy(event)
         end
@@ -45,6 +47,7 @@ module FaaStRuby
         # This should trigger
         # - Compile
         # - Deploy
+        bundle_install(event) if event.file_is_a_gemfile?
         compile_function(event)
         deploy(event)
       end
@@ -96,7 +99,7 @@ module FaaStRuby
         object = function_object_for_handler(event.filename)
         function = object.new(
           absolute_folder: event.dirname,
-          name: File.dirname(event.relative_path),
+          name: event.relative_path_dirname,
         )
         run(function.name, 'new_function') do
           debug "+ IGNORE #{event.dirname}"
@@ -144,6 +147,25 @@ module FaaStRuby
         # - removed handler
         function = Local::Function.that_has_file(event.full_path, event.type)
         run(function.name, 'remove_from_workspace') {function.remove_from_workspace}
+      end
+
+      def bundle_install(event)
+        puts "Running: cd #{event.relative_path_dirname} && bundle install"
+        if system("cd #{event.dirname} && bundle install")
+          STDOUT.puts '---'.yellow
+          puts "Gems from Gemfile '#{event.relative_path}' installed."
+        else
+          STDOUT.puts '---'.red
+          STDOUT.puts "#{Time.now} | Error installing gems for Gemfile '#{event.relative_path}'.".red
+        end
+      end
+
+      def init_gemfile(event)
+        unless File.size(event.full_path) > 0
+          puts "Initializing Gemfile '#{event.relative_path}'"
+          sleep 0.2
+          File.write(event.full_path, Local::RubyFunction.default_gemfile)
+        end
       end
 
     end

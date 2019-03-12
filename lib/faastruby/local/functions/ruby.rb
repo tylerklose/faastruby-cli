@@ -3,6 +3,16 @@ module FaaStRuby
     class RubyFunction < Function
       include Local::Logger
 
+      def self.default_gemfile
+        faastruby_rpc_version = Gem::DependencyList.from_specs.select{|d| d.name == 'faastruby-rpc'}[0]&.version || '0.2.3'
+        %(source 'https://rubygems.org'
+
+group :test do
+  gem 'rspec'
+end
+)
+      end
+
       def yaml_hash
         debug "yaml_hash"
         hash = {
