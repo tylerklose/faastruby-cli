@@ -123,6 +123,10 @@ def render(icon : String? = nil, jpeg : String? = nil, gif : String? = nil, png 
   FaaStRuby::Response.new(body: resp_body, status: status, headers: headers, binary: bin)
 end
 
+def render_nothing(status : Int32 = 200, headers : Hash(String, String) = {} of String => String)
+  FaaStRuby::Response.new(body: nil, status: status, headers: headers, binary: false)
+end
+
 def redirect_to(function : String, status : Int32 = 303)
   headers = {"Location" => function}
   FaaStRuby::Response.new(body: nil, status: status, headers: headers)
@@ -160,7 +164,7 @@ rescue e
   exit 1
 end
 spawn do
-  response = FaaStRuby::Function.run(event: payload.event)
+  response = FaaStRuby::Function.run(event: payload.event) || render_nothing
   puts "R,#{Base64.urlsafe_encode(response.payload.to_json)}"
   exit 0
 end

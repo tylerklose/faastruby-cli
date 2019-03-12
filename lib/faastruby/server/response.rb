@@ -25,7 +25,7 @@ module FaaStRuby
     end
 
     def self.invalid_response
-      body = {'error' => "Your function must render a response. For example, render text: \"Hello World!\""}
+      body = {'error' => "Your function must render a response. For example, render text: \"Hello World!\". If you want to respond with an empty body, use 'render_nothing'."}
       body = Oj.dump(body)
       new(
         body: body,

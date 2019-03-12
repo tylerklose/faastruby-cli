@@ -70,7 +70,7 @@ module FaaStRuby
         begin
           function = load_function("#{@function_folder}/handler.rb")
           function_object.extend(function)
-          response = function_object.handler(event, *args)
+          response = function_object.handler(event, *args) || function_object.render_nothing
           response = FaaStRuby::Response.invalid_response unless response.is_a?(FaaStRuby::Response)
         rescue Exception => e
           error = Oj.dump({

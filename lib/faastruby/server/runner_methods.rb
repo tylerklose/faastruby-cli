@@ -84,6 +84,10 @@ module FaaStRuby
       respond_with(resp_body, status: status, headers: headers, binary: bin)
     end
 
+    def render_nothing(status: 200, headers: {})
+      respond_with(nil, status: status, headers: headers, binary: false)
+    end
+
     def redirect_to(function: nil, url: nil, status: 303)
       headers = {"Location" => function || url}
       respond_with(nil, status: status, headers: headers, binary: false)
