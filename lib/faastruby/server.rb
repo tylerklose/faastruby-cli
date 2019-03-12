@@ -24,7 +24,13 @@ module FaaStRuby
     exit 1
   end
   SERVER_ROOT = Dir.pwd
-  PROJECT_YAML_FILE = ENV['FAASTRUBY_PROJECT_CONFIG_FILE'] || "#{SERVER_ROOT}/project.yml"
+  PROJECT_YAML_FILE = "#{SERVER_ROOT}/project.yml"
+  unless File.file?(PROJECT_YAML_FILE)
+    puts "\nERROR: Project configuration file not in current directory."
+    puts "You can only run 'faastruby local' inside a Project directory."
+    puts "To create a project, run 'faastruby new-project project-name'.\n\n"
+    exit 1
+  end
   SECRETS_FILE = ENV['FAASTRUBY_PROJECT_SECRETS_FILE'] || "#{SERVER_ROOT}/secrets.yml"
   PROJECT_NAME = YAML.load(File.read(PROJECT_YAML_FILE))['project']['name']
   SYNC_ENABLED = ENV['FAASTRUBY_PROJECT_SYNC_ENABLED']
