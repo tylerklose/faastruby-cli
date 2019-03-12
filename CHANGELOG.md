@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.10 - unreleased
+- Fix Watchdog message when a function is removed from the project.
+
 ## 0.5.9 - Mar 11 2019
 - Add Gemfile support to Watchdog. When a `Gemfile` is added to a function, Watchdog will initialize it if the file is empty and run `bundle install` every time you modify it.
 - Watchdog will stream the output of commands instead of printing everything once it's done.

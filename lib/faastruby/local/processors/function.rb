@@ -60,7 +60,7 @@ module FaaStRuby
         # - Remove from workspace
         if event.file_is_a_function_config?
           debug "removed: the file is a function_config"
-          function_name = event.relative_path
+          function_name = event.relative_path_dirname
           puts "Function '#{function_name}' was removed."
           return remove_from_workspace(event)
         end
