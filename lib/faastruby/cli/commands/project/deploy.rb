@@ -1,3 +1,4 @@
+STDOUT.sync
 require 'open3'
 module FaaStRuby
   module Command
@@ -16,9 +17,9 @@ module FaaStRuby
           @options['environment'] ||= 'stage'
           @project_yaml = YAML.load(File.read(PROJECT_YAML_FILE))['project'] rescue FaaStRuby::CLI.error("Could not find file 'project.yml'. Are you running this command from the project's folder?")
           @project_name = @project_yaml['name']
+          @root_to = @project_yaml['root_to'] || 'root'
+          @catch_all = @project_yaml['catch_all'] || 'catch-all'
           @project_identifier = "-#{@project_yaml['identifier']}" if @project_yaml['identifier']
-          @options['root_to'] ||= @project_yaml['root_to']
-          @options['catch_all'] ||= @project_yaml['catch_all']
         end
 
         def puts(msg)
@@ -33,17 +34,18 @@ module FaaStRuby
           root_folder = Dir.pwd
           jobs = []
           workspace = "#{@project_name}-#{@options['environment']}#{@project_identifier}"
+          spinner = spin "Deploying project '#{@project_name}' to workspace #{workspace}..."
           try_workspace(workspace)
-          spinner = spin("Deploying project '#{@project_name}'...")
           @options['functions'].each do |function_path|
             jobs << Thread.new do
               # puts "[#{function_path}] Entering folder '#{function_path}'"
               # Dir.chdir function_path
               function_config = YAML.load(File.read("#{function_path}/faastruby.yml"))
               function_name = function_config['name']
-              cmd = "cd #{function_path} && faastruby deploy-to #{workspace} --quiet"
-              cmd += " --set-root" if @options['root_to'] == function_name
-              cmd += " --set-catch-all" if @options['catch_all'] == function_name
+
+              cmd = "cd #{function_path} && faastruby deploy-to #{workspace} --quiet --dont-create-workspace"
+              cmd += " --set-root" if @root_to == function_name
+              cmd += " --set-catch-all" if @catch_all == function_name
               Open3.popen2(cmd) do |stdin, stdout, status_thread|
                 stdout.each_line do |line|
                   puts line
@@ -53,7 +55,6 @@ module FaaStRuby
             end
           end
           jobs.each{|thr| thr.join}
-          spinner.stop(" Done!")
           puts "* Project URL: #{FaaStRuby.workspace_host_for(workspace)}\n\n".green
         end
 
@@ -94,10 +95,6 @@ module FaaStRuby
           while @args.any?
             option = @args.shift
             case option
-            when '--root-to'
-              @options['root_to'] = @args.shift
-            when '--catch-all'
-              @options['catch_all'] = @args.shift
             when '--function', '-f'
               @options['functions'] << @args.shift
             when '--env', '-e'

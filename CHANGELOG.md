@@ -9,6 +9,7 @@
 - Change message confirmation when destroying a workspace
 - Update YAML template comments with mention to `test_command`
 - FaaStRuby Local won't start unless it can find `project.yml` in current directory.
+- Fix command `faastruby deploy`
 
 ## 0.5.9 - Mar 11 2019
 - Add Gemfile support to Watchdog. When a `Gemfile` is added to a function, Watchdog will initialize it if the file is empty and run `bundle install` every time you modify it.
