@@ -204,7 +204,7 @@ module FaaStRuby
     end
 
     def parse(response)
-      if latest_version = response.headers[:x_update_available]
+      if response.headers && latest_version = response.headers[:x_update_available]
         puts "########### FaaStRuby Update Available ###########"
         puts "# Latest version: #{latest_version}                          #"
         puts "# Please run 'faastruby update'                  #"
