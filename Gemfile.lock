@@ -1,9 +1,9 @@
 PATH
   remote: .
   specs:
-    faastruby (0.5.10)
+    faastruby (0.5.11)
       colorize (~> 0.8)
-      faastruby-rpc (~> 0.2.3)
+      faastruby-rpc (~> 0.2.4)
       listen (~> 3.1)
       oj (~> 3.6)
       puma (~> 3.12)
@@ -30,7 +30,7 @@ GEM
       unf (>= 0.0.5, < 1.0.0)
     equatable (0.5.0)
     erubis (2.7.0)
-    faastruby-rpc (0.2.3)
+    faastruby-rpc (0.2.4)
       oj (~> 3.6)
     ffi (1.10.0)
     hashdiff (0.3.7)
@@ -47,7 +47,7 @@ GEM
     mustermann (1.0.3)
     necromancer (0.4.0)
     netrc (0.11.0)
-    oj (3.7.9)
+    oj (3.7.10)
     pastel (0.7.2)
       equatable (~> 0.5.0)
       tty-color (~> 0.4.0)

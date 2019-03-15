@@ -1,6 +1,9 @@
 # Changelog
 
-## 0.5.10 - unreleased
+## 0.5.11 - Mar 14 2019
+- Bump faastruby-rpc to 0.2.4
+
+## 0.5.10 - Mar 13 2019
 - Fix Watchdog message when a function is removed from the project.
 - Add method render_nothing to ruby and crystal functions, to make it clear how to send an empty response body
 - Empty functions will render an empty body
