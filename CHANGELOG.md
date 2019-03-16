@@ -4,6 +4,7 @@
 - Add new branding to Local web templates.
 - Fix secrets.yml example in comments.
 - Cleanup logger module.
+- Local generated deploy-to command was not escaping JSON before bassing to `--context`.
 
 
 ## 0.5.11 - Mar 14 2019

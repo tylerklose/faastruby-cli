@@ -94,7 +94,7 @@ module FaaStRuby
         secrets_json = Oj.dump(Local.secrets_for_function(@name)) rescue nil
         deploy_cmd_print = deploy_cmd
         if secrets_json
-          deploy_cmd += ["--context", secrets_json]
+          deploy_cmd += ["--context", "'#{secrets_json}'"]
           deploy_cmd_print += ["--context", '*REDACTED*']
         end
         [deploy_cmd, deploy_cmd_print]
