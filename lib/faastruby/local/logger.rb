@@ -26,12 +26,6 @@ module FaaStRuby
         end
       end
 
-      def print(msg)
-        STDOUT_MUTEX.synchronize do
-          STDOUT.print "#{Time.now} | #{msg}".yellow
-        end
-      end
-
     end
   end
 end

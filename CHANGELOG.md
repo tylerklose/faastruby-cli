@@ -3,6 +3,7 @@
 ## 0.5.12 - Mar 16 2019
 - Add new branding to Local web templates.
 - Fix secrets.yml example in comments.
+- Cleanup logger module.
 
 
 ## 0.5.11 - Mar 14 2019
