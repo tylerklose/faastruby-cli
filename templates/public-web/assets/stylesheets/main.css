@@ -6,7 +6,8 @@
 html {
   height: 100%;
   margin: 0px;
-  background-image: linear-gradient(to right bottom, #ba473d, #933933, #6e2d28, #4a201d, #291412);
+  /* background-image: linear-gradient(to right bottom, #691003, #7a1309, #8b150e, #9d1712, #af1817); */
+  background: #DADADA;
 }
 
 body {
@@ -14,18 +15,14 @@ body {
   padding-left: 30px;
   padding-right: 30px;
   font-family: 'Open Sans';
-  color: #ffffff;
+  color: #313131;
   height: 100%;
 }
 
 h1,h2,h3,h4,h5,h6 {
-  font-family: 'Source Code Pro';
+  font-family: 'Overpass';
+  font-weight: 800;
   letter-spacing: -1px;
-}
-
-.paragraph {
-  font-family: 'Open Sans';
-  letter-spacing: 0px;
 }
 
 .text-center {
@@ -33,36 +30,26 @@ h1,h2,h3,h4,h5,h6 {
 }
 
 .header {
-  height: 60px;
+  padding-top: 40px;
+  padding-bottom: 0px;
+  height: 64px;
   width: 100%;
-  display:table;
-  padding: 0px;
 }
 
 .logo-image-div {
   vertical-align:middle;
   display:table-cell;
-  width: 60px;
+  height: 64px;
   padding: 0px;
 }
 
 .logo-image {
-  width: 60px;
+  height: 64px;
   padding: 0px;
-}
-
-.logo-name-div {
-  vertical-align:middle;
-  display:table-cell;
-  padding-left: 5px;
-  padding-bottom: 6px;
-}
-
-.logo-name {
-  font-size: 45px;
 }
 
 .content {
   width: 100%;
   margin: 0px;
+  margin-top: 100px;
 }
