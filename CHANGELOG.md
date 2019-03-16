@@ -5,6 +5,7 @@
 - Fix secrets.yml example in comments.
 - Cleanup logger module.
 - Local generated deploy-to command was not escaping JSON before bassing to `--context`.
+- Bump faastruby-rpc to 0.2.5
 
 
 ## 0.5.11 - Mar 14 2019
