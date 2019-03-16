@@ -3,7 +3,7 @@ PATH
   specs:
     faastruby (0.5.12)
       colorize (~> 0.8)
-      faastruby-rpc (~> 0.2.4)
+      faastruby-rpc (~> 0.2.5)
       listen (~> 3.1)
       oj (~> 3.6)
       puma (~> 3.12)
@@ -30,7 +30,7 @@ GEM
       unf (>= 0.0.5, < 1.0.0)
     equatable (0.5.0)
     erubis (2.7.0)
-    faastruby-rpc (0.2.4)
+    faastruby-rpc (0.2.5)
       oj (~> 3.6)
     ffi (1.10.0)
     hashdiff (0.3.7)
