@@ -1,7 +1,7 @@
 ![faastRuby](https://faastruby.io/wp-content/uploads/2019/03/logo-positive.png)
 
 [![Gem Version](https://badge.fury.io/rb/faastruby.svg)](https://badge.fury.io/rb/faastruby)
-[![Build Status](https://travis-ci.org/faastRuby/faastruby-cli.svg?branch=master)](https://travis-ci.org/faastRuby/faastruby-cli)
+[![Build Status](https://travis-ci.org/FaaStRuby/faastruby-cli.svg?branch=master)](https://travis-ci.org/FaaStRuby/faastruby-cli)
 
 * Looking for help? [Ask a question](https://meta.stackoverflow.com/questions/ask?tags=faastRuby,Serverless,Ruby,FaaS).
 
