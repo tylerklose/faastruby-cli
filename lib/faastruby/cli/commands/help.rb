@@ -7,7 +7,7 @@ module FaaStRuby
       end
 
       def run
-        puts "FaaStRuby CLI - Manage workspaces and functions hosted at faastruby.io"
+        puts "faastRuby CLI - Manage workspaces and functions hosted at faastruby.io"
         puts "Version: #{FaaStRuby::VERSION}"
         puts
         puts "Usage: faastruby [update] [OPTIONS] COMMAND [--help | -h] [ARGS]"
