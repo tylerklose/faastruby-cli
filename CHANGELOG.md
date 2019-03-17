@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.5.13 - unreleased
+## 0.5.13 - Mar 17 2019
 - Update help with new spelling
 - Better handle of deploys when sync is enabled
 - Fix broken output spinners
