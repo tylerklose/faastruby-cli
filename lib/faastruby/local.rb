@@ -133,6 +133,7 @@ module FaaStRuby
       # initial_compile
       puts "Listening for changes."
       puts "faastRuby Local is ready at http://localhost:3000"
+      puts "Your cloud workspace address is https://#{workspace}.tor1.faast.cloud" if SYNC_ENABLED
       sleep
     ensure
       puts "Stopping Watchdog..."

@@ -3,7 +3,8 @@
 ## 0.5.14 - Mar 17 2019
 - Fix bug when trying to detect Gemfile.lock
 - Add helper method to debug listener event
-
+- Local will give the cloud Workspace URL after booting when sync is enabled
+- `faastruby deploy` will print the workspace URL when it succeeds.
 
 ## 0.5.13 - Mar 17 2019
 - Update help with new spelling

@@ -76,6 +76,7 @@ module FaaStRuby
               puts output
               puts nil
             end
+          else
             puts "* Project URL: #{FaaStRuby.workspace_host_for(@workspace)}\n".green
           end
         end
