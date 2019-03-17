@@ -64,16 +64,15 @@ module FaaStRuby
         debug "deploy"
         deploy_cmd, deploy_cmd_print = generate_deploy_command
         puts "Running: #{deploy_cmd_print.join(' ')}".yellow
-        i, oe, thr = Open3.popen2(deploy_cmd.join(' '))
-        i.close
-        oe.each_line do |line|
-          next if line.chomp == '' || line.chomp == '---'
-          STDOUT.puts "#{Time.now} | #{line}"
-          STDOUT.puts "---"
+        status = nil
+        Open3.popen2(deploy_cmd.join(' ')) do |i, oe, thr|
+          oe.each_line do |line|
+            next if line.chomp == '' || line.chomp == '---'
+            STDOUT.puts "#{Time.now} | #{line}"
+            STDOUT.puts "---"
+          end
+          status = thr.value
         end
-        thr.join
-        oe.close
-        status = thr.value
       end
 
       def language

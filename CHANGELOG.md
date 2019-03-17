@@ -6,6 +6,7 @@
 - Fix broken output spinners
 - Improved console messages
 - Disable initial compile of crystal functions when starting Local
+- Fixed output bug when deploying from Local
 
 ## 0.5.12 - Mar 16 2019
 - Add new branding to Local web templates.
