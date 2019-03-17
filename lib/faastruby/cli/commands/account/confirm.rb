@@ -14,7 +14,10 @@ module FaaStRuby
         def run
           user = User.new(email: @options['email'])
           user.send_confirmation_code
-          puts "\nYou should have received an email with a confirmation token. If you didn't receive an email, make sure you sign up with the correct email address."
+          puts "\nYou should have received an email with a confirmation token."
+          puts "If you didn't receive an email:"
+          puts "- Make sure you sign up with the correct email address"
+          puts "- The system won't send an email if you account status is already 'confirmed'"
           print "Confirmation Token: "
           user.confirmation_token = STDIN.gets.chomp
           spinner = spin("Confirming your account...")
