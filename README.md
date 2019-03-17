@@ -1,18 +1,18 @@
 [![Gem Version](https://badge.fury.io/rb/faastruby.svg)](https://badge.fury.io/rb/faastruby)
-[![Build Status](https://travis-ci.org/FaaStRuby/faastruby-cli.svg?branch=master)](https://travis-ci.org/FaaStRuby/faastruby-cli)
+[![Build Status](https://travis-ci.org/faastRuby/faastruby-cli.svg?branch=master)](https://travis-ci.org/faastRuby/faastruby-cli)
 
-* Looking for help? [Ask a question](https://meta.stackoverflow.com/questions/ask?tags=FaaStRuby,Serverless,Ruby,FaaS).
+* Looking for help? [Ask a question](https://meta.stackoverflow.com/questions/ask?tags=faastRuby,Serverless,Ruby,FaaS).
 
-* [Changelog](https://github.com/FaaStRuby/faastruby-cli/blob/master/CHANGELOG.md)
+* [Changelog](https://github.com/faastRuby/faastruby-cli/blob/master/CHANGELOG.md)
 
 # faastruby-cli
 
-CLI tool for managing workspaces and functions hosted at [FaaStRuby](https://faastruby.io).
+Local development kit and CLI tool for managing workspaces and functions hosted at [faastRuby](https://faastruby.io).
 
-## What is FaaStRuby?
-FaaStRuby is a Serverless Software Development Platform for Ruby and Crystal.
+## What is faastRuby?
+faastRuby is a Serverless Software Development Platform for Ruby and Crystal.
 
-* [Tutorial](https://faastruby.io/getting-started)
+* [Documentation](https://faastruby.io/docs/faastruby-local/)
 
 ## Try it
 
@@ -26,86 +26,71 @@ Getting up and running is quick and easy:
 ~$ gem install faastruby
 ```
 
-2. Create a new FaaStRuby project
+2. Create a new faastRuby project
 
 ```
-~$ faastruby new-project hello-world
-+ d ./hello-world
-+ f ./hello-world/project.yml
-+ f ./hello-world/secrets.yml
-+ d ./hello-world/functions/root
-+ f ./hello-world/functions/root/index.html.erb
-+ f ./hello-world/functions/root/template.rb
-+ f ./hello-world/functions/root/handler.rb
-+ f ./hello-world/functions/root/faastruby.yml
-+ d ./hello-world/functions/catch-all
-+ f ./hello-world/functions/catch-all/404.html
-+ f ./hello-world/functions/catch-all/handler.rb
-+ f ./hello-world/functions/catch-all/faastruby.yml
-+ f ./hello-world/public/faastruby.yml
-+ f ./hello-world/.gitignore
-Initialized empty Git repository in /Users/mf/OpenSource/faastruby/hello-world/.git/
-Project 'hello-world' initialized.
+~$ faastruby new-project my-project
++ d ./myproject
++ f ./myproject/project.yml
++ f ./myproject/secrets.yml
++ d ./myproject/functions/root
++ f ./myproject/functions/root/index.html.erb
++ f ./myproject/functions/root/template.rb
++ f ./myproject/functions/root/handler.rb
++ f ./myproject/functions/root/faastruby.yml
++ d ./myproject/functions/catch-all
++ f ./myproject/functions/catch-all/404.html
++ f ./myproject/functions/catch-all/handler.rb
++ f ./myproject/functions/catch-all/faastruby.yml
++ f ./myproject/public/faastruby.yml
++ f ./myproject/.gitignore
+Initialized empty Git repository in /Users/DemoUser/myproject/.git/
+Project 'myproject' initialized.
 Now run:
-$ cd hello-world
+$ cd myproject
 $ faastruby local
 ```
 
 3. Fire up the local development environment for your new project
 
 ```
-~$ cd hello-world
-~/hello-world$ faastruby local
+~$ cd myproject
+~/myproject$ faastruby local
 Puma starting in single mode...
 * Version 3.12.0 (ruby 2.5.3-p105), codename: Llamas in Pajamas
 * Min threads: 0, max threads: 32
 * Environment: production
-sh: crystal: command not found
-2019-02-27 23:36:03 +0800 (EventHub) Channel subscriptions: {}
+* Listening on tcp://0.0.0.0:3000
+Use Ctrl-C to stop
+2019-03-16 21:09:36 -0300 | Detecting existing functions.
 ---
-2019-02-27 23:36:03 +0800 (EventHub) Please restart the server if you modify channel subscriptions in 'faastruby.yml' for any function.
+2019-03-16 21:09:36 -0300 | Ruby functions: ["lists/pets", "root", "catch-all", "ruby"]
 ---
-2019-02-27 23:36:03 +0800 (EventHub) Events thread started.
+2019-03-16 21:09:36 -0300 | Crystal functions: []
 ---
-2019-02-27 23:36:03 +0800 (Sentinel) Ruby functions: ["root", "catch-all"]
+2019-03-16 21:09:37 -0300 | Listening for changes.
 ---
-2019-02-27 23:36:03 +0800 (Sentinel) Watching for new Ruby functions...
 ```
 
 As you can see, this runs with Ruby only. If you want to run Crystal as well (similar to Ruby, but with types and compiled to run very fast), simply [install Crystal](https://crystal-lang.org/reference/installation/) and start `faastruby local` again.
 
 
-`faastruby local` is very powerful. When you add a new folder with a `handler.rb` or `handler.cr`, it will automatically be detected. FaaStRuby will automatically add the configuration for the function so you can jump straight in:
+`faastruby local` is very powerful. When you add a new folder with a `handler.rb` or `handler.cr`, it will automatically be detected. faastRuby will automatically add the configuration for the function so you can jump straight in:
 
 ![How to add a new folder and file](https://s3.amazonaws.com/faastruby/public/new-paths.mp4)
 
 Changes to the code will automatically be detected and immediately refreshed for you, making local development easy and comfortable:
 [!How to edit files and refresh them in the browser](https://s3.amazonaws.com/faastruby/public/local-file-refresh.mp4)
 
-4. Deploy it to a workspace:
+4. Deploy it to the cloud:
 
 ```
-~/hello-world$ faastruby deploy-to awesome-prod
-◐ Running tests... Passed!
+~/hello-world$ faastruby deploy
 ...
-
-Finished in 0.00563 seconds (files took 0.15076 seconds to load)
-3 examples, 0 failures
-
-◐ Building package... Done!
-◐ Deploying to workspace 'awesome-prod'... Done!
-Endpoint: https://api.tor1.faastruby.io/awesome-prod/hello-world
+* Project URL: https://myproject-stage-abd123.tor1.faast.cloud
 ```
+Now visit that url in the browser!
 
-3. Run it:
-
-```
-~/hello-world$ curl https://api.tor1.faastruby.io/awesome-prod/hello-world
-Hello, World!
-```
-
-Build lots of functions and share them with fellow Ruby devs!
-
-## FaaStRuby + Hyperstack = fullstack Ruby apps!
+## faastRuby + Hyperstack = fullstack Ruby apps!
 
 Do you think JavaScript is your only option for the front-end? Think again. [Hyperstack](https://hyperstack.org) is a Ruby DSL, compiled by Opal, bundled by Webpack, powered by React.
