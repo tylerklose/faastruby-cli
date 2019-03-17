@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.14 - Mar 17 2019
+- Fix bug when trying to detect Gemfile.lock
+- Add helper method to debug listener event
+
+
 ## 0.5.13 - Mar 17 2019
 - Update help with new spelling
 - Better handle of deploys when sync is enabled

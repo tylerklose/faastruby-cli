@@ -66,6 +66,18 @@ module FaaStRuby
         debug "EVENT: #{@full_path}"
       end
 
+      def to_h
+        {
+          listened_directory: @listened_directory,
+          full_path: @full_path,
+          relative_path: @relative_path,
+          relative_path_dirname: @relative_path_dirname,
+          filename: @filename,
+          dirname: @dirname,
+          type: @type
+        }
+      end
+
       def function_created?
         debug __method__
         added? && filename.match(/^handler\.(rb|cr)$/)
@@ -74,6 +86,11 @@ module FaaStRuby
       def file_is_a_gemfile?
         debug __method__
         filename == 'Gemfile'
+      end
+
+      def file_is_a_gemfile_lock?
+        debug __method__
+        filename == 'Gemfile.lock'
       end
 
       def file_is_a_handler?
