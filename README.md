@@ -1,7 +1,9 @@
-[![Gem Version](https://badge.fury.io/rb/faastruby.svg)](https://badge.fury.io/rb/faastruby)
-[![Build Status](https://travis-ci.org/faastRuby/faastruby-cli.svg?branch=master)](https://travis-ci.org/faastRuby/faastruby-cli)
+![faastRuby](https://faastruby.io/wp-content/uploads/2019/03/logo-positive.png)
 
-* Looking for help? [Ask a question](https://meta.stackoverflow.com/questions/ask?tags=faastRuby,Serverless,Ruby,FaaS).
+[![Gem Version](https://badge.fury.io/rb/faastruby.svg)](https://badge.fury.io/rb/faastruby)
+[![Build Status](https://travis-ci.org/FaaStRuby/faastruby-cli.svg?branch=master)](https://travis-ci.org/FaaStRuby/faastruby-cli)
+
+* Looking for help? [Join our Slack!](https://faastruby.io/slack).
 
 * [Changelog](https://github.com/faastRuby/faastruby-cli/blob/master/CHANGELOG.md)
 
@@ -17,8 +19,6 @@ faastRuby is a Serverless Software Development Platform for Ruby and Crystal.
 ## Try it
 
 Getting up and running is quick and easy:
-
-![Getting up and running](https://s3.amazonaws.com/faastruby/public/create-project.mp4)
 
 1. Install the gem so `faastruby` is available in your terminal
 
@@ -75,12 +75,9 @@ Use Ctrl-C to stop
 As you can see, this runs with Ruby only. If you want to run Crystal as well (similar to Ruby, but with types and compiled to run very fast), simply [install Crystal](https://crystal-lang.org/reference/installation/) and start `faastruby local` again.
 
 
-`faastruby local` is very powerful. When you add a new folder with a `handler.rb` or `handler.cr`, it will automatically be detected. faastRuby will automatically add the configuration for the function so you can jump straight in:
+`faastruby local` is very powerful. When you add a new folder with a `handler.rb` or `handler.cr`, it will automatically be detected. faastRuby will automatically add the configuration for the function so you can jump straight in.
 
-![How to add a new folder and file](https://s3.amazonaws.com/faastruby/public/new-paths.mp4)
-
-Changes to the code will automatically be detected and immediately refreshed for you, making local development easy and comfortable:
-[!How to edit files and refresh them in the browser](https://s3.amazonaws.com/faastruby/public/local-file-refresh.mp4)
+Changes to the code will automatically be detected and immediately refreshed for you, making local development easy and comfortable.
 
 4. Deploy it to the cloud:
 
