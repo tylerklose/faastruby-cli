@@ -4,8 +4,8 @@ module FaaStRuby
 
       def should_ignore?(event)
         debug "should_ignore?(#{event.inspect})"
-        return true if event.filename == 'Gemfile.lock'
-        if present_in_ignore_list?(event.dirname)
+        return true if event.file_is_a_gemfile_lock?
+        if present_in_ignore_list?(event.dirname) || present_in_ignore_list?(event.full_path)
           debug "SKIP #{event}"
           return true
         end
@@ -37,7 +37,7 @@ module FaaStRuby
           return new_function(event)
         end
         init_gemfile(event) if event.file_is_a_gemfile?
-        unless event.file_is_a_function_config? || event.file_is_a_gemfile?
+        unless event.file_is_a_function_config? || event.file_is_a_gemfile? || event.file_is_a_gemfile_lock?
           debug "added: a file was added"
           deploy(event)
         end
@@ -150,26 +150,30 @@ module FaaStRuby
       end
 
       def bundle_install(event)
-        puts "Running: cd #{event.relative_path_dirname} && bundle install"
-        if system("cd #{event.dirname} && bundle install")
-          STDOUT.puts '---'.yellow
-          puts "Gems from Gemfile '#{event.relative_path}' installed."
-        else
-          STDOUT.puts '---'.red
-          STDOUT.puts "#{Time.now} | Error installing gems for Gemfile '#{event.relative_path}'.".red
+        run(event.dirname, 'bundle install') do
+          puts "Running: cd #{event.relative_path_dirname} && bundle install"
+          if system("cd #{event.dirname} && bundle install")
+            STDOUT.puts '---'.yellow
+            puts "Gems from Gemfile '#{event.relative_path}' were installed in your local machine."
+          else
+            STDOUT.puts '---'.red
+            STDOUT.puts "#{Time.now} | Error installing gems in your local machine for Gemfile '#{event.relative_path}'.".red
+          end
         end
       end
 
       def init_gemfile(event)
         unless File.size(event.full_path) > 0
-          puts "Initializing Gemfile '#{event.relative_path}'"
-          add_ignore(event.full_path)
-          sleep 0.2
-          File.write(event.full_path, Local::RubyFunction.default_gemfile)
-          remove_ignore(event.full_path)
+          run(event.full_path, "init_gemfile") do
+            puts "Initializing Gemfile '#{event.relative_path}'"
+            add_ignore(event.full_path)
+            sleep 0.2
+            File.write(event.full_path, Local::RubyFunction.default_gemfile)
+            sleep 0.5
+            remove_ignore(event.full_path)
+          end
         end
       end
-
     end
   end
 end
