@@ -3,7 +3,7 @@
 [![Gem Version](https://badge.fury.io/rb/faastruby.svg)](https://badge.fury.io/rb/faastruby)
 [![Build Status](https://travis-ci.org/FaaStRuby/faastruby-cli.svg?branch=master)](https://travis-ci.org/FaaStRuby/faastruby-cli)
 
-* Looking for help? [Ask a question](https://meta.stackoverflow.com/questions/ask?tags=faastRuby,Serverless,Ruby,FaaS).
+* Looking for help? [Join our Slack!](https://faastruby.io/slack).
 
 * [Changelog](https://github.com/faastRuby/faastruby-cli/blob/master/CHANGELOG.md)
 
