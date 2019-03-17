@@ -128,10 +128,11 @@ module FaaStRuby
       puts "Crystal functions: #{crystal_functions.inspect}"
       listen_on_functions_dir
       listen_on_public_dir if SYNC_ENABLED
-      initial_compile_and_deploy(crystal_functions)
-      puts "Listening for changes."
       FunctionProcessor.new(FUNCTIONS_EVENT_QUEUE).start
       StaticFileProcessor.new(PUBLIC_EVENT_QUEUE).start if SYNC_ENABLED
+      # initial_compile
+      puts "Listening for changes."
+      puts "faastRuby Local is ready at http://localhost:3000"
       sleep
     ensure
       puts "Stopping Watchdog..."
@@ -139,30 +140,21 @@ module FaaStRuby
       Local::Listener.public_listener.each(&:stop)
     end
 
-    def self.initial_compile_and_deploy(crystal_functions)
-      debug "initial_compile_and_deploy(#{crystal_functions.inspect})"
-      puts "Triggering 'compile' on Crystal functions." if crystal_functions.any?
-      if SYNC_ENABLED
-        puts "Running initial cloud sync."
-        StaticFile.full_sync
+    def self.initial_compile
+      debug __method__
+      Thread.new do
+        sleep 1
+        crystal_functions = @@functions.map{|f| f if f.language == "crystal"}.compact
+        puts "Triggering 'compile' on Crystal functions." if crystal_functions.any?
+        crystal_functions.each {|f| FileUtils.touch("#{f.absolute_folder}/faastruby.yml")}
       end
-      sleep 1
-      @@functions.each {|f| FileUtils.touch("#{f.absolute_folder}/faastruby.yml")}
     end
 
     def self.sync_mode_enabled
       debug __method__
       puts "Sync mode enabled."
-      print "Connecting to workspace '#{workspace}'... "
-      try_to_create = Proc.new {system("faastruby create-workspace #{workspace}")}
-      has_credentials = system("faastruby list-workspace #{workspace} > /dev/null 2>&1")
-      continue = has_credentials || try_to_create.call
-      unless continue
-        puts "[FATAL] Unable to setup project workspace '#{workspace}'. Make sure you have the credentials, or try a different environment name.\nExample: faastruby local --sync --deploy-env #{DEPLOY_ENVIRONMENT}-#{(rand * 100).to_i}".red
-        exit 1
-      end
-      STDOUT.puts "connected!\n".yellow
       puts "Your local environment will be synced to https://#{workspace}.tor1.faast.cloud"
+      system("faastruby deploy")
       true
     end
 
