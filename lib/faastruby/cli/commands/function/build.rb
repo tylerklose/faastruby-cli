@@ -62,7 +62,7 @@ module FaaStRuby
           @yaml_config['before_build']&.each do |command|
             puts `#{command}`
           end
-          spinner.stop(' Done!')
+          spinner.success
           self.class.build(source, output_file, @function_name)
         end
 

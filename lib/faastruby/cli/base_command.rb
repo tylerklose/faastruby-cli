@@ -3,8 +3,10 @@ require 'yaml'
 module FaaStRuby
   module Command
     class BaseCommand
-      def self.spin(message)
-        spinner = TTY::Spinner.new(":spinner #{message}", format: SPINNER_FORMAT)
+      def self.spin(message=nil)
+        s = ":spinner"
+        s += " #{message}" if message
+        spinner = TTY::Spinner.new(s, format: SPINNER_FORMAT)
         spinner.auto_spin
         spinner
       end

@@ -19,7 +19,7 @@ module FaaStRuby
           workspace = FaaStRuby::Workspace.new(name: @workspace_name)
           workspace.update_runners(@options['runners_max'])
           FaaStRuby::CLI.error(workspace.errors) if workspace.errors.any?
-          spinner.stop("Done!")
+          spinner.success
         end
 
         def self.help

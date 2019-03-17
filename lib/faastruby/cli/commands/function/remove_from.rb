@@ -29,10 +29,10 @@ module FaaStRuby
           function = FaaStRuby::Function.new(name: @function_name, workspace: workspace)
           function.destroy
           if function.errors.any?
-            spinner.stop('Failed :(')
+            spinner.error
             FaaStRuby::CLI.error(function.errors)
           end
-          spinner.stop('Done!')
+          spinner.success
         end
 
         def self.help

@@ -21,12 +21,12 @@ module FaaStRuby
             spinner = spin("Setting up workspace '#{@workspace_name}'...")
             workspace = FaaStRuby::Workspace.create(name: @workspace_name, email: @options['email'])
             if workspace.errors.any?
-              spinner.stop(" Failed :(") if exit_on_error
+              spinner.error if exit_on_error
               FaaStRuby::CLI.error(workspace.errors) if exit_on_error
-              spinner.stop
+              spinner.success
               return false
             end
-            spinner.stop(" Done!")
+            spinner.success
           end
           create_dir if @options['create_local_dir'] && create_directory && !dir_exists?
           true

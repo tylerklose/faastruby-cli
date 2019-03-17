@@ -41,10 +41,21 @@ module FaaStRuby
         def run
           create_or_use_workspace
           if @yaml_config['serve_static']
+            if @options['quiet']
+              puts "[#{@function_name}] Deploying static files '#{@function_name}' to workspace '#{@workspace_name}'..."
+              spinner = spin("")
+            else
+              spinner = say("[#{@function_name}] Deploying static files '#{@function_name}' to workspace '#{@workspace_name}'...")
+            end
             package_file_name = build_package
-            spinner = say("* [#{@function_name}] Deploying static files '#{@function_name}' to workspace '#{@workspace_name}'...", quiet: @options['quiet'])
             workspace = FaaStRuby::Workspace.new(name: @workspace_name).deploy(package_file_name)
           else
+            if @options['quiet']
+              puts "[#{@function_name}] Deploying #{runtime_name} function '#{@function_name}' to workspace '#{@workspace_name}'..."
+              spinner = spin("")
+            else
+              spinner = spin("[#{@function_name}] Deploying #{runtime_name} function '#{@function_name}' to workspace '#{@workspace_name}'...")
+            end
             if ruby_runtime?
               FaaStRuby::CLI.error('Please fix the problems above and try again') unless bundle_install
             end
@@ -53,15 +64,14 @@ module FaaStRuby
             end
             FaaStRuby::CLI.error("[#{@function_name}] Deploy aborted because 'test_command' exited non-zero.") unless run_tests
             package_file_name = build_package
-            spinner = say("* [#{@function_name}] Deploying #{runtime_name} function '#{@function_name}' to workspace '#{@workspace_name}'...", quiet: @options['quiet'])
             workspace = FaaStRuby::Workspace.new(name: @workspace_name).deploy(package_file_name, root_to: @options['root_to'], catch_all: @options['catch_all'], context: @options['context'])
           end
           if workspace.errors.any?
-            puts ' Failed :(' unless spinner&.stop(' Failed :(')
+            puts ' Failed :(' unless spinner&.error
             @package_file.unlink
             FaaStRuby::CLI.error(workspace.errors)
           end
-          spinner.stop(' Done!') unless @options['quiet']
+          spinner.success unless @options['quiet']
           @package_file.unlink
           puts "* [#{@function_name}] Deploy OK".green
           unless @yaml_config['serve_static']
@@ -101,20 +111,24 @@ module FaaStRuby
             # for consistency. This is temporary until the API gets patched.
             spinner = say("[#{@function_name}] Waiting for the workspace '#{@workspace_name}' to be ready...", quiet: @options['quiet'])
             sleep 2
-            puts ' Done!' unless spinner&.stop(' Done!')
+            puts ' Done!' unless spinner&.success
           end
         end
 
         def shards_install
           return true unless File.file?('shard.yml')
-          puts "[#{@function_name}] Verifying dependencies"
+          # puts "[#{@function_name}] Verifying dependencies" unless @options["quiet"]
           system('shards check > /dev/null') || system('shards install')
+        rescue Errno::EPIPE
+          true
         end
 
         def bundle_install
           return true unless File.file?('Gemfile')
-          puts "* [#{@function_name}] Verifying dependencies"
+          # puts "* [#{@function_name}] Verifying dependencies" unless @options["quiet"]
           system('bundle check >/dev/null') || system('bundle install')
+        rescue Errno::EPIPE
+          true
         end
 
         def missing_args
@@ -140,7 +154,7 @@ module FaaStRuby
             @yaml_config['before_build']&.each do |command|
               puts `#{command}`
             end
-            spinner&.stop(' Done!')
+            spinner&.success
           end
           require 'faastruby/cli/commands/function/build'
           FaaStRuby::Command::Function::Build.build(source, output_file, @function_name, true)

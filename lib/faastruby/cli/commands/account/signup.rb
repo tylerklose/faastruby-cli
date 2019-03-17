@@ -32,10 +32,10 @@ module FaaStRuby
           spinner = spin("Creating your account...")
           user = User.create(email: email, password: password)
           if user.errors.any?
-            spinner.stop(" Failed :(")
+            spinner.error
             FaaStRuby::CLI.error(user.errors)
           end
-          spinner.stop(' Done!')
+          spinner.success
           exec("faastruby confirm-account --email #{email}")
           exit 0
         end

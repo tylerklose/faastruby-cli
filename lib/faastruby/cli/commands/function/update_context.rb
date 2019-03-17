@@ -22,10 +22,10 @@ module FaaStRuby
           function = FaaStRuby::Function.new(name: @function_name, workspace: workspace)
           function.update(new_context: @options['data'])
           if function.errors.any?
-            spinner.stop('Failed :(')
+            spinner.error
             FaaStRuby::CLI.error(function.errors)
           end
-          spinner.stop('Done!')
+          spinner.success
         end
 
         def self.help

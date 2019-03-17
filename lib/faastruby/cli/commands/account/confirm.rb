@@ -20,7 +20,7 @@ module FaaStRuby
           spinner = spin("Confirming your account...")
           user.confirm_account!
           FaaStRuby::CLI.error(user.errors) if user.errors.any?
-          spinner.stop(" Done!")
+          spinner.success
           user.save_credentials
           puts "Login successful!"
           migrate

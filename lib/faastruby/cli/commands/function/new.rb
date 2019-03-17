@@ -186,7 +186,7 @@ module FaaStRuby
           return true unless File.file?("#{@base_dir}/Gemfile")
           spinner = spin("Installing gems...")
           system("bundle install --gemfile=#{@base_dir}/Gemfile > /dev/null")
-          spinner.stop('Done!')
+          spinner.success
         end
 
         def write_shards_file
@@ -213,7 +213,7 @@ module FaaStRuby
           return true unless File.file?("#{@base_dir}/shard.yml")
           spinner = spin("Installing shards...")
           system("cd #{@base_dir} && shards install > /dev/null")
-          spinner.stop('Done!')
+          spinner.success
         end
 
         def name_valid?

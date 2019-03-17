@@ -21,10 +21,10 @@ module FaaStRuby
           spinner = spin("Destroying...")
           workspace.destroy
           if workspace.errors.any?
-            spinner.stop(" Failed :(")
+            spinner.error
             FaaStRuby::CLI.error(workspace.errors)
           end
-          spinner.stop("Done!")
+          spinner.success
           puts "Workspace '#{@workspace_name}' was deleted from the cloud platform."
         end
 

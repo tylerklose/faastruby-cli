@@ -19,7 +19,7 @@ module FaaStRuby
           workspace = FaaStRuby::Workspace.new(name: @workspace_name)
           workspace.delete_file(relative_path: @relative_path)
           FaaStRuby::CLI.error(workspace.errors) if workspace.errors.any?
-          spinner.stop("Done!")
+          spinner.success
           puts "* [#{@relative_path}] File removed from cloud workspace '#{@workspace_name}'.".green
         end
 

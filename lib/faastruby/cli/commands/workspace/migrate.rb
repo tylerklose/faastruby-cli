@@ -70,11 +70,11 @@ module FaaStRuby
           response = api.migrate_to_account(workspace_name: workspace_name, api_key: credentials['api_key'], api_secret: credentials['api_secret'])
           if response.code > 299
             @failed << workspace_name
-            spinner.stop(" Failed :(".red)
+            spinner.error
             return false
           end
           @migrated << workspace_name
-          spinner.stop(" Done!".green)
+          spinner.success
           return true
         end
 
