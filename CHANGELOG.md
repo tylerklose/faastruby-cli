@@ -2,6 +2,7 @@
 
 ## 0.5.13 - unreleased
 - Update help with new spelling
+- Better handle of deploys when sync is enabled
 
 ## 0.5.12 - Mar 16 2019
 - Add new branding to Local web templates.

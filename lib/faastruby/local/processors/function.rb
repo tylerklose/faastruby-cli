@@ -4,6 +4,7 @@ module FaaStRuby
 
       def should_ignore?(event)
         debug "should_ignore?(#{event.inspect})"
+        return true if event.filename == 'Gemfile.lock'
         if present_in_ignore_list?(event.dirname)
           debug "SKIP #{event}"
           return true
@@ -36,7 +37,7 @@ module FaaStRuby
           return new_function(event)
         end
         init_gemfile(event) if event.file_is_a_gemfile?
-        unless event.file_is_a_function_config? && event.file_is_a_gemfile?
+        unless event.file_is_a_function_config? || event.file_is_a_gemfile?
           debug "added: a file was added"
           deploy(event)
         end
@@ -124,7 +125,6 @@ module FaaStRuby
       end
 
       def deploy(event)
-        debug "deploy(#{event.inspect})"
         return false unless SYNC_ENABLED
         # This should run when sync is enabled and:
         # - added any file but handler
@@ -132,11 +132,11 @@ module FaaStRuby
         # - removed any file but handler
         function = Local::Function.that_has_file(event.full_path, event.type)
         run(function.name, 'deploy') do
-          debug "+ IGNORE #{function.absolute_folder}"
-            add_ignore(function.absolute_folder)
-            function.deploy
-            debug "- IGNORE #{function.absolute_folder}"
-            remove_ignore(function.absolute_folder)
+          # debug "+ IGNORE #{function.absolute_folder}"
+          # add_ignore(function.absolute_folder)
+          function.deploy
+          # debug "- IGNORE #{function.absolute_folder}"
+          # remove_ignore(function.absolute_folder)
         end
       end
 
@@ -163,8 +163,10 @@ module FaaStRuby
       def init_gemfile(event)
         unless File.size(event.full_path) > 0
           puts "Initializing Gemfile '#{event.relative_path}'"
+          add_ignore(event.full_path)
           sleep 0.2
           File.write(event.full_path, Local::RubyFunction.default_gemfile)
+          remove_ignore(event.full_path)
         end
       end
 
