@@ -20,8 +20,6 @@ faastRuby is a Serverless Software Development Platform for Ruby and Crystal.
 
 Getting up and running is quick and easy:
 
-![Getting up and running](https://s3.amazonaws.com/faastruby/public/create-project.mp4)
-
 1. Install the gem so `faastruby` is available in your terminal
 
 ```
@@ -77,12 +75,9 @@ Use Ctrl-C to stop
 As you can see, this runs with Ruby only. If you want to run Crystal as well (similar to Ruby, but with types and compiled to run very fast), simply [install Crystal](https://crystal-lang.org/reference/installation/) and start `faastruby local` again.
 
 
-`faastruby local` is very powerful. When you add a new folder with a `handler.rb` or `handler.cr`, it will automatically be detected. faastRuby will automatically add the configuration for the function so you can jump straight in:
+`faastruby local` is very powerful. When you add a new folder with a `handler.rb` or `handler.cr`, it will automatically be detected. faastRuby will automatically add the configuration for the function so you can jump straight in.
 
-![How to add a new folder and file](https://s3.amazonaws.com/faastruby/public/new-paths.mp4)
-
-Changes to the code will automatically be detected and immediately refreshed for you, making local development easy and comfortable:
-[!How to edit files and refresh them in the browser](https://s3.amazonaws.com/faastruby/public/local-file-refresh.mp4)
+Changes to the code will automatically be detected and immediately refreshed for you, making local development easy and comfortable.
 
 4. Deploy it to the cloud:
 
