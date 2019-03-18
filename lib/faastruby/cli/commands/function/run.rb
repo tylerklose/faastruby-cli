@@ -69,8 +69,9 @@ module FaaStRuby
               @options['method'] = @args.shift.downcase
             when '-h', '--header'
               set_header
-            when '-t', '--time'
-              @options['time'] = true
+            when '--measure'
+              @options['headers'] ||= {}
+              @options['headers']['Benchmark'] = true
             when '--curl'
               @options['curl'] = true
             when '-q', '--query'
