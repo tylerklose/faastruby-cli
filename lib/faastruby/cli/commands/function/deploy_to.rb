@@ -175,6 +175,8 @@ module FaaStRuby
               Dir.chdir @args.shift
             when '--context'
               @options['context'] = @args.shift
+            when '--context-from-stdin'
+              @options['context'] = STDIN.gets.chomp
             when '--quiet', '-q'
               @options['quiet'] = true
             when '--set-root'
