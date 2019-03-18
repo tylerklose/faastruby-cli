@@ -121,54 +121,54 @@ module FaaStRuby
         end
 
         def default_secrets_file
-          [
-            'secrets:',
-            "  # Add secrets here and they will be available inside the function as \"event.context\"",
-            "  # Example:",
-            "  # prod:",
-            "  #   root:",
-            "  #     a_secret: bfe76f4557ffc2de901cb24e0f87436f",
-            "  #   another/function:",
-            "  #     another_secret: 4d1c281e.619a2489c.8b5d.dd945616d324",
-            "",
-            "  # 'stage' is the default environment when you start Local",
-            "  # stage:",
-            "  #   root:",
-            "  #     a_secret: bfe76f4557ffc2de901cb24e0f87436f",
-            "  #   another/function:",
-            "  #     another_secret: 4d1c281e.619a2489c.8b5d.dd945616d324"
-          ].join("\n")
+%(secrets:
+  # Add secrets here and they will be available inside the function as "event.context"
+  # Example:
+  # prod:
+  #   root:
+  #     a_secret: bfe76f4557ffc2de901cb24e0f87436f
+  #   another/function:
+  #     another_secret: 4d1c281e.619a2489c.8b5d.dd945616d324
+
+  # 'stage' is the default environment when you start Local
+  # stage:
+  #   root:
+  #     a_secret: bfe76f4557ffc2de901cb24e0f87436f
+  #   another/function:
+  #     another_secret: 4d1c281e.619a2489c.8b5d.dd945616d324
+)
         end
 
         def default_project_file
-          [
-            "project:",
-            "  # The project name",
-            "  name: #{@project_name}",
-            "  # The project identifier is used to ensure your workspaces will have unique names.",
-            "  # This is not a secret, but don't lose it!",
-            "  identifier: #{Digest::MD5.hexdigest(Time.now.to_s).slice(0..5)}",
-            "",
-            "  ## The 'public' directory, where you put static files.",
-            "  ## Files will be served from here first, meaning that if",
-            "  ## you have a function at '/product' and a folder '/product'",
-            "  ## inside the public folder, the public one will take precedence.",
-            "  ## Defaults to 'public'.",
-            "  # public_dir: public",
-            "",
-            "  ## The name of the folder containing your functions. Defaults to 'functions'",
-            "  # functions_dir: functions",
-            "",
-            "  ## The name of the function that will respond to requests made",
-            "  ## to '/'. Defaults to 'root'",
-            "  # root_to: root",
-            "",
-            "  ## The setting 'catch_all' allows you to capture requests to",
-            "  ## non-existing functions and send them to another function.",
-            "  ## This is useful for setting custom 404 pages, for example.",
-            "  ## Defaults to 'catch-all'.",
-            "  # catch_all: catch-all"
-          ].join("\n")
+%(project:
+  # The project name
+  name: #{@project_name}
+
+  # The project identifier is used to ensure your workspaces will have unique names.
+  # This is not a secret, but don't lose it!
+  identifier: #{Digest::MD5.hexdigest(Time.now.to_s).slice(0..5)}
+
+  ## The 'public' directory is where you put static files.
+  ## Files will be served from there first, meaning that if
+  ## you have a function at 'functions/product' and a folder
+  ## 'public/product', the public one will take precedence.
+  ## Defaults to 'public'.
+  # public_dir: public
+
+  ## The name of the folder containing the project's functions.
+  ## Defaults to 'functions'.
+  # functions_dir: functions
+
+  ## The name of the function that will respond to requests made
+  ## to '/'. Defaults to 'root'
+  # root_to: root
+
+  ## The setting 'catch_all' allows you to capture requests to
+  ## non-existing functions and send them to another function.
+  ## This is useful for setting custom 404 pages, for example.
+  ## Defaults to 'catch-all'.
+  # catch_all: catch-all
+)
         end
 
         def tmuxinator_config
