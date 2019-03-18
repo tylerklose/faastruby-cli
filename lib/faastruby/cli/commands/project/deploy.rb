@@ -18,7 +18,7 @@ module FaaStRuby
           @options['functions'] += find_functions unless @options['functions'].any?
           @options['environment'] ||= 'stage'
           @project_yaml = YAML.load(File.read(PROJECT_YAML_FILE))['project'] rescue FaaStRuby::CLI.error("Could not find file 'project.yml'. Are you running this command from the project's folder?")
-          @project_secrets = YAML.load(File.read(PROJECT_SECRETS_FILE)) rescue {secrets: {}}
+          @project_secrets = YAML.load(File.read(PROJECT_SECRETS_FILE))['secrets'] rescue {secrets: {}}
           @project_name = @project_yaml['name']
           @root_to = @project_yaml['root_to'] || 'root'
           @catch_all = @project_yaml['catch_all'] || 'catch-all'
