@@ -14,7 +14,7 @@ module FaaStRuby
           load_credentials
         end
 
-        def run(create_directory: true, exit_on_error: true)
+        def run
           spinner = spin("Updating the number of runners to #{@options['runners_max']}...")
           workspace = FaaStRuby::Workspace.new(name: @workspace_name)
           workspace.update_runners(@options['runners_max'])
