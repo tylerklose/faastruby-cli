@@ -124,7 +124,7 @@ module FaaStRuby
 -f,--function FUNCTION_PATH    # Specify the path to the function directory in your local machine.
                                # This argument can be repeated many times for multiple functions. Example:
                                # -f path/to/function1 -f path/to/function2
--e,--env ENVIRONMENT           # ENVIRONMENT is added to the project name to compose the workspace name.
+-e,--env ENVIRONMENT           # ENVIRONMENT is added to the project's name to compose the workspace name.
           )
         end
 

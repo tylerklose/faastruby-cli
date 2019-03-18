@@ -39,15 +39,15 @@ module FaaStRuby
         def usage
           puts "\nUsage: faastruby #{self.class.help}"
           puts %(
--b,--body 'DATA'               # The request body
---stdin                        # Read the request body from STDIN
--m,--method METHOD             # The request method
+-b,--body 'DATA'               # The request body.
+--stdin                        # Read the request body from STDIN.
+-m,--method METHOD             # The request method.
 -h,--header 'Header: Value'    # Set a header. Can be used multiple times.
--f,--form 'a=1&b=2'            # Send form data and set header 'Content-Type: application/x-www-form-urlencoded'
--j,--json '{"a":"1"}'          # Send JSON data and set header 'Content-Type: application/json'
--t,--time                      # Return function run time in the response
+-f,--form 'a=1&b=2'            # Send form data and set header 'Content-Type: application/x-www-form-urlencoded'.
+-j,--json '{"a":"1"}'          # Send JSON data and set header 'Content-Type: application/json'.
+--measure                      # Return function execution time in the response headers.
 -q,--query 'foo=bar'           # Set a query parameter for the request. Can be used multiple times.
---curl                         # Return the CURL command equivalent for the request
+--curl                         # Print the equivalent CURL command for the request and exit.
           )
         end
 

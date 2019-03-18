@@ -90,10 +90,14 @@ module FaaStRuby
           puts "\nUsage: faastruby #{self.class.help}"
           puts %(
 -f,--function PATH/TO/FUNCTION     # Specify the directory where the function is.
---context DATA                     # The data to be stored as context in the cloud,
-                                   # accessible via 'event.context' from within your function.
---set-root                         # Set the function as the root route of the workspace/
---set-catch-all                    # Set the function as the catch-all route of the workspace.
+--context 'JSON_STRING'            # The data to be stored as execution context
+                                   #  in the cloud, accessible via 'event.context'
+                                   #  from within your function.
+                                   #  The context data must be a JSON String, and
+                                   #  have maximum size of 4KB.
+--context-from-stdin               # Read context data from STDIN.
+--set-root                         # Set the function as the root route for the workspace.
+--set-catch-all                    # Set the function as the catch-all route for the workspace.
 --dont-create-workspace            # Don't try to create the workspace if it doesn't exist.
           )
         end

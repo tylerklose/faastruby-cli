@@ -39,8 +39,7 @@ module FaaStRuby
         def usage
           puts "\nUsage: faastruby #{self.class.help}"
           puts %(
---create-local-dir    # Create a local folder in addition to the cloud
---local-only          # Only create a local folder. Skip creating workspace on the cloud
+--create-local-dir    # Create a local directory with the workspace name.
           )
         end
 

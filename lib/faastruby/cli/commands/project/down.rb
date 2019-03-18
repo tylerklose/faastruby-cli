@@ -31,10 +31,17 @@ module FaaStRuby
         end
 
         def usage
-          puts "Usage: faastruby #{self.class.help}"
           puts %(
--e,--env ENVIRONMENT           # ENVIRONMENT is added to the project name to compose the workspace name.
-          )
+
+Remove a workspace from the cloud.
+Must be executed from within a project's directory.
+
+Usage: faastruby #{self.class.help}
+
+-e,--env ENVIRONMENT           # ENVIRONMENT is added to the project's name to compose the workspace name.
+                               # Defaults to 'stage'
+
+)
         end
 
         def parse_options

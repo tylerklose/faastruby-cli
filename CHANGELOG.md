@@ -2,6 +2,7 @@
 
 ## 0.5.16 - unreleased
 - Remove unused arguments from update workspace `run` method.
+- Update Help
 
 ## 0.5.15 - Mar 18 2019
 - Remove `nil` entries from error array before trying to print error messages

@@ -30,6 +30,10 @@ module FaaStRuby
           puts "\nUsage: faastruby #{self.class.help}"
           puts %(
 --runners N   # Assign N runners to the workspace.
+              #  N must be an integer between 0 and 100.
+              #  When set to 0, requests to any functions
+              #  whithin the workspace will return HTTP error
+              #  429 - Too Many Requests.
           )
         end
 
