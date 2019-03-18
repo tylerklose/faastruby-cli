@@ -44,7 +44,8 @@ Projects:
 
 Workspaces:
   create-workspace     # Create a cloud workspace
-  destroy-workspace    # Erase a workspace from the cloud
+  destroy-workspace    # Remove a workspace and all its functions
+                       #  from the cloud. Can't be undone.
   list-workspace       # List what's in a cloud workspace
   cp                   # Copy a static file from your local machine to
                        #  a cloud workspace
