@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.15 - Mar 18 2019
+- Remove `nil` entries from error array before trying to print error messages
+
 ## 0.5.14 - Mar 17 2019
 - Fix bug when trying to detect Gemfile.lock
 - Add helper method to debug listener event

@@ -8,7 +8,7 @@ module FaaStRuby
 
   class CLI
     def self.error(message, color: :red)
-      message.each {|m| STDERR.puts m.colorize(color)} if message.is_a?(Array)
+      message.compact.each {|m| STDERR.puts m.colorize(color)} if message.is_a?(Array)
       STDERR.puts message.colorize(color) if message.is_a?(String)
       exit 1
     end
