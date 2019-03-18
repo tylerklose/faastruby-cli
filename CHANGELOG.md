@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.5.16 - unreleased
+## 0.5.16 - Mar 18 2019
 - Remove unused arguments from update workspace `run` method.
 - Update Help
 - Change the argument that measures the execution time on `run` to `--measure`
