@@ -6,6 +6,7 @@
 - Change the argument that measures the execution time on `run` to `--measure`
 - Add argument to read context from STDIN when running `deploy-to`
 - Switch default config files method from array to multiline string
+- Allow passwords with up to 50 characters.
 
 ## 0.5.15 - Mar 18 2019
 - Remove `nil` entries from error array before trying to print error messages
