@@ -6,6 +6,7 @@ require 'sinatra/multi_route'
 require 'securerandom'
 require 'rouge'
 require 'colorize'
+
 module FaaStRuby
   class Server < Sinatra::Base
     include FaaStRuby::Logger::Requests
@@ -23,21 +24,22 @@ module FaaStRuby
       request_uuid = SecureRandom.uuid
       splat = params['splat'][0]
       function_name = resolve_function_name(splat)
-      headers = parse_headers(env)
-      if headers.has_key?("Faastruby-Rpc")
+      request_headers = parse_headers(env)
+      if request_headers.has_key?('Faastruby-Rpc')
         body = nil
-        rpc_args = parse_body(request.body.read, headers['Content-Type'], request.request_method) || []
+        rpc_args = parse_body(request.body.read, request_headers['Content-Type'], request.request_method, true) || []
+
       else
-        body = parse_body(request.body.read, headers['Content-Type'], request.request_method)
+        body = parse_body(request.body.read, request_headers['Content-Type'], request.request_method)
         rpc_args = []
       end
-      headers['X-Request-Id'] = request_uuid
-      headers['Request-Method'] = request.request_method
-      original_request_id = headers['X-Original-Request-Id']
+      request_headers['X-Request-Id'] = request_uuid
+      request_headers['Request-Method'] = request.request_method
+      original_request_id = request_headers['X-Original-Request-Id']
       query_params = parse_query(request.query_string)
       context = Oj.dump(FaaStRuby::ProjectConfig.secrets_for_function(function_name))
-      event = FaaStRuby::Event.new(body: body, query_params: query_params, headers: headers, context: context)
-      log_request_message(function_name, request, request_uuid, query_params, body, context)
+      event = FaaStRuby::Event.new(body: body, query_params: query_params, headers: request_headers, context: context)
+      log_request_message(function_name, request, request_uuid, query_params, body || rpc_args, context, request_headers)
       time, response = FaaStRuby::Runner.new(function_name).call(event, rpc_args)
       status response.status
       headers set_response_headers(response, request_uuid, original_request_id, time)
@@ -46,8 +48,8 @@ module FaaStRuby
       body response_body
     end
 
-    def log_request_message(function_name, request, request_uuid, query_params, body, context)
-      puts "[#{function_name}] <- [REQUEST: #{request.request_method} \"#{request.fullpath}\"] request_id=\"#{request_uuid}\" body=\"#{body}\" query_params=#{query_params} headers=#{headers}"
+    def log_request_message(function_name, request, request_uuid, query_params, body, context, request_headers)
+      puts "[#{function_name}] <- [REQUEST: #{request.request_method} \"#{request.fullpath}\"] request_id=\"#{request_uuid}\" body=\"#{body}\" query_params=#{query_params} headers=#{request_headers}"
     end
 
     def log_response_message(function_name, time, request_uuid, response, print_body)
@@ -80,10 +82,14 @@ module FaaStRuby
       File.file?("#{FaaStRuby::ProjectConfig.functions_dir}/#{name}/faastruby.yml")
     end
 
-    def parse_body(body, content_type, method)
+    def parse_body(body, content_type, method, rpc=false)
       return nil if method == 'GET'
       return {} if body.nil? && method != 'GET'
-      return Oj.load(body) if content_type == 'application/json'
+      if rpc
+        return Oj.load(body, symbol_keys: true) if content_type == 'application/json'
+      else
+        return Oj.load(body) if content_type == 'application/json'
+      end
       return body
     end
 
@@ -97,11 +103,16 @@ module FaaStRuby
     end
 
     def parse_headers(env)
-      Hash[*env.select {|k,v| k.start_with? 'HTTP_'}
-        .collect {|k,v| [k.sub(/^HTTP_/, ''), v]}
-        .collect {|k,v| [k.split('_').collect{|a|k == 'DNT' ? k : k.capitalize}.join('-'), v]}
-        .sort
-        .flatten]
+      result = {}
+      env.select{|e| e.match(/^HTTP_/)}.each do |k, v|
+        newkey = k.sub(/^HTTP_/, '').split('_').map{|x| x.capitalize}.join('-')
+        result[newkey] = v
+      end
+      result['Content-Type'] = env['CONTENT_TYPE']
+      result['Request-Method'] = env['REQUEST_METHOD']
+      result['Content-Length'] = env['CONTENT_LENGTH']
+      result['Remote-Addr'] = env['REMOTE_ADDR']
+      result
     end
   end
 end
