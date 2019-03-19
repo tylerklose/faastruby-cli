@@ -4,7 +4,6 @@ module FaaStRuby
     module Requests
 
       def puts(msg)
-        msg = msg.inspect unless msg.is_a?(String)
         msg = Rouge.highlight(msg, 'ruby', Rouge::Formatters::Terminal256.new(Rouge::Themes::Monokai.new))
         STDOUT_MUTEX.synchronize do
           STDOUT.puts "#{Time.now} | #{msg}"
