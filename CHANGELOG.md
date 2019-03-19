@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.5.18 - Mar 19 2019
+- Reverted changes from 0.5.17
+- Refactored headers parsing
+- Bump `faastruby-rpc` version
+- Force RPC calls to use event.body instead of extra arguments
+- Added `favicon.ico` to the public template to stop annoying catch-all invocations on log
+- Match platform behaviour when render text is used on an object
+
+## 0.5.17 - Mar 19 2019
+- Refactored headers parsing
+- Change Oj load behaviour to use hash with symbol keys when loading rpc_args
+- Bump `faastruby-rpc` version
+- Added `favicon.ico` to the public template to stop annoying catch-all invocations on log
+
 ## 0.5.16 - Mar 18 2019
 - Remove unused arguments from update workspace `run` method.
 - Update Help

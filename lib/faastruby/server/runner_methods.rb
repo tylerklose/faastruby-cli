@@ -40,7 +40,7 @@ module FaaStRuby
         resp_body = json.is_a?(String) ? json : Oj.dump(json)
       when html, inline
         headers["Content-Type"] ||= "text/html"
-        resp_body = html
+        resp_body = html || inline
       when text
         headers["Content-Type"] ||= "text/plain"
         resp_body = text

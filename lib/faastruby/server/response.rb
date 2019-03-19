@@ -48,7 +48,11 @@ module FaaStRuby
     end
     attr_accessor :body, :status, :headers, :binary
     def initialize(body:, status: 200, headers: {}, binary: false)
-      @body = body
+      if body.is_a?(String) || body.nil?
+        @body = body
+      else
+        @body = body.inspect
+      end
       @status = status
       @headers = headers
       @binary = binary
