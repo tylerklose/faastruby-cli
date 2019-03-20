@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.20 - Mar 20 2019
+- Improved email regex.
+
 ## 0.5.19 - Mar 20 2019
 - Fix bug preventing `faastruby deploy` from working when secrets are nil
 

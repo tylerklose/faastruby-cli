@@ -1,8 +1,6 @@
 module FaaStRuby
   module Command
     module Account
-      PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,50}$/
-      EMAIL_REGEX = /\A([\w+\-].?)+@[a-z\d\-]+(\.[a-z]+)*\.[a-z]+\z/i
       require 'faastruby/cli/commands/account/base_command'
       require 'io/console'
       class Signup < AccountBaseCommand
