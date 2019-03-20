@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.19 - Mar 20 2019
+- Fix bug preventing `faastruby deploy` from working when secrets are nil
+
 ## 0.5.18 - Mar 19 2019
 - Reverted changes from 0.5.17
 - Refactored headers parsing
