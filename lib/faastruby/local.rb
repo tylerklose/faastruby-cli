@@ -26,12 +26,17 @@ module FaaStRuby
 
     def self.crystal_present_and_supported?
       debug "self.crystal_present_and_supported?"
-      system("which crystal >/dev/null") && SUPPORTED_CRYSTAL.include?(get_crystal_version)
+      system("which crystal >/dev/null") && version_match?(SUPPORTED_CRYSTAL, get_crystal_version)
     end
 
     def self.ruby_present_and_supported?
       debug "self.ruby_present_and_supported?"
-      system("which ruby >/dev/null") && SUPPORTED_RUBY.include?(RUBY_VERSION)
+      system("which ruby >/dev/null") && version_match?(SUPPORTED_RUBY, RUBY_VERSION)
+    end
+
+    def self.version_match?(supported, current)
+      supported.each {|supported_version| return true if Gem::Dependency.new('', supported_version).match?('', current)}
+      return false
     end
 
     def self.check_if_logged_in
@@ -52,7 +57,7 @@ module FaaStRuby
     RUBY_ENABLED = ruby_present_and_supported?
     unless RUBY_ENABLED || CRYSTAL_ENABLED
       puts "\n[ERROR] You need to have one of the following 'language:version' pairs in order to use FaaStRuby Local."
-      puts SUPPORTED_RUNTIMES.join(', ') + "\n"*2
+      puts SUPPORTED_RUNTIMES.join(', ') + "\n\n"
       exit 1
     end
     SERVER_ROOT = Dir.pwd
@@ -62,10 +67,11 @@ module FaaStRuby
     SYNC_ENABLED = ENV['SYNC'] && check_if_logged_in
     CRYSTAL_VERSION = get_crystal_version.freeze
     DEFAULT_CRYSTAL_RUNTIME = "crystal:#{CRYSTAL_VERSION}".freeze
-    DEFAULT_RUBY_RUNTIME = "ruby:#{RUBY_VERSION}".freeze
+    DEFAULT_RUBY_RUNTIME = "ruby:#{CURRENT_MINOR_RUBY}".freeze
     FUNCTIONS_EVENT_QUEUE = Queue.new
     PUBLIC_EVENT_QUEUE = Queue.new
-
+    puts "Using '#{DEFAULT_RUBY_RUNTIME}' as default Ruby runtime." if RUBY_ENABLED
+    puts "Using '#{DEFAULT_CRYSTAL_RUNTIME}' as default Crystal runtime." if CRYSTAL_ENABLED
     def self.workspace
       debug "self.workspace"
       return "#{project_config['name']}-#{DEPLOY_ENVIRONMENT}-#{project_config['identifier']}" if project_config['identifier']

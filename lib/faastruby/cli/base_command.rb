@@ -2,6 +2,7 @@ require 'tty-spinner'
 require 'yaml'
 module FaaStRuby
   module Command
+    DEFAULT_RUBY_RUNTIME = "ruby:#{CURRENT_MINOR_RUBY}".freeze
     class BaseCommand
       def self.spin(message=nil)
         s = ":spinner"

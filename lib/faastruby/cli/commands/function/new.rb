@@ -17,7 +17,7 @@ module FaaStRuby
           parse_options
           @base_dir ||= @function_name
           @options['runtime_name'] ||= 'ruby'
-          @options['runtime_version'] ||= '2.5.3'
+          @options['runtime_version'] ||= CURRENT_MINOR_RUBY
           if @options['blank_template']
             @options['template'] = FaaStRuby::Template.new(type: 'local', source: Template.gem_template_path_for('example-blank', runtime: @options['runtime_name'] || 'ruby'))
           else
@@ -34,7 +34,7 @@ module FaaStRuby
             @yaml_content['name'] = @function_name
             @options['runtime_name'], @options['runtime_version'] = @yaml_content['runtime']&.split(':')
             @options['runtime_name'] ||= 'ruby'
-            @options['runtime_version'] ||= '2.5.3'
+            @options['runtime_version'] ||= CURRENT_MINOR_RUBY
           else
             @yaml_content = yaml_for(@options['runtime_name'])
           end
@@ -143,14 +143,14 @@ module FaaStRuby
             {
               'cli_version' => FaaStRuby::VERSION,
               'name' => @function_name,
-              'runtime' => @options['runtime'] || 'ruby:2.5.3'
+              'runtime' => @options['runtime'] || DEFAULT_RUBY_RUNTIME
             }
           else
             {
               'cli_version' => FaaStRuby::VERSION,
               'name' => @function_name,
               'before_build' => [],
-              'runtime' => @options['runtime'] || 'ruby:2.5.3',
+              'runtime' => @options['runtime'] || DEFAULT_RUBY_RUNTIME,
               'test_command' => test_command
             }
           end

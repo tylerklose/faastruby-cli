@@ -9,18 +9,23 @@ module FaaStRuby
   end
 
   def self.crystal_present_and_supported?
-    system("which crystal >/dev/null") && SUPPORTED_CRYSTAL.include?(get_crystal_version)
+    system("which crystal >/dev/null") && version_match?(SUPPORTED_CRYSTAL, get_crystal_version)
   end
 
   def self.ruby_present_and_supported?
-    system("which ruby >/dev/null") && SUPPORTED_RUBY.include?(RUBY_VERSION)
+    system("which ruby >/dev/null") && version_match?(SUPPORTED_RUBY, RUBY_VERSION)
+  end
+
+  def self.version_match?(supported, current)
+    supported.each {|supported_version| return true if Gem::Dependency.new('', supported_version).match?('', current)}
+    return false
   end
 
   CRYSTAL_ENABLED = crystal_present_and_supported?
   RUBY_ENABLED = ruby_present_and_supported?
   unless RUBY_ENABLED || CRYSTAL_ENABLED
     puts "\n[ERROR] You need to have one of the following language:version pairs in order to use FaaStRuby Local."
-    puts SUPPORTED_RUNTIMES.join(', ') + "\n"*2
+    puts SUPPORTED_RUNTIMES.join(', ') + "\n\n"
     exit 1
   end
   SERVER_ROOT = Dir.pwd
@@ -39,7 +44,7 @@ module FaaStRuby
   CHDIR_MUTEX = Mutex.new
   CRYSTAL_VERSION = get_crystal_version.freeze
   DEFAULT_CRYSTAL_RUNTIME = "crystal:#{CRYSTAL_VERSION}".freeze
-  DEFAULT_RUBY_RUNTIME = "ruby:#{RUBY_VERSION}".freeze
+  DEFAULT_RUBY_RUNTIME = "ruby:#{CURRENT_MINOR_RUBY}".freeze
   require 'faastruby/server/logger'
   require 'faastruby/server/project_config'
   require 'faastruby/server/local'

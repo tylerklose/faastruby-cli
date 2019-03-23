@@ -46,7 +46,12 @@ module FaaStRuby
 
     def self.check_ruby_version
       require 'faastruby/supported_runtimes'
-      error("Unsupported Ruby version: #{RUBY_VERSION}\nSupported Ruby versions are: #{SUPPORTED_RUBY.join(", ")}") unless SUPPORTED_RUBY.include?(RUBY_VERSION)
+      error("Unsupported Ruby version: #{RUBY_VERSION}\nSupported Ruby versions are: #{SUPPORTED_RUBY.join(", ")}") unless version_match?(SUPPORTED_RUBY, RUBY_VERSION)
+    end
+
+    def self.version_match?(supported, current)
+      supported.each {|supported_version| return true if Gem::Dependency.new('', supported_version).match?('', current)}
+      return false
     end
 
     def self.check_region
