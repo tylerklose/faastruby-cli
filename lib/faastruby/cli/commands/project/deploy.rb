@@ -48,12 +48,12 @@ module FaaStRuby
             jobs << Thread.new do
               function_config = YAML.load(File.read("#{function_path}/faastruby.yml"))
               function_name = function_config['name']
-              msg = function_name == 'public' ? "Uploading static assets in '#{function_name}'" : "Deploying function '#{function_path}'"
+              msg = function_name == 'public' ? "Uploading static assets in '#{function_name}'" : "Deploying function from '#{function_path}'"
               spinner = @spinners.register "[:spinner] #{msg}"
               spinner.auto_spin
               # puts "[#{function_path}] Entering folder '#{function_path}'"
               # Dir.chdir function_path
-              cmd = "cd #{function_path} && faastruby deploy-to #{@workspace} --quiet --dont-create-workspace"
+              cmd = "cd #{function_path} && faastruby deploy-to #{@workspace} --quiet --dont-create-workspace #{'--skip-dependencies' if @options['skip_dependencies']}"
               cmd += " --set-root" if @root_to == function_name
               cmd += " --set-catch-all" if @catch_all == function_name
               secrets = secrets_for(function_name)
@@ -122,9 +122,11 @@ module FaaStRuby
           puts "Usage: faastruby #{self.class.help}"
           puts %(
 -f,--function FUNCTION_PATH    # Specify the path to the function directory in your local machine.
-                               # This argument can be repeated many times for multiple functions. Example:
-                               # -f path/to/function1 -f path/to/function2
+                               #  This argument can be repeated many times for multiple functions.
+                               #  Example: -f path/to/function1 -f path/to/function2
 -e,--env ENVIRONMENT           # ENVIRONMENT is added to the project's name to compose the workspace name.
+--skip-dependencies            # Don't try to install Gems or Shards before creating
+                               #  the deployment package
           )
         end
 
@@ -133,6 +135,8 @@ module FaaStRuby
           while @args.any?
             option = @args.shift
             case option
+            when '--skip-dependencies'
+              @options['skip_dependencies'] = true
             when '--skip-create-workspace'
               @options['skip_create_workspace'] = true
             when '--function', '-f'

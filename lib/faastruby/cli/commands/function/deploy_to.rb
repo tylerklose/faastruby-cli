@@ -99,6 +99,8 @@ module FaaStRuby
 --set-root                         # Set the function as the root route for the workspace.
 --set-catch-all                    # Set the function as the catch-all route for the workspace.
 --dont-create-workspace            # Don't try to create the workspace if it doesn't exist.
+--skip-dependencies                # Don't try to install Gems or Shards before creating
+                                   #  the deployment package
           )
         end
 
@@ -120,7 +122,7 @@ module FaaStRuby
         end
 
         def shards_install
-          return true unless File.file?('shard.yml')
+          return true unless File.file?('shard.yml') && @options['skip_dependencies'].nil?
           # puts "[#{@function_name}] Verifying dependencies" unless @options["quiet"]
           system('shards check > /dev/null') || system('shards install')
         rescue Errno::EPIPE
@@ -128,7 +130,7 @@ module FaaStRuby
         end
 
         def bundle_install
-          return true unless File.file?('Gemfile')
+          return true unless File.file?('Gemfile') && @options['skip_dependencies'].nil?
           # puts "* [#{@function_name}] Verifying dependencies" unless @options["quiet"]
           system('bundle check >/dev/null') || system('bundle install')
         rescue Errno::EPIPE
@@ -185,6 +187,8 @@ module FaaStRuby
               @options['is_catch_all'] = true
             when '--dont-create-workspace'
               @options['dont_create_workspace'] = true
+            when '--skip-dependencies'
+              @options['skip_dependencies'] = true
             else
               FaaStRuby::CLI.error("Unknown argument: #{option}")
             end
