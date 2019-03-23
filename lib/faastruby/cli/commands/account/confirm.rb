@@ -22,7 +22,10 @@ module FaaStRuby
           user.confirmation_token = STDIN.gets.chomp
           spinner = spin("Confirming your account...")
           user.confirm_account!
-          FaaStRuby::CLI.error(user.errors) if user.errors.any?
+          if user.errors.any?
+            spinner.error
+            FaaStRuby::CLI.error(user.errors)
+          end
           spinner.success
           user.save_credentials
           puts "Login successful!"

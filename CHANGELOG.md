@@ -1,7 +1,8 @@
 # Changelog
 
-## 0.5.20 - Mar 20 2019
+## 0.5.20 - Mar 23 2019
 - Improved email regex.
+- Display the correct error message when confirmation token is invalid
 
 ## 0.5.19 - Mar 20 2019
 - Fix bug preventing `faastruby deploy` from working when secrets are nil
