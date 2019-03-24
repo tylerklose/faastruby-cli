@@ -5,7 +5,7 @@ module FaaStRuby
   WORKSPACE_NAME_REGEX = '[a-zA-Z0-im9_]{1}[a-zA-Z0-9\-]{1,}[a-zA-Z0-9_]{1}'
   FAASTRUBY_YAML = 'faastruby.yml'
   SPINNER_FORMAT = :spin_2
-
+  require 'faastruby/supported_runtimes'
   class CLI
     def self.error(message, color: :red)
       message.compact.each {|m| STDERR.puts m.colorize(color)} if message.is_a?(Array)

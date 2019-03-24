@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.21 - MAr 24 2019
+- Require supported_runtimes on every command run.
+
 ## 0.5.20 - Mar 24 2019
 - Improved email regex.
 - Display the correct error message when confirmation token is invalid
