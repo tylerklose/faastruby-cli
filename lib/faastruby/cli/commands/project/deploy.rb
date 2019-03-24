@@ -100,7 +100,7 @@ module FaaStRuby
           continue = has_credentials || try_to_create.call
           unless continue
             connect_spinner.error
-            FaaStRuby::CLI.error("Unable to deploy project to workspace '#{workspace}'. Make sure you have the credentials, or try a different environment name.\nExample: faastruby deploy --deploy-env #{@options['environment']}-#{(rand * 100).to_i}")
+            FaaStRuby::CLI.error("Unable to deploy project to workspace '#{workspace}'. Make sure you have the credentials, or try a different environment name.\nExample: faastruby deploy --env #{@options['environment']}-#{(rand * 100).to_i}")
           end
           connect_spinner.success
           true

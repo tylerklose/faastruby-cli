@@ -1,10 +1,11 @@
 # Changelog
 
-## 0.5.20 - Mar 23 2019
+## 0.5.20 - Mar 24 2019
 - Improved email regex.
 - Display the correct error message when confirmation token is invalid
 - Add option `--skip-dependencies` to the commands `deploy-to` and `deploy` to allow skipping of `bundle install` and `shards install`.
 - Change Ruby runtimes to `2.5` and `2.6` and use the pessimistic version operator to compare Ruby versions and maintain backwards compatibility.
+- Fix error message on `deploy-to` when workspace credentials are missing
 
 ## 0.5.19 - Mar 20 2019
 - Fix bug preventing `faastruby deploy` from working when secrets are nil
