@@ -1,6 +1,9 @@
 # Changelog
 
-## 0.5.21 - MAr 24 2019
+## 0.5.22 - unreleased
+- Detect crystal functions that have `handler.cr` inside `src` directory
+
+## 0.5.21 - Mar 24 2019
 - Require supported_runtimes on every command run.
 
 ## 0.5.20 - Mar 24 2019

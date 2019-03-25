@@ -8,6 +8,7 @@ module FaaStRuby
         debug "self.find_all_in(#{functions_dir.inspect})"
         Dir.glob(["**/handler.rb", "**/handler.cr"], base: functions_dir).map do |entry|
           function_absolute_folder = "#{functions_dir}/#{File.dirname(entry)}"
+          function_absolute_folder = File.dirname(function_absolute_folder) if File.basename(function_absolute_folder) == "src"
           next unless File.file?("#{function_absolute_folder}/faastruby.yml")
           from_yaml(function_absolute_folder)
         end.compact
