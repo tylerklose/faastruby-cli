@@ -2,10 +2,13 @@ require "base64"
 require "json"
 require "yaml"
 
+macro require_handler
+  require {{env("HANDLER_PATH")}}
+end
+
+require_handler
+
 module FaaStRuby
-  macro require_handler
-    require {{env("HANDLER_PATH")}}
-  end
   class Event
     JSON.mapping(
       body: String?,
@@ -67,8 +70,6 @@ module FaaStRuby
     end
   end
 end
-
-FaaStRuby.require_handler
 
 def render(icon : String? = nil, jpeg : String? = nil, gif : String? = nil, png : String? = nil, io : Bytes? = nil, css : String? = nil, svg : String? = nil, js : String? = nil, inline : String? = nil, html : String? = nil, json : String? = nil, yaml : String? = nil, text : String? = nil, status : Int32 = 200, headers : Hash(String, String) = {} of String => String, content_type : String? = nil, binary : Bool = false)
   headers["Content-Type"] = content_type if content_type
