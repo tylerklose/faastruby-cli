@@ -4,10 +4,10 @@ module FaaStRuby
       require 'faastruby/cli/commands/function/base_command'
       require 'faastruby/cli/package'
       class Build < FunctionBaseCommand
-        def self.build(source, output_file, function_name, quiet = false)
+        def self.build(source, output_file, function_name, quiet = false, exclude: [])
           # msg = "[#{function_name}] Building package..."
           # quiet ? puts(msg) : spinner = spin(msg)
-          FaaStRuby::Package.new(source, output_file).build
+          FaaStRuby::Package.new(source, output_file, exclude: exclude).build
           # quiet ? puts("[#{function_name}] Package created.") : spinner.stop('Done!')
           puts "+ f #{output_file}".green unless quiet
         end

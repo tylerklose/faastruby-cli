@@ -2,15 +2,16 @@ require 'zip'
 module FaaStRuby
   class Package
     # Initialize with the directory to zip and the location of the output archive.
-    def initialize(input_dir, output_file)
+    def initialize(input_dir, output_file, exclude: [])
       @input_dir = input_dir
       @output_file = output_file
+      @exclude = ['.', '..', '.git', @output_file.split('/').last] + exclude
     end
 
     # Zip the input directory.
     def build
       entries = Dir.entries(@input_dir)
-      entries.delete_if {|e| ['.', '..', '.git', @output_file.split('/').last].include?(e)}
+      entries.delete_if {|e| @exclude.include?(e)}
       FileUtils.rm_f(@output_file) # Make sure file doesn't exist
       ::Zip::File.open(@output_file, ::Zip::File::CREATE) do |zipfile|
         write_entries entries, '', zipfile

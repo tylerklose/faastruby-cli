@@ -1,7 +1,8 @@
 # Changelog
 
 ## 0.5.22 - unreleased
-- Detect crystal functions that have `handler.cr` inside `src` directory
+- Detect Crystal functions that have `handler.cr` inside `src` directory
+- Exclude Crystal function handler binaries when generating a deployment package
 
 ## 0.5.21 - Mar 24 2019
 - Require supported_runtimes on every command run.

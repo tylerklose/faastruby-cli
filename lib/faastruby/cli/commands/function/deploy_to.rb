@@ -163,7 +163,8 @@ module FaaStRuby
             spinner&.success
           end
           require 'faastruby/cli/commands/function/build'
-          FaaStRuby::Command::Function::Build.build(source, output_file, @function_name, true)
+          exclude = crystal_runtime? ? ['handler', 'handler.dwarf'] : []
+          FaaStRuby::Command::Function::Build.build(source, output_file, @function_name, true, exclude: exclude)
           @package_file.close
           output_file
         end
