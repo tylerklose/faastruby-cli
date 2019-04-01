@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.5.22 - unreleased
+## 0.5.22 - April 1 2019
 - Detect Crystal functions that have `handler.cr` inside `src` directory
 - Exclude Crystal function handler binaries when generating a deployment package
 - Move Crystal Runtime Macro to the top of the file, outside the FaaStRuby module
