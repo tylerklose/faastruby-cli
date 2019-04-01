@@ -161,7 +161,7 @@ module FaaStRuby
       debug __method__
       puts "Sync mode enabled."
       puts "Your local environment will be synced to https://#{workspace}.tor1.faast.cloud"
-      system("faastruby deploy")
+      system("faastruby deploy --env #{DEPLOY_ENVIRONMENT}")
       true
     end
 

@@ -4,6 +4,7 @@
 - Detect Crystal functions that have `handler.cr` inside `src` directory
 - Exclude Crystal function handler binaries when generating a deployment package
 - Move Crystal Runtime Macro to the top of the file, outside the FaaStRuby module
+- Fix bug preventing `--sync` from working with any other environment.
 
 ## 0.5.21 - Mar 24 2019
 - Require supported_runtimes on every command run.
