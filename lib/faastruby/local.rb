@@ -71,6 +71,7 @@ module FaaStRuby
     DEFAULT_RUBY_RUNTIME = "ruby:#{CURRENT_MINOR_RUBY}".freeze
     FUNCTIONS_EVENT_QUEUE = Queue.new
     PUBLIC_EVENT_QUEUE = Queue.new
+    WORKSPACE_BASE_HOST = ENV['FAASTRUBY_WORKSPACE_BASE_HOST'] || 'faast.cloud'
     puts "Using '#{DEFAULT_RUBY_RUNTIME}' as default Ruby runtime." if RUBY_ENABLED
     puts "Using '#{DEFAULT_CRYSTAL_RUNTIME}' as default Crystal runtime." if CRYSTAL_ENABLED
     def self.workspace
@@ -140,7 +141,7 @@ module FaaStRuby
       # initial_compile
       puts "Listening for changes."
       puts "faastRuby Local is ready at http://localhost:3000"
-      puts "Your cloud workspace address is https://#{workspace}.tor1.faast.cloud" if SYNC_ENABLED
+      puts "Your cloud workspace address is https://#{workspace}.#{REGION}.#{WORKSPACE_BASE_HOST}" if SYNC_ENABLED
       sleep
     ensure
       puts "Stopping Watchdog..."
@@ -161,7 +162,7 @@ module FaaStRuby
     def self.sync_mode_enabled
       debug __method__
       puts "Sync mode enabled."
-      puts "Your local environment will be synced to https://#{workspace}.tor1.faast.cloud"
+      puts "Your local environment will be synced to https://#{workspace}.#{REGION}.#{WORKSPACE_BASE_HOST}"
       system("faastruby deploy --env #{DEPLOY_ENVIRONMENT}")
       true
     end
