@@ -9,6 +9,7 @@ module FaaStRuby
     require 'pathname'
     require 'securerandom'
     require 'faastruby/version'
+    require 'faastruby/regions'
     require 'faastruby/supported_runtimes'
     require 'faastruby/local/logger'
     require 'faastruby/local/functions'

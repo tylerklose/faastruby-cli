@@ -1,10 +1,7 @@
 module FaaStRuby
+  require "faastruby/regions"
   ROOT_DOMAIN = ENV['FAASTRUBY_ROOT_DOMAIN'] || 'faastruby.io'
   WORKSPACE_BASE_HOST = ENV['FAASTRUBY_WORKSPACE_BASE_HOST'] || 'faast.cloud'
-  DEFAULT_REGION = 'tor1'
-  REGIONS = [
-    'tor1'
-  ]
   class << self
     attr_accessor :configuration
   end
@@ -24,12 +21,6 @@ module FaaStRuby
 
   def self.credentials
     {api_key: api_key, api_secret: api_secret}
-  end
-
-  def self.region
-    ENV['FAASTRUBY_REGION'] ||= DEFAULT_REGION
-    raise "No such region: #{ENV['FAASTRUBY_REGION']}" unless FaaStRuby::REGIONS.include?(ENV['FAASTRUBY_REGION'])
-    ENV['FAASTRUBY_REGION']
   end
 
   def self.api_host

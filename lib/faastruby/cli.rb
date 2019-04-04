@@ -6,6 +6,7 @@ module FaaStRuby
   FAASTRUBY_YAML = 'faastruby.yml'
   SPINNER_FORMAT = :spin_2
   require 'faastruby/supported_runtimes'
+  require 'faastruby/regions'
   class CLI
     def self.error(message, color: :red)
       message.compact.each {|m| STDERR.puts m.colorize(color)} if message.is_a?(Array)
