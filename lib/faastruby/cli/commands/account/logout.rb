@@ -18,6 +18,7 @@ module FaaStRuby
           end
           user.logout(all: @options['all'])
           FaaStRuby::CLI.error(user.errors) if !@options['force'] && user&.errors.any?
+        ensure
           @credentials_file.clear
           puts "Logout successful."
         end
