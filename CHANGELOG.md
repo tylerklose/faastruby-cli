@@ -3,6 +3,7 @@
 ## 0.5.23 - Unreleased
 - Move regions configuration to a separate file, so it can be shared among different among different components of the gem
 - Replace hardcoded URLs by the correct variables
+- Fix messy env vars
 
 ## 0.5.22 - April 1 2019
 - Detect Crystal functions that have `handler.cr` inside `src` directory

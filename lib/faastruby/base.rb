@@ -2,6 +2,7 @@ module FaaStRuby
   require "faastruby/regions"
   ROOT_DOMAIN = ENV['FAASTRUBY_ROOT_DOMAIN'] || 'faastruby.io'
   WORKSPACE_BASE_HOST = ENV['FAASTRUBY_WORKSPACE_BASE_HOST'] || 'faast.cloud'
+  URL_PROTOCOL = ENV['FAASTRUBY_URL_PROTOCOL'] || 'https'
   class << self
     attr_accessor :configuration
   end
@@ -24,11 +25,11 @@ module FaaStRuby
   end
 
   def self.api_host
-    ENV['FAASTRUBY_HOST'] || "https://api.#{region}.#{ROOT_DOMAIN}"
+    ENV['FAASTRUBY_HOST'] || "#{URL_PROTOCOL}://api.#{region}.#{ROOT_DOMAIN}"
   end
 
   def self.workspace_host_for(workspace_name)
-    "https://#{workspace_name}.#{region}.#{WORKSPACE_BASE_HOST}"
+    "#{URL_PROTOCOL}://#{workspace_name}.#{region}.#{WORKSPACE_BASE_HOST}"
   end
 
   class Configuration
