@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.5.23 - Unreleased
+## 0.5.23 - Apr 7 2019
 - Move regions configuration to a separate file, so it can be shared among different components of the gem
 - Replace hardcoded URLs by the correct variables
 - Fix messy env vars
