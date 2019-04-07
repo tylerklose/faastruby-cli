@@ -1,10 +1,11 @@
 # Changelog
 
 ## 0.5.23 - Unreleased
-- Move regions configuration to a separate file, so it can be shared among different among different components of the gem
+- Move regions configuration to a separate file, so it can be shared among different components of the gem
 - Replace hardcoded URLs by the correct variables
 - Fix messy env vars
 - Ensure logout happens even if connection to the API fails
+- Bump faastruby-rpc to 0.2.7
 
 ## 0.5.22 - April 1 2019
 - Detect Crystal functions that have `handler.cr` inside `src` directory
