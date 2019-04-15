@@ -24,6 +24,8 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'tmuxinator', '~> 0.15'
   spec.add_runtime_dependency 'rouge', '~> 3.3'
   spec.add_runtime_dependency 'listen', '~> 3.1'
+  spec.add_runtime_dependency 'opal', '~> 0.11.4'
+  spec.add_runtime_dependency 'opal-jquery', '~> 0.4.3'
 
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'

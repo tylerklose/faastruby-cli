@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.24 - Apr 15 2019
+- Add experimental support for Opal
+- Add new project configuration keys: `opal_dir` and `opal_js_destination`
+
 ## 0.5.23 - Apr 7 2019
 - Move regions configuration to a separate file, so it can be shared among different components of the gem
 - Replace hardcoded URLs by the correct variables

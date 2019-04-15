@@ -71,6 +71,7 @@ module FaaStRuby
     DEFAULT_RUBY_RUNTIME = "ruby:#{CURRENT_MINOR_RUBY}".freeze
     FUNCTIONS_EVENT_QUEUE = Queue.new
     PUBLIC_EVENT_QUEUE = Queue.new
+    OPAL_EVENT_QUEUE = Queue.new
     WORKSPACE_BASE_HOST = ENV['FAASTRUBY_WORKSPACE_BASE_HOST'] || 'faast.cloud'
     URL_PROTOCOL = ENV['FAASTRUBY_URL_PROTOCOL'] || 'https'
     puts "Using '#{DEFAULT_RUBY_RUNTIME}' as default Ruby runtime." if RUBY_ENABLED
@@ -125,6 +126,18 @@ module FaaStRuby
       YAML.load(File.read(SECRETS_YAML_FILE))['secrets'] || {}
     end
 
+    def self.opal_enabled?
+      !project_config['opal_dir'].nil?
+    end
+
+    def self.opal_dir
+      "#{SERVER_ROOT}/#{project_config['opal_dir']}"
+    end
+
+    def self.opal_js_destination
+      project_config['opal_js_destination'] || "#{public_dir}/assets/javascripts"
+    end
+
     def self.start!
       Listen::Adapter::Linux::DEFAULTS[:events] << :modify
       debug "self.start!"
@@ -135,10 +148,19 @@ module FaaStRuby
       puts "Detecting existing functions."
       puts "Ruby functions: #{ruby_functions.inspect}"
       puts "Crystal functions: #{crystal_functions.inspect}"
+
       listen_on_functions_dir
+      if opal_enabled?
+        puts "Opal Ruby files will be auto-compiled to Javascript and added to '#{opal_js_destination}'."
+        FileUtils.mkdir_p(Local.opal_dir)
+        listen_on_opal_dir
+      end
       listen_on_public_dir if SYNC_ENABLED
+
       FunctionProcessor.new(FUNCTIONS_EVENT_QUEUE).start
+      OpalProcessor.new(OPAL_EVENT_QUEUE).start if opal_enabled?
       StaticFileProcessor.new(PUBLIC_EVENT_QUEUE).start if SYNC_ENABLED
+
       # initial_compile
       puts "Listening for changes."
       puts "faastRuby Local is ready at http://localhost:3000"
@@ -148,6 +170,7 @@ module FaaStRuby
       puts "Stopping Watchdog..."
       Local::Listener.functions_listener.each(&:stop)
       Local::Listener.public_listener.each(&:stop)
+      Local::Listener.opal_listener.each(&:stop)
     end
 
     def self.initial_compile
@@ -174,6 +197,14 @@ module FaaStRuby
       listener = Listener.new(directory: functions_dir, queue: FUNCTIONS_EVENT_QUEUE)
       listener.start
       Local::Listener.functions_listener << listener
+    end
+
+    def self.listen_on_opal_dir
+      debug "self.listen_on_opal_dir"
+      debug "Listening for changes in '#{opal_dir}'"
+      listener = Listener.new(directory: opal_dir, queue: OPAL_EVENT_QUEUE)
+      listener.start
+      Local::Listener.opal_listener << listener
     end
 
     def self.listen_on_public_dir

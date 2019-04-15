@@ -7,6 +7,10 @@ module FaaStRuby
       def self.public_listener
         @@public_listener ||= []
       end
+      def self.opal_listener
+        @@opal_listener ||= []
+      end
+
       include Local::Logger
       attr_accessor :listener, :directory, :queue
       def initialize(directory:, queue:)
@@ -101,6 +105,10 @@ module FaaStRuby
       def file_is_a_function_config?
         debug __method__
         filename == 'faastruby.yml'
+      end
+
+      def file_is_opal_main?
+        filename == 'main.rb'
       end
 
       # def file_was_just_added?

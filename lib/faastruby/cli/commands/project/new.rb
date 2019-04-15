@@ -159,6 +159,16 @@ module FaaStRuby
   ## Defaults to 'functions'.
   # functions_dir: functions
 
+  ## Opal support (experimental)
+  ## You can use Opal to write Ruby code and have it autocompiled to
+  ## Javascript and placed inside the public assets folder.
+  ## If 'opal_dir' is set, folders inside 'opal_dir' that contain
+  ## a file named 'main.rb' will be compiled using opal
+  # opal_dir: opal
+  ## Destination folder for .js files created by Opal.
+  ## Defaults to PUBLIC_DIR/assets/javascripts
+  # opal_js_destination: public/assets/javascripts
+
   ## The name of the function that will respond to requests made
   ## to '/'. Defaults to 'root'
   # root_to: root
