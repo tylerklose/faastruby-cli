@@ -73,6 +73,14 @@ module FaaStRuby
           response = function_object.handler(event, *args) || function_object.render_nothing
           response = FaaStRuby::Response.invalid_response unless response.is_a?(FaaStRuby::Response)
         rescue Exception => e
+          if e.class == SyntaxError
+            line, *m = e.message.split(' ')
+            line_no = line.split(':')[1]
+            real_no = line_no.to_i - 13
+            STDOUT.puts "handler.rb:#{real_no}: #{m.join(' ')}"
+          else
+            STDOUT.puts e.full_message
+          end
           error = Oj.dump({
             'error' => e.message,
             'location' => e.backtrace&.first
