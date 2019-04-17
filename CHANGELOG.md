@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.5.24 - unreleased
+## 0.5.24 - Apr 17 2019
 - Add experimental support for Opal
 - Add new project configuration keys: `opal_dir` and `opal_js_destination`
 - Add helper method `render_template` to the Ruby runtime.
