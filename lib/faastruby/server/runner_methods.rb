@@ -88,6 +88,10 @@ module FaaStRuby
       respond_with(nil, status: status, headers: headers, binary: false)
     end
 
+    def render_template(template_path, status: 200, headers: {}, variables: {})
+      render html: FaaStRuby::Template.new(variables: variables).render(template_path), status: status, headers: headers
+    end
+
     def redirect_to(function: nil, url: nil, status: 303)
       headers = {"Location" => function || url}
       respond_with(nil, status: status, headers: headers, binary: false)

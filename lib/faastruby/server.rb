@@ -55,6 +55,7 @@ module FaaStRuby
   require 'faastruby/server/event_channel'
   require 'faastruby/server/subscriber'
   # require 'faastruby/server/event_hub'
+  require 'faastruby/server/template'
   require 'faastruby/server/runner_methods'
   require 'faastruby/server/function_object'
   require 'faastruby/server/runner'
