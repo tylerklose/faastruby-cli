@@ -5,7 +5,8 @@ image: ruby:2.6
 test:
   stage: test
   script:
-    - rspec
+    - bundle install --with test
+    - bundle exec rspec
 
 build:
   stage: build
